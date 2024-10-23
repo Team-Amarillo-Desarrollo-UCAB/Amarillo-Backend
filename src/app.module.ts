@@ -1,21 +1,33 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { JwtModule } from '@nestjs/jwt';
+
+import { postgresDatabaseProvider } from './common/infraestructure/providers/postgres-provider';
+import { UserModule } from './user/infraestructure/user.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     ScheduleModule.forRoot(),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET_KEY,
-      signOptions: { expiresIn: '24h' },
+
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        return {
+          secret: configService.get('JWT_SECRET_KEY'),
+          signOptions: {
+            expiresIn: '24h'
+          }
+        }
+      }
     }),
+      
+    UserModule
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    postgresDatabaseProvider
+  ],
 })
 export class AppModule {}
