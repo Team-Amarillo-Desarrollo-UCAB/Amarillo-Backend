@@ -30,6 +30,7 @@ export class User extends AggregateRoot<string> {
 
     protected applyEvent(event: DomainEvent): void {
         switch (event.eventName) {
+            //patron estado o estrategia, esto es una cochinada el switch case
             case 'UserCreated':
                 const userCreated: UserCreated = event as UserCreated;
                 this.name = userCreated.userName
