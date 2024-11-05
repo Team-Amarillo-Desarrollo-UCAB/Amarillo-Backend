@@ -19,6 +19,8 @@ export abstract class AggregateRoot<T> extends Entity<T> {
 
     protected abstract ensureValidState(): void
 
+    //por que reiniciar eventos?? 
+    //se parece al builder
     public pullEvents(): DomainEvent[] {
         const events = this.events
         this.events = []

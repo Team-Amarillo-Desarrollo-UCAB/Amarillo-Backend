@@ -9,7 +9,7 @@ export class Result<T> {
   private constructor(
     value: T,
     error: Error,
-    errorCode: number,
+    errorCode: number,//esto es de la capa de infraestructura, NO de dominio!!
     message: string,
   ) {
     this.error = error;
