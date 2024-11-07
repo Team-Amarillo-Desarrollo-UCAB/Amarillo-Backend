@@ -4,7 +4,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { JwtModule } from '@nestjs/jwt';
 
 import { postgresDatabaseProvider } from './common/infraestructure/providers/postgres-provider';
-import { UserModule } from './user/infraestructure/user.module';
+import { UserController } from './user/infraestructure/controller/user.controller';
+import { ProductController } from './product/infraestructure/controller/product.controller';
 
 @Module({
   imports: [
@@ -24,7 +25,10 @@ import { UserModule } from './user/infraestructure/user.module';
       }
     }),
       
-    UserModule
+  ],
+  controllers: [
+    UserController,
+    ProductController
   ],
   providers: [
     postgresDatabaseProvider
