@@ -5,7 +5,7 @@ export abstract class AggregateRoot<T> extends Entity<T> {
     protected events: DomainEvent[] = []
 
     // Nota: Esto mas adelante se determinara si lo construye a partir del evento de dominio created
-    protected constructor(id: T /*,event: DomainEvent*/) {
+    protected constructor(id: T ,event: DomainEvent) {
         super(id);
         //this.onEvent(event);
     }
