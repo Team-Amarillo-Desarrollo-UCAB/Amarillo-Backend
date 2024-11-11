@@ -9,26 +9,34 @@ import { ProductStock } from "./value-objects/product-stock";
 import { AggregateRoot } from "src/common/domain/aggregate-root/aggregate-root";
 import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface";
 import { UnidadMedida } from "./enum/UnidadMedida";
+import { ProductCreated } from "./domain-event/product-created-event";
+import { ProductCantidadMedida } from "./value-objects/product-unit/product-cantidad-medida";
+import { ProductAmount } from "./value-objects/product-precio/product-amount";
+import { ProductCurrency } from "./value-objects/product-precio/product-currency";
 
 export class Product extends AggregateRoot<ProductId> {
 
     constructor(
         id: ProductId,
-        private readonly name: ProductName,
-        private readonly description: ProductDescription,
-        private readonly unit: ProductUnit,
-        private readonly price: ProductPrice,
-        private readonly image: ProductImage,
-        private readonly stock: ProductStock
+        private name: ProductName,
+        private description: ProductDescription,
+        private unit: ProductUnit,
+        private price: ProductPrice,
+        private image: ProductImage,
+        private stock: ProductStock
     ) {
-        super(id)
-        this.name = name,
-            this.description = description,
-            this.unit = unit
-        this.price = price
-        this.image = image
-        this.stock = stock
-
+        const event = ProductCreated.create(
+            id.Id,
+            name.Name,
+            description.Description,
+            unit.Unit,
+            unit.Cantidad_medida,
+            price.Amount,
+            price.Currency,
+            image.Image,
+            stock.Stock
+        );
+        super(id, event)
     }
 
     get Name(): string {
@@ -51,7 +59,7 @@ export class Product extends AggregateRoot<ProductId> {
         return this.price.Amount;
     }
 
-    get Moneda(): string{
+    get Moneda(): string {
         return this.price.Currency
     }
 
@@ -64,10 +72,35 @@ export class Product extends AggregateRoot<ProductId> {
     }
 
     protected applyEvent(event: DomainEvent): void {
-        throw new Error("Method not implemented.");
+        switch (event.eventName) {
+            //patron estado o estrategia, esto es una cochinada el switch case
+            case 'ProductCreated':
+                const productCreated: ProductCreated = event as ProductCreated;
+                this.name = ProductName.create(productCreated.name)
+                this.description = ProductDescription.create(productCreated.description)
+                this.unit = ProductUnit.create(
+                    productCreated.unit,
+                    ProductCantidadMedida.create(productCreated.cantidad_medida)
+                )
+                this.price = ProductPrice.create(
+                    ProductAmount.create(productCreated.amount),
+                    ProductCurrency.create(productCreated.currency)
+                )
+                this.image = ProductImage.create(productCreated.image)
+                this.stock = ProductStock.create(productCreated.stock)
+                break;
+        }
     }
     protected ensureValidState(): void {
-        throw new Error("Method not implemented.");
+        if (
+            !this.name ||
+            !this.description ||
+            !this.unit ||
+            !this.price ||
+            !this.image ||
+            !this.stock
+        )
+        throw new Error('El producto tiene que ser valido');
     }
 
     static create(
