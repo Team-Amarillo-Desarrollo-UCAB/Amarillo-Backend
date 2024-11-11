@@ -8,6 +8,7 @@ import { ProductImage } from "./value-objects/product-image";
 import { ProductStock } from "./value-objects/product-stock";
 import { AggregateRoot } from "src/common/domain/aggregate-root/aggregate-root";
 import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface";
+import { UnidadMedida } from "./enum/UnidadMedida";
 
 export class Product extends AggregateRoot<ProductId> {
 
@@ -22,12 +23,44 @@ export class Product extends AggregateRoot<ProductId> {
     ) {
         super(id)
         this.name = name,
-        this.description = description,
-        this.unit = unit
+            this.description = description,
+            this.unit = unit
         this.price = price
         this.image = image
         this.stock = stock
 
+    }
+
+    get Name(): string {
+        return this.name.Name;
+    }
+
+    get Description(): string {
+        return this.description.Description;
+    }
+
+    get Unit(): UnidadMedida {
+        return this.unit.Unit;
+    }
+
+    get CantidadMedida(): number {
+        return this.unit.Cantidad_medida;
+    }
+
+    get Price(): number {
+        return this.price.Amount;
+    }
+
+    get Moneda(): string{
+        return this.price.Currency
+    }
+
+    get Image(): string {
+        return this.image.Image;
+    }
+
+    get Stock(): number {
+        return this.stock.Stock;
     }
 
     protected applyEvent(event: DomainEvent): void {
@@ -45,7 +78,7 @@ export class Product extends AggregateRoot<ProductId> {
         price: ProductPrice,
         image: ProductImage,
         stock: ProductStock
-    ): Product{
+    ): Product {
         return new Product(
             id,
             name,
@@ -54,7 +87,7 @@ export class Product extends AggregateRoot<ProductId> {
             price,
             image,
             stock
-        ) 
+        )
     }
 
 }
