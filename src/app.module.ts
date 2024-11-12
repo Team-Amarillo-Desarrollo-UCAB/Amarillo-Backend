@@ -7,6 +7,7 @@ import { postgresDatabaseProvider } from './common/infraestructure/providers/pos
 import { UserController } from './user/infraestructure/controller/user.controller';
 import { ProductController } from './product/infraestructure/controller/product.controller';
 import { AuthController } from './auth/infraestructure/controller/auth.controller';
+import { CategoryController } from './category/infraestructure/controller/category.controller';
 
 @Module({
   imports: [
@@ -27,10 +28,11 @@ import { AuthController } from './auth/infraestructure/controller/auth.controlle
     }),
       
   ],
-  controllers: [
+  controllers: [//con
     UserController,
     ProductController,
-    AuthController
+    AuthController,
+    CategoryController,
   ],
   providers: [
     Logger,

@@ -73,12 +73,6 @@ export class ProductController {
     async createProduct(
         @Body() entry: CreateProductEntryDTO
     ): Promise<string> {
-        
-        /*const image: File = await this.imageTransformer.base64ToFile(entry.image)
-
-        const url = this.fileUploader.UploadFile(image,"primera")
-
-        console.log(url)*/
 
         const data: CreateProductServiceEntryDTO = {userId: "24117a35-07b0-4890-a70f-a082c948b3d4", ...entry} 
 
