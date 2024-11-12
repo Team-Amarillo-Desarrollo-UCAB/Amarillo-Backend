@@ -1,3 +1,4 @@
+import { OrmProduct } from 'src/product/infraestructure/entities/product.entity';
 import { Column, Entity, PrimaryColumn, ManyToMany, JoinTable } from 'typeorm';
 //import { OrmProduct } from 'src/product/infrastructure/entities/orm-entities/orm-product';
 
@@ -13,9 +14,19 @@ export class OrmCategory {
   icon: string; // Icono de la categoría
 
   // Relación muchos a muchos con productos
-//   @ManyToMany(() => OrmProduct, (product) => product.categories)
-//   @JoinTable({ name: 'category_product' }) // Tabla de unión
-//   products: OrmProduct[];
+  @ManyToMany(() => OrmProduct, (product) => product.categories)
+  @JoinTable({
+    name: "category_product",
+    joinColumn: {
+        name: "category_id",
+        referencedColumnName: "id"
+    },
+    inverseJoinColumn: {
+        name: "product_id",
+        referencedColumnName: "id"
+    }
+  })  // Tabla de unión
+  products: OrmProduct[];
 
   // Método estático para crear una instancia de categoría
   static create(
