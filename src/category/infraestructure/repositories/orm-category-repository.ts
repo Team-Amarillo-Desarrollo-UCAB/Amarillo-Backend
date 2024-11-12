@@ -18,7 +18,9 @@ export class OrmCategoryRepository extends Repository<OrmCategory> implements IC
     try {
       // Convierte la entidad de dominio a una entidad persistente
       const ormCategory = await this.ormCategoryMapper.fromDomainToPersistence(category);
+      console.log("Antes del this.save")
       const result = await this.save(ormCategory);
+      console.log("Despues del this.save")
 
       // Convierte la entidad persistente guardada de nuevo a entidad de dominio
        return Result.success<Category>(
@@ -28,6 +30,7 @@ export class OrmCategoryRepository extends Repository<OrmCategory> implements IC
 
       //return Result.success<Category>(category,200) --> version Luigi (Está bien o mal?)
     } catch (error) {
+      console.log("Ocurrió un erroooooor")
       return Result.fail<Category>(error, 500, error.message);
     }
   }
@@ -38,7 +41,7 @@ export class OrmCategoryRepository extends Repository<OrmCategory> implements IC
       const categories = await this.find({
         skip: page,
         take: limit,
-        relations: ['productos'],
+        //relations: ['categorias'],
       });
 
       if(!categories){

@@ -27,4 +27,8 @@ export class ProductPrice implements IValueObject<ProductPrice>{
         return (this.amount.Monto === valueObject.amount.Monto)
             && (this.currency.Currency === valueObject.currency.Currency);
     }
+
+    static create(amount: ProductAmount, currency: ProductCurrency): ProductPrice{
+        return new ProductPrice(amount,currency)
+    }
 }

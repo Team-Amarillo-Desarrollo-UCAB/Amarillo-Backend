@@ -6,9 +6,11 @@ services:
     ports:
       - "${DB_PORT}:5432"
     environment:
+      POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     container_name: amarillo_database
+    env_file: ".env"
     networks:
       - amarillo-network
     volumes:

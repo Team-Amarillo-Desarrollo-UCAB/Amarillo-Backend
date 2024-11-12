@@ -5,7 +5,7 @@ export class CategoryImage implements IValueObject<CategoryImage> {
     private readonly url: string;
 
     private constructor(url: string) {
-        if (!url || !this.isValidURL(url)) {
+        if (!url) {
             throw new InvalidCategoryIconException();
         }
         this.url = url;
@@ -22,12 +22,12 @@ export class CategoryImage implements IValueObject<CategoryImage> {
     get Value(){ return this.url }
 
     private isValidURL(url: string): boolean {
-        const urlPattern = new RegExp(
-            '^(https?:\\/\\/)?' + // protocolo
-            '((([a-zA-Z0-9$-_.+!*\'(),]|[\\x{00a0}-\\x{ffff}])+)(\\.[a-zA-Z0-9-]+)+)' + // dominio y subdominios
-            '(\\:[0-9]{1,5})?' + // puerto
-            '(\\/.*)?$', 'u'
-        );
+        const urlPattern = new RegExp(  
+            '^(https?:\\/\\/)?' + // protocolo  
+            '((([a-zA-Z0-9$-_.+!*\'(),]|[^\\x00-\\x1F\\x20-\\x7E])+)(\\.[a-zA-Z0-9-]+)+)' + // dominio y subdominios  
+            '(\\:[0-9]{1,5})?' + // puerto  
+            '(\\/.*)?$', 'u'  
+        );  
         return urlPattern.test(url);
     }
 }

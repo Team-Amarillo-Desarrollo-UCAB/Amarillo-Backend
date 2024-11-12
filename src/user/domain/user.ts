@@ -26,14 +26,14 @@ export class User extends AggregateRoot<UserId> {
         image: UserImage,
         role: UserRole
     ) {
-        /*const userCreated: UserCreated = UserCreated.create(
+        const userCreated: UserCreated = UserCreated.create(
             id.Id,
             name.Name,
             phone.Phone,
             email.Email,
             role.Role
-        );*/
-        super(id);
+        );
+        super(id,userCreated);
         this.name = name
         this.email = email
         this.phone = phone

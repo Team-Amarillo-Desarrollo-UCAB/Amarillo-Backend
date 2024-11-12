@@ -21,25 +21,29 @@ import { PaginationDto } from 'src/common/infraestructure/dto/entry/pagination.d
 import { FindAllCategoriesApplicationService } from 'src/category/application/queries/find-all-categories.service';
 import { GetAllCategoriesServiceEntryDTO } from 'src/category/application/dto/entry/get-all-categories-service-entry.dto';
 import { GetCategoryByNameServiceEntryDTO } from 'src/category/application/dto/entry/get-category-by-name-service-entry.dto';
-import { GetCategoryByNameEntryDTO } from '../DTO/entry/get-category-by-name-entry.dto';
+//import { GetCategoryByNameEntryDTO } from '../DTO/entry/get-category-by-name-entry.dto';
 import { GetCategoryByNameResponseDTO } from '../DTO/response/get-category-by-name-response.dto';
 import { GetCategoryByNameService } from 'src/category/application/queries/get-category-by-name.service';
+import { CloudinaryFileUploader } from 'src/common/infraestructure/cloudinary-file-uploader/cloudinary-file-uploader';
+import { GetCategoryByNameEntryDTO } from '../DTO/entry/get-category-by-name-entry.dto';
 
 
 @ApiTags("Category")
 @Controller('category')
 export class CategoryController {
+
+  private readonly categoryRepository: OrmCategoryRepository
+  private readonly logger: Logger = new Logger('CategoryController')
+  private readonly idGenerator: IdGenerator<string>
+  private readonly fileUploader: IFileUploader//dudoso
+  
   
   constructor(
-    private readonly categoryRepository: OrmCategoryRepository,
-    private readonly logger: Logger = new Logger('CategoryController'),
-    private readonly idGenerator: IdGenerator<string>,
-    private readonly fileUploader: IFileUploader,//dudoso
     @Inject('DataSource') private readonly dataSource: DataSource//iny. dependencias
   ) {
         this.categoryRepository = new OrmCategoryRepository(new OrmCategoryMapper(),dataSource)
         this.idGenerator = new UuidGenerator();
-        this.fileUploader=fileUploader;
+        this.fileUploader=new CloudinaryFileUploader();
   }
 
   /**
@@ -78,7 +82,7 @@ export class CategoryController {
    * @param id - nombre de la categoría.
    * @returns - Los datos de la categoría o un error si no se encuentra.
    */
-  @Get('one/:name')
+  @Get('one/name')
   @ApiOkResponse({
     description: 'Devuelve la informacion de una categoría dado el nombre',
     type: GetCategoryByNameResponseDTO,
@@ -88,6 +92,7 @@ export class CategoryController {
     @Body() entry: GetCategoryByNameEntryDTO
 ) {
 
+  console.log(entry)
   const data: GetCategoryByNameServiceEntryDTO = {
     userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
     name: entry.name

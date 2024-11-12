@@ -19,4 +19,8 @@ export class ProductStock implements IValueObject<ProductStock>{
     equals(valueObject: ProductStock): boolean {
         return this.stock === valueObject.Stock
     }
+
+    static create(stock: number): ProductStock{
+        return new ProductStock(stock)
+    }
 }

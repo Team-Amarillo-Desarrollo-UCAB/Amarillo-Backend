@@ -7,9 +7,6 @@ export class OrmMoneda {
   id: string;
 
   @Column({ type: 'varchar' })
-  nombre: string;
-
-  @Column({ type: 'varchar' })
   simbolo: string;
 
   @OneToMany(() => HistoricoPrecio, (historico) => historico.moneda)
@@ -22,7 +19,6 @@ export class OrmMoneda {
 ): OrmMoneda {
     const moneda = new OrmMoneda()
     moneda.id = id
-    moneda.nombre = nombre
     moneda.simbolo = simbolo
     return moneda
 }

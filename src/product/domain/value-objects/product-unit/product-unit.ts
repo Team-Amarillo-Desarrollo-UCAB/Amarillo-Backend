@@ -16,7 +16,7 @@ export class ProductUnit implements IValueObject<ProductUnit>{
 
     }
 
-    get Unit(): string{
+    get Unit(): UnidadMedida{
         return this.unit
     }
 
