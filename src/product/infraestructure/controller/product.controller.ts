@@ -40,6 +40,8 @@ import { GetAllProductService } from "src/product/aplication/service/queries/get
 import { PaginationDto } from "src/common/infraestructure/dto/entry/pagination.dto";
 import { GetAllProductServiceEntryDTO } from "src/product/aplication/DTO/entry/get-all-product-service-entry.dto";
 import { GetAllProductsResponseDTO } from "../DTO/response/get-all-product-response.dto";
+import { IFileUploader } from "src/common/application/file-uploader/file-uploader.interface";
+import { ImageTransformer } from "src/common/infraestructure/image-helper/image-transformer";
 
 @ApiTags("Product")
 @Controller("product")
@@ -50,6 +52,8 @@ export class ProductController {
     private readonly monedaRepository: MonedaRepository
     private readonly logger: Logger = new Logger('ProductController')
     private readonly idGenerator: IdGenerator<string>
+    private readonly fileUploader: IFileUploader
+    private readonly imageTransformer: ImageTransformer;
 
     constructor(
         @Inject('DataSource') private readonly dataSource: DataSource
@@ -58,6 +62,7 @@ export class ProductController {
         this.idGenerator = new UuidGenerator();
         this.historicoRepository = new HistoricoPrecioRepository(dataSource)
         this.monedaRepository = new MonedaRepository(dataSource)
+        this.imageTransformer = new ImageTransformer();
     }
 
     @Post('create')
@@ -69,6 +74,12 @@ export class ProductController {
         @Body() entry: CreateProductEntryDTO
     ): Promise<string> {
         
+        /*const image: File = await this.imageTransformer.base64ToFile(entry.image)
+
+        const url = this.fileUploader.UploadFile(image,"primera")
+
+        console.log(url)*/
+
         const data: CreateProductServiceEntryDTO = {userId: "24117a35-07b0-4890-a70f-a082c948b3d4", ...entry} 
 
         const service = 
