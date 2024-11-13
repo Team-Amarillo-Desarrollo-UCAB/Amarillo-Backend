@@ -36,6 +36,7 @@ import { CategoryController } from './category/infraestructure/controller/catego
   ],
   providers: [
     Logger,
+    Logger,
     postgresDatabaseProvider
   ],
 })
