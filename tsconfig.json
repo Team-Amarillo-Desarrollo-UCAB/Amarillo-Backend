@@ -17,10 +17,5 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-
-    // Agregar las siguientes configuraciones para rutas absolutas:
-    "paths": {
-      "src/*": ["./src/*"]  // Esto permite usar importaciones absolutas como 'src/common/...'
-    }
   }
 }

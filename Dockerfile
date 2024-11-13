@@ -1,33 +1,21 @@
-FROM node:21.7-alpine3.19 as builder
+FROM node:20-alpine as base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+COPY . /app
+WORKDIR /app
+RUN ls
+RUN pnpm install
+RUN pnpm run build
 
-
-ENV NODE_ENV build
-
-WORKDIR /home/node
-
-COPY . .
-
-RUN npm ci \
-    && npm run build \
-    && npm prune --production
-
-
-# ---
-
-
-FROM node:21.7-alpine3.19
-
-
-ENV NODE_ENV production
-
-USER node
-WORKDIR /home/node
-
-EXPOSE 3000
-
-COPY --from=builder /home/node/package*.json /home/node/
-COPY --from=builder /home/node/node_modules/ /home/node/node_modules/
-COPY --from=builder /home/node/dist/ /home/node/dist/
-
-
-CMD ["node", "dist/main.js"]
+FROM node:20-alpine as prod
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+COPY --from=base /app/dist /app/dist
+COPY --from=base /app/package.json /app/package.json
+COPY --from=base /app/pnpm-lock.yaml /app/pnpm-lock.yaml
+WORKDIR /app
+RUN pnpm install -P
+RUN ls
+CMD ["node", "dist/main"]
