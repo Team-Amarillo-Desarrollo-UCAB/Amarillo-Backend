@@ -40,6 +40,12 @@ import { GetAllProductService } from "src/product/aplication/service/queries/get
 import { PaginationDto } from "src/common/infraestructure/dto/entry/pagination.dto";
 import { GetAllProductServiceEntryDTO } from "src/product/aplication/DTO/entry/get-all-product-service-entry.dto";
 import { GetAllProductsResponseDTO } from "../DTO/response/get-all-product-response.dto";
+import { IFileUploader } from "src/common/application/file-uploader/file-uploader.interface";
+import { ImageTransformer } from "src/common/infraestructure/image-helper/image-transformer";
+import { CloudinaryFileUploader } from "src/common/infraestructure/cloudinary-file-uploader/cloudinary-file-uploader";
+import { RabbitEventBus } from "src/common/infraestructure/rabbit-event-handler/rabbit-event-handler";
+import { testCreated } from "./test-event";
+import { testService } from "./test-service";
 
 @ApiTags("Product")
 @Controller("product")
@@ -50,6 +56,9 @@ export class ProductController {
     private readonly monedaRepository: MonedaRepository
     private readonly logger: Logger = new Logger('ProductController')
     private readonly idGenerator: IdGenerator<string>
+    private readonly fileUploader: IFileUploader
+    private readonly imageTransformer: ImageTransformer
+    private readonly eventBus = RabbitEventBus.getInstance();
 
     constructor(
         @Inject('DataSource') private readonly dataSource: DataSource
@@ -58,6 +67,8 @@ export class ProductController {
         this.idGenerator = new UuidGenerator();
         this.historicoRepository = new HistoricoPrecioRepository(dataSource)
         this.monedaRepository = new MonedaRepository(dataSource)
+        this.imageTransformer = new ImageTransformer();
+        this.fileUploader = new CloudinaryFileUploader()
     }
 
     @Post('create')
@@ -68,7 +79,7 @@ export class ProductController {
     async createProduct(
         @Body() entry: CreateProductEntryDTO
     ): Promise<string> {
-        
+
         const data: CreateProductServiceEntryDTO = {userId: "24117a35-07b0-4890-a70f-a082c948b3d4", ...entry} 
 
         const service = 
@@ -187,4 +198,33 @@ export class ProductController {
         return response
     }
 
+    // Endpoints para probar caracteristicas adicionales
+
+    @Get("image")
+    async getImage(
+        @Body('base64Image') base64Image: string
+    ){
+        
+        const URL = await this.fileUploader.UploadFile(base64Image)
+
+        console.log(URL)
+    }
+
+    @Get("rabbit")
+    async testRabbit(
+    ){
+        
+        this.eventBus.subscribe( 'testCreated', async ( event: testCreated ) =>{
+            console.log(event)
+        })
+
+        console.log("hola")
+
+        const service = new testService(this.eventBus)
+        const result = await service.execute("Mensaje enviado")
+
+        
+        
+
+    }
 }

@@ -1,4 +1,4 @@
 export interface IFileUploader
 {
-    UploadFile ( file: File, fileName: string): Promise<string>
+    UploadFile ( base64: string): Promise<string>
 }

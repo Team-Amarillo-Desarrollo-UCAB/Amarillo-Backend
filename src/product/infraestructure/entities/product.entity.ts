@@ -1,6 +1,7 @@
-import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
+import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryColumn } from "typeorm";
 import { HistoricoPrecio } from "./historico-precio.entity";
 import { UnidadMedida } from "src/product/domain/enum/UnidadMedida";
+import { OrmCategory } from "src/category/infraestructure/entities/orm-category";
 
 @Entity({ name: "producto" })
 export class OrmProduct {
@@ -14,7 +15,7 @@ export class OrmProduct {
     @Column('varchar')
     description: string
 
-    @Column( 'enum', { enum: UnidadMedida } )
+    @Column('enum', { enum: UnidadMedida })
     unidad_medida: UnidadMedida
 
     @Column('numeric')
@@ -28,6 +29,21 @@ export class OrmProduct {
 
     @OneToMany(() => HistoricoPrecio, (historico) => historico.producto)
     historicos: HistoricoPrecio[];
+
+    // Relación muchos a muchos con productos
+    @ManyToMany(() => OrmCategory, (category) => category.products,{eager: true})
+    @JoinTable({
+        name: "category_product",
+        joinColumn: {
+            name: "product_id",
+            referencedColumnName: "id"
+        },
+        inverseJoinColumn: {
+            name: "category_id",
+            referencedColumnName: "id"
+        }
+    })  // Tabla de unión
+    categories: OrmCategory[];
 
     static create(
         id: string,

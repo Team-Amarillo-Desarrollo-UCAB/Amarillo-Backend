@@ -3,7 +3,7 @@ import { IsNotEmpty, IsString } from "class-validator";
 
 export class GetCategoryByNameEntryDTO{
     @ApiProperty({
-        example: "Familiar"
+        example: "Cheese Tris"
     })
     @IsString()
     @IsNotEmpty()

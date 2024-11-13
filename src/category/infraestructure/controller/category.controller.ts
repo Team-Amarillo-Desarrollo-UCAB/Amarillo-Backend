@@ -1,7 +1,18 @@
-import { Controller, Get, Post, Param, Body, Query, HttpStatus, HttpException, Logger, Inject, BadRequestException, ParseUUIDPipe } from '@nestjs/common';
+import { 
+  Controller, 
+  Get, 
+  Post, 
+  Param, 
+  Body, 
+  Query, 
+  Logger, 
+  Inject, 
+  BadRequestException, 
+  ParseUUIDPipe 
+} from '@nestjs/common';
 import { GetCategoryByIdServiceEntryDTO } from 'src/category/application/dto/entry/get-category-by-id-service-entry';
-import { GetCategoryByIdServiceResponseDTO } from 'src/category/application/dto/response/get-category-by-id-service-response.dto';
-import { Result } from 'src/common/domain/result-handler/Result';
+//import { GetCategoryByIdServiceResponseDTO } from 'src/category/application/dto/response/get-category-by-id-service-response.dto';
+//import { Result } from 'src/common/domain/result-handler/Result';
 import { ApiOkResponse,ApiTags } from '@nestjs/swagger';
 import { OrmCategoryRepository } from '../repositories/orm-category-repository';
 import { IdGenerator } from 'src/common/application/id-generator/id-generator.interface';
@@ -54,7 +65,7 @@ export class CategoryController {
   @Get('one/:id')
   async getCategoryById(
     @Param('id', ParseUUIDPipe) id: string
-) {
+  ) {
     const entry: GetCategoryByIdServiceEntryDTO = {
         userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
         id_category: id
@@ -82,13 +93,12 @@ export class CategoryController {
    * @param id - nombre de la categoría.
    * @returns - Los datos de la categoría o un error si no se encuentra.
    */
-  @Get('one/name')
+  @Get('one/by/name')
   @ApiOkResponse({
     description: 'Devuelve la informacion de una categoría dado el nombre',
     type: GetCategoryByNameResponseDTO,
 })
   async getCategoryByName(
-
     @Body() entry: GetCategoryByNameEntryDTO
 ) {
 
