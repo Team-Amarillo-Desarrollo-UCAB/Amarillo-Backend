@@ -9,13 +9,18 @@
     "target": "ES2021",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
+    "baseUrl": "./",  // Ya está configurado correctamente
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+
+    // Agregar las siguientes configuraciones para rutas absolutas:
+    "paths": {
+      "src/*": ["./src/*"]  // Esto permite usar importaciones absolutas como 'src/common/...'
+    }
   }
 }
