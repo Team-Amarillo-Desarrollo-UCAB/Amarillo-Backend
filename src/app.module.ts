@@ -8,6 +8,7 @@ import { UserController } from './user/infraestructure/controller/user.controlle
 import { ProductController } from './product/infraestructure/controller/product.controller';
 import { AuthController } from './auth/infraestructure/controller/auth.controller';
 import { CategoryController } from './category/infraestructure/controller/category.controller';
+import { OrderController } from './order/infraestructure/controller/order.controller';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { CategoryController } from './category/infraestructure/controller/catego
     ProductController,
     AuthController,
     CategoryController,
+    OrderController
   ],
   providers: [
     Logger,
