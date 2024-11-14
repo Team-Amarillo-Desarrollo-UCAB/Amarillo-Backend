@@ -2,7 +2,7 @@ import { HttpException } from "@nestjs/common"
 import amqp, { ChannelWrapper } from "amqp-connection-manager"
 import { IAmqpConnectionManager } from "amqp-connection-manager/dist/types/AmqpConnectionManager"
 import { IEventHandler } from "src/common/application/event-handler/event-handler.interface"
-import { IEventSubscriber } from "src/common/Application/event-handler/subscriber.interface"
+import { IEventSubscriber } from "src/common/application/event-handler/subscriber.interface"
 import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface"
 
 

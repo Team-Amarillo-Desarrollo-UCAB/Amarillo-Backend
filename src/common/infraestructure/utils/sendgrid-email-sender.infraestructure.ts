@@ -1,6 +1,6 @@
 import * as sgMail from "@sendgrid/mail"
 
-import { IEmailSender } from "src/common/Application/email-sender/email-sender.interface.application"
+import { IEmailSender } from "src/common/application/email-sender/email-sender.interface.application"
 
 export abstract class JetEmailSender implements IEmailSender {
     private subjectText: string

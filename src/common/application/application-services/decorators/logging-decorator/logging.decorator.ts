@@ -1,8 +1,8 @@
-import { Result } from 'src/common/Domain/result-handler/Result';
+import { Result } from 'src/common/domain/result-handler/Result';
 import { IApplicationService } from '../../application-service.interface';
 import { ApplicationServiceDecorator } from '../application-service.decorator';
-import { ILogger } from 'src/common/Application/logger/logger.interface';
-import { LoggerDto } from 'src/common/Application/logger/dto/logs.dto';
+import { ILogger } from 'src/common/application/logger/logger.interface';
+import { LoggerDto } from 'src/common/application/logger/dto/logs.dto';
 import { ApplicationServiceEntryDto } from '../../DTO/application-service-entry.dto';
 
 export class LoggingDecorator<D extends ApplicationServiceEntryDto, R>

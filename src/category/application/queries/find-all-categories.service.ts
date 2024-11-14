@@ -1,5 +1,5 @@
-import { IApplicationService } from 'src/common/Application/application-services/application-service.interface';
-import { Result } from 'src/common/Domain/result-handler/Result';
+import { IApplicationService } from 'src/common/application/application-services/application-service.interface';
+import { Result } from 'src/common/domain/result-handler/Result';
 import { ICategoryRepository } from 'src/category/domain/repositories/category-repository.interface';
 import { GetAllCategoriesServiceEntryDTO } from '../dto/entry/get-all-categories-service-entry.dto';
 import { GetAllCategoriesServiceResponseDTO } from '../dto/response/get-all-category-service-response.dto';

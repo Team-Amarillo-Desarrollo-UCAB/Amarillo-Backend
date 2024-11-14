@@ -1,4 +1,4 @@
-import { Result } from 'src/common/Domain/result-handler/Result';
+import { Result } from 'src/common/domain/result-handler/Result';
 import { DataSource, Repository } from 'typeorm';
 import { OrmCategory } from '../entities/orm-category';
 import { ICategoryRepository } from 'src/category/domain/repositories/category-repository.interface';
