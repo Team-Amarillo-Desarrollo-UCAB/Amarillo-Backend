@@ -1,0 +1,37 @@
+services:
+  
+  db:
+    image: postgres:14.3
+    restart: always
+    ports:
+      - "${DB_PORT}:5432"
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+    container_name: amarillo_database
+    env_file: ".env"
+    networks:
+      - amarillo-network
+    volumes:
+      - /postgres:/var/lib/postgresql/data
+
+  app-container:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../..:/workspaces:cached
+    ports:
+      - ${PORT}:5555
+    restart: always
+    env_file: ".env"
+    depends_on:
+      - db
+    container_name: amarillo_container
+    networks:
+      - amarillo-network
+
+networks:
+  amarillo-network:
+    driver: bridge

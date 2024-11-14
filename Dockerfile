@@ -1,37 +1,15 @@
-FROM node:21.7-alpine3.19 as builder
+FROM node:20-alpine as base
+COPY . /app
+WORKDIR /app
+RUN ls
+RUN npm install
+RUN npm run build
 
-
-ENV NODE_ENV build
-
-
-WORKDIR /home/node
-
-COPY . .
-
-
-RUN npm ci \
-    && npm run build \
-    && npm prune --production
-
-
-# ---
-
-
-FROM node:21.7-alpine3.19
-
-
-ENV NODE_ENV production
-
-
-
-USER node
-WORKDIR /home/node
-
-EXPOSE 3000
-
-COPY --from=builder /home/node/package*.json /home/node/
-COPY --from=builder /home/node/node_modules/ /home/node/node_modules/
-COPY --from=builder /home/node/dist/ /home/node/dist/
-
-
-CMD ["node", "dist/main.js"]
+FROM node:20-alpine as prod
+COPY --from=base /app/dist /app/dist
+COPY --from=base /app/package.json /app/package.json
+COPY --from=base /app/package-lock.json /app/package-lock.json
+WORKDIR /app
+RUN npm ci
+RUN ls
+CMD ["node", "dist/main"]
