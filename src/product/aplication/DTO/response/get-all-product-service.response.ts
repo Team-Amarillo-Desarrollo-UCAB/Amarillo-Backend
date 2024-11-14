@@ -14,6 +14,8 @@ export interface GetAllProductServiceResponseDTO{
 
     cantidad_medida: number
 
+    descripcion: string
+
     image: string
 
 }

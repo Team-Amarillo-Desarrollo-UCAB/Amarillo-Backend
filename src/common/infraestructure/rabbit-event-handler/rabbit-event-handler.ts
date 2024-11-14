@@ -2,7 +2,7 @@ import { HttpException } from "@nestjs/common"
 import * as amqp from 'amqplib'
 
 import { IEventHandler } from "src/common/application/event-handler/event-handler.interface"
-import { IEventSubscriber } from "src/common/Application/event-handler/subscriber.interface"
+import { IEventSubscriber } from "src/common/application/event-handler/subscriber.interface"
 import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface"
 import { OrderCreated } from "src/order/domain/domain-event/order-created-event"
 import { testCreated } from "src/product/infraestructure/controller/test-event"

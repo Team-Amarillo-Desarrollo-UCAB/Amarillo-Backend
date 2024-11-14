@@ -26,7 +26,7 @@ import { GetCategoryResponseDTO } from '../DTO/response/get-category-response.dt
 import { CreateCategoryEntryDTO } from '../DTO/entry/create-category-entry.dto';
 import { CreateCategoryServiceEntryDto } from 'src/category/application/dto/entry/create-category-service-entry.dto';
 import { CreateCategoryApplicationService } from 'src/category/application/commands/create-category.service';
-import { IFileUploader } from 'src/common/Application/file-uploader/file-uploader.interface';
+import { IFileUploader } from 'src/common/application/file-uploader/file-uploader.interface';
 import { GetAllCategoriesResponseDTO } from '../DTO/response/get-all-categories-response.dto';
 import { PaginationDto } from 'src/common/infraestructure/dto/entry/pagination.dto';
 import { FindAllCategoriesApplicationService } from 'src/category/application/queries/find-all-categories.service';

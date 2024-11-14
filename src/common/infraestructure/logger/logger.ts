@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
-import { LoggerDto } from 'src/common/Application/logger/dto/logs.dto';
-import { ILogger } from 'src/common/Application/logger/logger.interface';
+import { LoggerDto } from 'src/common/application/logger/dto/logs.dto';
+import { ILogger } from 'src/common/application/logger/logger.interface';
 
 export class NativeLogger implements ILogger {
   private readonly logger: Logger;

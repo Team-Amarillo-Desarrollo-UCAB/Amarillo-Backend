@@ -1,4 +1,4 @@
-import { IValueObject } from 'src/common/Domain/value-object/value-object.interface';
+import { IValueObject } from 'src/common/domain/value-object/value-object.interface';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';//lo que vi del curso de FH, creo que se pudiera manejar con expresiones regulares
 import { InvalidCategoryIdException } from '../exceptions/invalid-category-id-exception';
 

@@ -38,6 +38,7 @@ import { OrderController } from './order/infraestructure/controller/order.contro
   ],
   providers: [
     Logger,
+    Logger,
     postgresDatabaseProvider
   ],
 })

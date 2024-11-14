@@ -1,14 +1,14 @@
+import { IApplicationService } from 'src/common/application/application-services/application-service.interface';
+import { Result } from 'src/common/domain/result-handler/Result';
 import { ICategoryRepository } from 'src/category/domain/repositories/category-repository.interface';
-import { IdGenerator } from 'src/common/Application/id-generator/id-generator.interface';
+import { IdGenerator } from 'src/common/application/id-generator/id-generator.interface';
 import { CategoryName } from 'src/category/domain/value-objects/category-name';
 import { CategoryImage } from 'src/category/domain/value-objects/category-image';
 import { CreateCategoryServiceEntryDto } from '../dto/entry/create-category-service-entry.dto';
 import { CreateCategoryServiceResponseDTO } from '../dto/response/create-category-service-response.dto';
 import { Category } from 'src/category/domain/category.entity';
-import { IFileUploader } from 'src/common/Application/file-uploader/file-uploader.interface';
+import { IFileUploader } from 'src/common/application/file-uploader/file-uploader.interface';
 import { CategoryID } from 'src/category/domain/value-objects/category-id';
-import { IApplicationService } from 'src/common/application/application-services/application-service.interface';
-import { Result } from 'src/common/domain/result-handler/Result';
 
 export class CreateCategoryApplicationService
   implements IApplicationService<CreateCategoryServiceEntryDto, CreateCategoryServiceResponseDTO>
