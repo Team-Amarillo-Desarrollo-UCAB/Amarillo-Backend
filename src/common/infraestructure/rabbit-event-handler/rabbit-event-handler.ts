@@ -40,7 +40,7 @@ export class RabbitEventBus implements IEventHandler {
     private static async initialize(): Promise<void> {
         try {
             // Establecer la conexión con RabbitMQ solo una vez
-            this.instance!.connection = await amqp.connect('amqps://qtqvqnvz:GwI-cQ4Y7VMeu9YOKHkCa6exDZ5S9WYY@moose.rmq.cloudamqp.com/qtqvqnvz');
+            this.instance!.connection = await amqp.connect(process.env.RABBIRMQ_URL);
             this.connectionInitialized = true;
             console.log('Conexión a RabbitMQ exitosa');
         } catch (error) {
