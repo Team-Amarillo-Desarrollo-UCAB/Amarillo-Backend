@@ -1,4 +1,3 @@
-import { HttpException } from "@nestjs/common"
 import * as amqp from 'amqplib'
 
 import { IEventHandler } from "src/common/application/event-handler/event-handler.interface"

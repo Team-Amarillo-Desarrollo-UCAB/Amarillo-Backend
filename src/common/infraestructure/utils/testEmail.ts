@@ -14,10 +14,11 @@ const transporter = nodemailer.createTransport({
 
 // Configuración de opciones de correo
 const mailOptions = {
-  from: userGmail,
-  to: userGmail,
+  from: { Email: userGmail, Name: "Jamal"},
+  to: "labastidas.21@est.ucab.edu.ve",
   subject: "Eres una lacra",
   text: "Eres una mega lacra Jamaaal!",
+  html: "<h1>Hello world it's me Hi</h1>"
 };
 
 // Envío del correo
