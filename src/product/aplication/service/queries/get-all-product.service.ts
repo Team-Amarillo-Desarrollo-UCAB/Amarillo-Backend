@@ -33,7 +33,8 @@ export class GetAllProductService implements IApplicationService<GetAllProductSe
                     stock: producto.Stock,
                     image: producto.Image,
                     unidad_medida: producto.Unit,
-                    cantidad_medida: producto.CantidadMedida
+                    cantidad_medida: producto.CantidadMedida,
+                    descripcion: producto.Description
                 })
             }
         )
