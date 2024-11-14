@@ -1,4 +1,4 @@
-import { IValueObject } from "src/common/Domain/value-object/value-object.interface";
+import { IValueObject } from "src/common/domain/value-object/value-object.interface";
 
 export class OrderDetalleCantidad implements IValueObject<OrderDetalleCantidad> {
 
