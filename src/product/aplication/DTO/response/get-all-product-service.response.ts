@@ -10,4 +10,10 @@ export interface GetAllProductServiceResponseDTO{
     
     stock: number
 
+    unidad_medida: string
+
+    cantidad_medida: number
+
+    image: string
+
 }
