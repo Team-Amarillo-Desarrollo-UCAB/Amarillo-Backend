@@ -180,12 +180,12 @@ export class ProductController {
         type: GetProductByNameResponseDTO,
     })
     async getProductByName(
-        @Body() entry: GetProductByNameEntryDTO
+        @Query('name') name: string
     ) {
-        console.log(entry)
+        console.log(name)
         const data: GetProductByNameServiceEntryDTO = {
             userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
-            name: entry.name
+            name: name
         }
 
         const service = 

@@ -90,7 +90,7 @@ export class OrderController {
         this.eventBus.subscribe( 'OrderCreated', async ( event: OrderCreated ) =>{
             const sender = new NodemailerEmailSender()
             const order_id = event.id
-            sender.sendEmail("jamalcuent@gmail.com","Jamal",order_id)
+            sender.sendEmail("nadinechancay2010@gmail.com","Jamal",order_id)
         })
 
         const data: CreateOrderEntryServiceDTO = {

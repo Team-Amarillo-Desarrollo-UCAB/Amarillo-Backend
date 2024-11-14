@@ -19,7 +19,7 @@ export class NodemailerEmailSender implements IEmailSender {
         });
     }
 
-    async sendEmail(emailReceiver: string, nameReceiver: string, orderId: string) {
+    async sendEmail(emailReceiver: string, nameReceiver: string,order_id: string) {
 
         try {
 
@@ -31,7 +31,7 @@ export class NodemailerEmailSender implements IEmailSender {
                 to: emailReceiver,
                 subject: "Eres una lacra",
                 text: "Eres una mega lacra Jamaaal!",
-                html: `<h1>Su orden ha sido creada, la orden #${orderId}</h1>`
+                html: `<h1>Su orden ha sido creada, la orden #${order_id}</h1>`
             };
 
             this.transporter.sendMail(mailOptions, (error, info) => {
