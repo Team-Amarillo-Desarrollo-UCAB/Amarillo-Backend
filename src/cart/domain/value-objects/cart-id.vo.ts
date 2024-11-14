@@ -1,4 +1,4 @@
-import { IValueObject } from 'src/common/Domain/value-object/value-object.interface';
+import { IValueObject } from 'src/common/domain/value-object/value-object.interface';
 import { v4 as uuidv4 } from 'uuid';
 
 export class CartID implements IValueObject<CartID> {

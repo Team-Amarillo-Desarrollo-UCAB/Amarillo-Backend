@@ -47,6 +47,8 @@ import { CreateEstadoOrdenService } from "../services/command/create-estado-orde
 import { EstadoOrdenRepository } from "../repositories/estado_orden.repository";
 import { EstadoRepository } from "../repositories/estado.repository";
 import { JetEmailSender } from "src/common/infraestructure/utils/sendgrid-email-sender.infraestructure";
+import { OrderCreated } from "src/order/domain/domain-event/order-created-event";
+import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface";
 
 @ApiTags("Order")
 @Controller("order")
@@ -84,6 +86,11 @@ export class OrderController {
     async createOrder(
         @Body() entry: CreateOrderEntryDTO[]
     ): Promise<CreateOrderResponseDTO> {
+
+        this.eventBus.subscribe( 'OrderCreated', async ( event: OrderCreated ) =>{
+            console.log("evento recibido: ",event)
+        })
+
         const data: CreateOrderEntryServiceDTO = {
             userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
             entry: entry.map((entry) => ({
@@ -96,7 +103,8 @@ export class OrderController {
                 new CreateOrderService(
                     this.orderRepository,
                     this.productRepository,
-                    this.idGenerator
+                    this.idGenerator,
+                    this.eventBus
                 ),
                 new NativeLogger(this.logger)
             )
@@ -166,5 +174,8 @@ export class OrderController {
 
     }
 
+    async showEvent(event: DomainEvent): Promise<void>{
+        console.log("Evento publicado: ", event)
+    }
 
 }

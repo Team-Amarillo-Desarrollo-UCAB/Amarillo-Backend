@@ -1,4 +1,4 @@
-import { IValueObject } from 'src/common/Domain/value-object/value-object.interface';
+import { IValueObject } from 'src/common/domain/value-object/value-object.interface';
 import { InvalidUserPhone } from '../domain-exception/invalid-user-phone';
 
 export class UserPhone implements IValueObject<UserPhone> {

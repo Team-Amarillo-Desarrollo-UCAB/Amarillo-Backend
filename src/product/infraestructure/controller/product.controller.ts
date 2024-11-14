@@ -215,18 +215,15 @@ export class ProductController {
     @Get("rabbit")
     async testRabbit(
     ){
-        
+
         this.eventBus.subscribe( 'testCreated', async ( event: testCreated ) =>{
-            console.log(event)
+            console.log("evento reaccion: ",event)
         })
 
         console.log("hola")
 
         const service = new testService(this.eventBus)
         const result = await service.execute("Mensaje enviado")
-
-        
-        
 
     }
 }

@@ -1,4 +1,4 @@
-import { IValueObject } from "src/common/Domain/value-object/value-object.interface"
+import { IValueObject } from "src/common/domain/value-object/value-object.interface"
 import { EnumOrderEstados } from "../order-estados-enum"
 
 export class OrderEstado implements IValueObject<OrderEstado>{
