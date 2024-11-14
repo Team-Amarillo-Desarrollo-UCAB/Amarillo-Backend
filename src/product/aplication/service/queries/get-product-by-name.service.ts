@@ -27,7 +27,8 @@ export class GetProductByNameService implements IApplicationService<GetProductBy
             moneda: producto.Value.Moneda,
             stock: producto.Value.Stock,
             unidad_medida: producto.Value.Unit,               
-            cantidad_medida: producto.Value.CantidadMedida
+            cantidad_medida: producto.Value.CantidadMedida,
+            image: producto.Value.Image
         }
 
         return Result.success(response,202)

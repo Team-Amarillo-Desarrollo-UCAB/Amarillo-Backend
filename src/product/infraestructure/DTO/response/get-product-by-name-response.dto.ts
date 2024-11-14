@@ -42,4 +42,10 @@ export class GetProductByNameResponseDTO{
     })
     stock: number
 
+
+    @ApiProperty({
+        example: "https://res.cloudinary.com/dxttqmyxu/image/upload/v1731614522/bzrj2nraiiz4gbqzsapn.jpg"
+    })
+    image: string
+
 }

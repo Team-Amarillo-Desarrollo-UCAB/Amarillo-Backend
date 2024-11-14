@@ -16,4 +16,6 @@ export interface GetProductByNameServiceResponseDTO{
 
     cantidad_medida: number
 
+    image: string
+
 }
