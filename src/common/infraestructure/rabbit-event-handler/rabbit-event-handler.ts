@@ -1,9 +1,10 @@
-import { HttpException } from "@nestjs/common"
 import * as amqp from 'amqplib'
 
 import { IEventHandler } from "src/common/application/event-handler/event-handler.interface"
 import { IEventSubscriber } from "src/common/application/event-handler/subscriber.interface"
 import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface"
+import { OrderCreated } from "src/order/domain/domain-event/order-created-event"
+import { testCreated } from "src/product/infraestructure/controller/test-event"
 
 
 export class RabbitEventBus implements IEventHandler {
@@ -39,7 +40,7 @@ export class RabbitEventBus implements IEventHandler {
     private static async initialize(): Promise<void> {
         try {
             // Establecer la conexión con RabbitMQ solo una vez
-            this.instance!.connection = await amqp.connect('amqps://qtqvqnvz:GwI-cQ4Y7VMeu9YOKHkCa6exDZ5S9WYY@moose.rmq.cloudamqp.com/qtqvqnvz');
+            this.instance!.connection = await amqp.connect(process.env.RABBIRMQ_URL);
             this.connectionInitialized = true;
             console.log('Conexión a RabbitMQ exitosa');
         } catch (error) {
@@ -79,10 +80,29 @@ export class RabbitEventBus implements IEventHandler {
 
         try{
             const channel = await this.connection.createChannel();
+            await channel.assertQueue(eventName, { durable: true })
             await channel.consume(eventName, async (message) => {
                 if(message){
-                    const event = JSON.parse(message.content.toString())
-                    console.log("evento: ",event)
+                    const event_data = JSON.parse(message.content.toString())
+                    console.log("evento nombre: ",eventName)
+                    console.log("evento: ",event_data)
+                    let event: DomainEvent
+                    switch(eventName){
+                        case 'testCreated':
+                            event = testCreated.create(
+                                event_data.msg
+                            )
+                            break;
+                        case 'OrderCreated':
+                            event = OrderCreated.create(
+                                event_data.id,
+                                event_data.estado,
+                                new Date(event_data.fecha_creacion),
+                                event_data.montoTotal, 
+                                event_data.detalles
+                            );
+                            break;
+                    }
                     await callback(event)
                     channel.ack(message)
                 }
@@ -98,7 +118,7 @@ export class RabbitEventBus implements IEventHandler {
 
             }
         }
-        
+
     }
 
 }

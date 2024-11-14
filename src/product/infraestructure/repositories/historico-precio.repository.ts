@@ -11,9 +11,7 @@ export class HistoricoPrecioRepository extends Repository<HistoricoPrecio>{
     async saveHistorico(historico: HistoricoPrecio): Promise<Result<HistoricoPrecio>>{
         try
         {
-            console.log(historico)
             const resultado = await this.save(historico)
-            console.log(historico)
             return Result.success( resultado, 200 )
         } catch ( error )
         {

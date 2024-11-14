@@ -15,17 +15,20 @@ import { OrderDetail } from "src/order/domain/entites/order-detail";
 import { ProductId } from "src/product/domain/value-objects/product-id";
 import { OrderDetalleCantidad } from "src/order/domain/value-object/order-detalle.ts/order-detalle-cantidad";
 import { OrderDetalleId } from "src/order/domain/value-object/order-detalle.ts/order-detalle-id";
+import { IEventHandler } from "src/common/application/event-handler/event-handler.interface";
 
 export class CreateOrderService implements IApplicationService<CreateOrderEntryServiceDTO, CreateOrderResponseServiceDTO> {
 
     constructor(
         private readonly orderRepository: IOrderRepository,
         private readonly productRepository: IProductRepository,
-        private readonly idGenerator: IdGenerator<string>
+        private readonly idGenerator: IdGenerator<string>,
+        private readonly eventHandler: IEventHandler
     ) {
         this.orderRepository = orderRepository
         this.productRepository = productRepository
         this.idGenerator = idGenerator
+        this.eventHandler = eventHandler
     }
 
     async execute(data: CreateOrderEntryServiceDTO): Promise<Result<CreateOrderResponseServiceDTO>> {
@@ -79,6 +82,8 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
             fecha_creacion: result.Value.Fecha_creacion,
             estado: result.Value.Estado
         }
+
+        await this.eventHandler.publish( orden.pullEvents() )
 
         return Result.success(response, 200)
     }

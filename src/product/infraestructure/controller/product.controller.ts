@@ -180,12 +180,12 @@ export class ProductController {
         type: GetProductByNameResponseDTO,
     })
     async getProductByName(
-        @Body() entry: GetProductByNameEntryDTO
+        @Query('name') name: string
     ) {
-        console.log(entry)
+        console.log(name)
         const data: GetProductByNameServiceEntryDTO = {
             userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
-            name: entry.name
+            name: name
         }
 
         const service = 
@@ -215,18 +215,15 @@ export class ProductController {
     @Get("rabbit")
     async testRabbit(
     ){
-        
+
         this.eventBus.subscribe( 'testCreated', async ( event: testCreated ) =>{
-            console.log(event)
+            console.log("evento reaccion: ",event)
         })
 
         console.log("hola")
 
         const service = new testService(this.eventBus)
         const result = await service.execute("Mensaje enviado")
-
-        
-        
 
     }
 }

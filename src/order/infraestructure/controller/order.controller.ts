@@ -46,7 +46,9 @@ import { CreateDetalleServiceEntry } from "../services/DTO/entry/create-detalle-
 import { CreateEstadoOrdenService } from "../services/command/create-estado-orden.service";
 import { EstadoOrdenRepository } from "../repositories/estado_orden.repository";
 import { EstadoRepository } from "../repositories/estado.repository";
-import { JetEmailSender } from "src/common/infraestructure/utils/sendgrid-email-sender.infraestructure";
+import { NodemailerEmailSender } from "src/common/infraestructure/utils/nodemailer-email-sender.infraestructure";
+import { OrderCreated } from "src/order/domain/domain-event/order-created-event";
+import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface";
 
 @ApiTags("Order")
 @Controller("order")
@@ -84,6 +86,13 @@ export class OrderController {
     async createOrder(
         @Body() entry: CreateOrderEntryDTO[]
     ): Promise<CreateOrderResponseDTO> {
+
+        this.eventBus.subscribe( 'OrderCreated', async ( event: OrderCreated ) =>{
+            const sender = new NodemailerEmailSender()
+            const order_id = event.id
+            sender.sendEmail("nadinechancay2010@gmail.com","Jamal",order_id)
+        })
+
         const data: CreateOrderEntryServiceDTO = {
             userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
             entry: entry.map((entry) => ({
@@ -96,7 +105,8 @@ export class OrderController {
                 new CreateOrderService(
                     this.orderRepository,
                     this.productRepository,
-                    this.idGenerator
+                    this.idGenerator,
+                    this.eventBus
                 ),
                 new NativeLogger(this.logger)
             )
@@ -161,8 +171,8 @@ export class OrderController {
         @Body('email') email: string,
     ) {
         console.log(email)
-        const sender = new JetEmailSender()
-        await sender.sendEmailMailGun(email,"Luigi")
+        console.log(process.env.NODEMAILER_SENDER)
+        const sender = new NodemailerEmailSender()
 
     }
 
