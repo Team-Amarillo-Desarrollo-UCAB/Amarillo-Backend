@@ -26,7 +26,7 @@ export class OrmUser{
     @Column( 'enum', { enum: EnumUserRole, default: 'CLIENT' } )
     type: EnumUserRole
 
-    // TODO: Relaciones con las ordes si es necesario
+    // TODO: Relaciones con las ordenes y carrito mas adelante
 
     static create ( 
         id: string,
