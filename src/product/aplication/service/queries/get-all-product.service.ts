@@ -3,6 +3,7 @@ import { IProductRepository } from "src/product/domain/repositories/product-repo
 import { GetAllProductServiceEntryDTO } from "../../DTO/entry/get-all-product-service-entry.dto"
 import { Result } from "src/common/domain/result-handler/Result"
 import { GetAllProductServiceResponseDTO } from "../../DTO/response/get-all-product-service.response"
+import { UnidadMedida } from "src/product/domain/enum/UnidadMedida"
 
 export class GetAllProductService implements IApplicationService<GetAllProductServiceEntryDTO, GetAllProductServiceResponseDTO[]> {
 
@@ -29,7 +30,10 @@ export class GetAllProductService implements IApplicationService<GetAllProductSe
                     nombre: producto.Name,
                     precio: producto.Price,
                     moneda: producto.Moneda,    
-                    stock: producto.Stock
+                    stock: producto.Stock,
+                    image: producto.Image,
+                    unidad_medida: producto.Unit,
+                    cantidad_medida: producto.CantidadMedida
                 })
             }
         )
