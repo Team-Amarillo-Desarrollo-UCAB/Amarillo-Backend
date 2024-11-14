@@ -80,7 +80,10 @@ export class ProductController {
         @Body() entry: CreateProductEntryDTO
     ): Promise<string> {
 
-        const data: CreateProductServiceEntryDTO = {userId: "24117a35-07b0-4890-a70f-a082c948b3d4", ...entry} 
+        const data: CreateProductServiceEntryDTO = {
+            userId: "24117a35-07b0-4890-a70f-a082c948b3d4", 
+            ...entry
+        } 
 
         const service = 
         new LoggingDecorator(
@@ -204,10 +207,9 @@ export class ProductController {
     async getImage(
         @Body('base64Image') base64Image: string
     ){
-        
         const URL = await this.fileUploader.UploadFile(base64Image)
 
-        console.log(URL)
+        return URL
     }
 
     @Get("rabbit")

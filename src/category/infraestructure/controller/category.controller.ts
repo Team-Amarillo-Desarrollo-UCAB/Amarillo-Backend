@@ -79,7 +79,7 @@ export class CategoryController {
 
     const result = await service.execute(entry)
 
-    if(!result.isSuccess)
+    if(!result.isSuccess())
         throw result.Error
 
     const response: GetCategoryResponseDTO = {...result.Value}
