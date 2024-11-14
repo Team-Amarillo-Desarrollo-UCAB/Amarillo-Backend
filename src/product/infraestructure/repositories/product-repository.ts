@@ -17,7 +17,7 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
     }
 
     async saveProductAggregate(product: Product): Promise<Result<Product>> {
-        
+
         try
         {
             const producto = await this.ormProductMapper.fromDomainToPersistence(product)

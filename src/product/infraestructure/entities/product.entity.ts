@@ -2,6 +2,7 @@ import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryColumn } from 
 import { HistoricoPrecio } from "./historico-precio.entity";
 import { UnidadMedida } from "src/product/domain/enum/UnidadMedida";
 import { OrmCategory } from "src/category/infraestructure/entities/orm-category";
+import { Detalle_Orden } from "src/order/infraestructure/entites/detalle_orden.entity";
 
 @Entity({ name: "producto" })
 export class OrmProduct {
@@ -29,6 +30,9 @@ export class OrmProduct {
 
     @OneToMany(() => HistoricoPrecio, (historico) => historico.producto)
     historicos: HistoricoPrecio[];
+
+    @OneToMany(() => Detalle_Orden, (detalle) => detalle.producto)
+    detalles: Detalle_Orden[];
 
     // Relación muchos a muchos con productos
     @ManyToMany(() => OrmCategory, (category) => category.products,{eager: true})
