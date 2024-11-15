@@ -1,4 +1,4 @@
-import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
 import { Detalle_Orden } from "./detalle_orden.entity";
 import { Estado_Orden } from "./Estado-orden/estado_orden.entity";
 

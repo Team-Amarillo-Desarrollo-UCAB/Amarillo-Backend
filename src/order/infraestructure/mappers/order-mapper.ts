@@ -4,7 +4,6 @@ import { IMapper } from "src/common/application/mappers/mapper.interface"
 import { Detalle_Orden } from '../entites/detalle_orden.entity';
 import { OrderId } from "src/order/domain/value-object/order-id";
 import { OrderEstado } from "src/order/domain/value-object/order-estado";
-import { Estado } from "../entites/Estado-orden/estado.entity";
 import { Estado_Orden } from "../entites/Estado-orden/estado_orden.entity";
 import { OrderCreationDate } from "src/order/domain/value-object/order-fecha-creacion";
 import { OrderTotal } from "src/order/domain/value-object/order-total";
@@ -63,6 +62,7 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
                     OrderDetalleCantidad.create(detalle.cantidad)
                 ))
 
+        console.log("Orden persistenca: ", persistence)
         console.log("Antes de crear")
 
         const orderEstado = persistence.detalles.length === 0

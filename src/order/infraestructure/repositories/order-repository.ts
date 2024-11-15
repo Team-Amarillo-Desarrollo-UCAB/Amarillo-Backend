@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { IMapper } from "src/common/application/mappers/mapper.interface";
 import { Result } from "src/common/domain/result-handler/Result";
 import { Order } from "src/order/domain/order";
@@ -40,6 +41,7 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
 
         const resultado = await this.ormOrderMapper.fromPersistenceToDomain(order)
 
+        console.log("orden mappeada")
         return Result.success(resultado, 202)
     }
 
