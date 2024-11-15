@@ -12,7 +12,7 @@ import {
     Post,
     Query
 } from "@nestjs/common";
-import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBody, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { DataSource } from "typeorm";
 
 import { GetProductResponseDTO } from "src/product/infraestructure/DTO/response/get-product-response.dto";
@@ -35,7 +35,7 @@ import { OrmOrder } from "../entites/order.entity";
 import { CreateOrderEntryDTO } from "../DTO/entry/create-order-entry-dto";
 import { CreateOrderResponseDTO } from "../DTO/response/create-order-response";
 import { CreateOrderEntryServiceDTO } from "src/order/application/DTO/entry/create-order-entry-service";
-import { CreateOrderService } from "src/order/application/services/create-order.service";
+import { CreateOrderService } from "src/order/application/services/command/create-order.service";
 import { IProductRepository } from "src/product/domain/repositories/product-repository.interface";
 import { OrmProductRepository } from "src/product/infraestructure/repositories/product-repository";
 import { ProductMapper } from "src/product/infraestructure/mappers/product-mapper";
@@ -49,6 +49,10 @@ import { EstadoRepository } from "../repositories/estado.repository";
 import { NodemailerEmailSender } from "src/common/infraestructure/utils/nodemailer-email-sender.infraestructure";
 import { OrderCreated } from "src/order/domain/domain-event/order-created-event";
 import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface";
+import { CreateOrderRequestDTO } from "../DTO/entry/create-order-request-dto";
+import { GetOrderByIdReponseDTO } from "../DTO/response/get-order-by-id-response";
+import { GetOrderByIdEntryServiceDTO } from "src/order/application/DTO/entry/get-order-entry-service.dto";
+import { GetOrderByIdService } from "src/order/application/services/queries/get-order-by-id.service";
 
 @ApiTags("Order")
 @Controller("order")
@@ -83,22 +87,28 @@ export class OrderController {
         description: 'Crea una nueva orden en la base de datos',
         type: CreateOrderResponseDTO
     })
+    @ApiBody({
+        type: [CreateOrderEntryDTO], // Define el tipo como un array de CreateOrderEntryDTO
+        description: 'Array de entradas para crear una orden',
+    })
     async createOrder(
-        @Body() entry: CreateOrderEntryDTO[]
+        @Body() request: CreateOrderRequestDTO, // Cambiamos el tipo de entrada a CreateOrderRequestDTO
     ): Promise<CreateOrderResponseDTO> {
 
-        this.eventBus.subscribe( 'OrderCreated', async ( event: OrderCreated ) =>{
-            const sender = new NodemailerEmailSender()
-            const order_id = event.id
-            sender.sendEmail("nadinechancay2010@gmail.com","Jamal",order_id)
-        })
+        // Suscripción al evento 'OrderCreated'
+        this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
+            const sender = new NodemailerEmailSender();
+            const order_id = event.id;
+            sender.sendEmail("nadinechancay2010@gmail.com", "Jamal", order_id);
+        });
 
+        // Mapeo de datos para el servicio
         const data: CreateOrderEntryServiceDTO = {
             userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
-            entry: entry.map((entry) => ({
+            entry: request.entry.map((entry) => ({
                 ...entry,
             })),
-        }
+        };
 
         const service =
             new LoggingDecorator(
@@ -112,10 +122,13 @@ export class OrderController {
             )
 
         const result = await service.execute(data)
-
+        
+        // TODO: Esto sera reemplazado por el aspecto de HTTPExceptionHandler
         if (!result.isSuccess())
             throw result.Error
 
+        // TODO: Se pasara a un servicio de aplicacion o se realizara en el mismo servicio de la orden
+        // Persistencia de la entidad de base de datos detalle
         const service_create_detalle =
             new LoggingDecorator(
                 new CreateDetalleService(
@@ -134,6 +147,8 @@ export class OrderController {
 
         console.log("Detalle creado")
 
+        // TODO: Se podria realizar utilizando rabbit para subscribirse al evento de creacion?
+        // Persistencia de la entidad de base de datos Estado_Orden
         const service_create_estado_orden =
             new LoggingDecorator(
                 new CreateEstadoOrdenService(
@@ -143,7 +158,7 @@ export class OrderController {
                 ),
                 new NativeLogger(this.logger)
             )
- 
+
         const result_create_estado_orden = await service_create_estado_orden.execute({
             userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
             id_orden: result.Value.id_orden,
@@ -163,18 +178,44 @@ export class OrderController {
         return response
     }
 
-    @Get('email')
+    @Get('one/by/:id')
     @ApiOkResponse({
         description: 'Devuelve la informacion de una orden dado el id',
+        type: GetOrderByIdReponseDTO
     })
-    async sendEmain(
-        @Body('email') email: string,
+    async getOrder(
+        @Param('id', ParseUUIDPipe) id: string,
     ) {
-        console.log(email)
-        console.log(process.env.NODEMAILER_SENDER)
-        const sender = new NodemailerEmailSender()
 
-    }
+        const data: GetOrderByIdEntryServiceDTO = {
+            userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+            id_orden: id
+        }
+
+        const service =
+            new LoggingDecorator(
+                new GetOrderByIdService(
+                    this.orderRepository
+                ),
+                new NativeLogger(this.logger)
+            )
+
+        const result = await service.execute(data)
+
+        // TODO: Esto sera reemplazado por el aspecto de HTTPExceptionHandler
+        if (!result.isSuccess())
+            throw result.Error
+
+        console.log("Resultado del servicio: ",result.Value)
+
+        const response: GetOrderByIdReponseDTO = {
+            id_orden: id,
+            ...result.Value
+        };
+
+        return response
+
+    }   
 
 
 }

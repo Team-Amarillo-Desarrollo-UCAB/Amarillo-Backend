@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne, JoinColumn, PrimaryColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, PrimaryColumn } from 'typeorm';
 import { OrmOrder } from '../order.entity';
 import { Estado } from './estado.entity';
 
@@ -21,7 +21,7 @@ export class Estado_Orden {
   @JoinColumn({ name: 'id_orden' })
   orden: OrmOrder;
 
-  @ManyToOne(() => Estado, (estado) => estado.estados)
+  @ManyToOne(() => Estado, (estado) => estado.estados,  {eager: true})
   @JoinColumn({ name: 'id_estado' })
   estado: Estado;
 
