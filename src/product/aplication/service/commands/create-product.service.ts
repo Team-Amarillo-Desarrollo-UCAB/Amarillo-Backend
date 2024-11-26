@@ -15,17 +15,21 @@ import { ProductStock } from "src/product/domain/value-objects/product-stock";
 import { ProductCantidadMedida } from "src/product/domain/value-objects/product-unit/product-cantidad-medida";
 import { ProductCurrency } from "src/product/domain/value-objects/product-precio/product-currency";
 import { ProductAmount } from "src/product/domain/value-objects/product-precio/product-amount";
+import { IFileUploader } from "src/common/application/file-uploader/file-uploader.interface";
 
 export class CreateProductService implements IApplicationService<CreateProductServiceEntryDTO, CreateProductServiceResponseDTO> {
 
     constructor(
         private readonly productRepository: IProductRepository,
-        private readonly idGenerator: IdGenerator<string>
+        private readonly fileUploader: IFileUploader,
+        private readonly idGenerator: IdGenerator<string>,
     ) {
 
     }
 
     async execute(data: CreateProductServiceEntryDTO): Promise<Result<CreateProductServiceResponseDTO>> {
+
+        const image_url = await this.fileUploader.UploadFile(data.imagen)
 
         const producto = Product.create(
             ProductId.create(await this.idGenerator.generateId()),
@@ -39,7 +43,7 @@ export class CreateProductService implements IApplicationService<CreateProductSe
                 ProductAmount.create(data.precio),
                 ProductCurrency.create(data.moneda)
             ),
-            ProductImage.create(data.imagen),
+            ProductImage.create(image_url),
             ProductStock.create(data.stock)
         )
         const result = await this.productRepository.saveProductAggregate(producto)

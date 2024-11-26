@@ -6,14 +6,14 @@ import { User } from "src/user/domain/user";
 import { IMapper } from "src/common/application/mappers/mapper.interface";
 
 export class OrmUserRepository extends Repository<OrmUser> implements IUserRepository{
-    
+
     private readonly ormUserMapper: IMapper<User,OrmUser>
 
     constructor(ormUserMapper: IMapper<User,OrmUser>, dataSource: DataSource){
         super(OrmUser, dataSource.createEntityManager());
         this.ormUserMapper = ormUserMapper
     }
-    
+
     async saveUserAggregate(user: User): Promise<Result<User>> {
         const ormUser = await this.ormUserMapper.fromDomainToPersistence( user )
         await this.save( ormUser )

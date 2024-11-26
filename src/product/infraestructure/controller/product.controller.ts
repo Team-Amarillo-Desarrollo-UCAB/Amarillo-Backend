@@ -22,7 +22,7 @@ import { LoggingDecorator } from "src/common/application/application-services/de
 import { GetProductByIdService } from "src/product/aplication/service/queries/get-product-by-id.service";
 import { NativeLogger } from "src/common/infraestructure/logger/logger";
 import { GetProductByIdServiceEntryDTO } from "src/product/aplication/DTO/entry/get-product-by-id-service-entry.dto";
-import { GetUser } from "src/common/infraestructure/jwt/decorator/get-user.param.decorator";
+import { GetUser } from "src/auth/infraestructure/jwt/decorator/get-user.param.decorator";
 import { GetProductByNameServiceEntryDTO } from "src/product/aplication/DTO/entry/get-product-by-name-service-entry.dto";
 import { GetProductByNameService } from "src/product/aplication/service/queries/get-product-by-name.service";
 import { GetProductByNameResponseDTO } from "../DTO/response/get-product-by-name-response.dto";
@@ -87,7 +87,11 @@ export class ProductController {
 
         const service = 
         new LoggingDecorator(
-            new CreateProductService(this.productRepository,this.idGenerator),
+            new CreateProductService(
+                this.productRepository,
+                this.fileUploader,
+                this.idGenerator
+            ),
             new NativeLogger(this.logger)
         )
 
@@ -127,7 +131,7 @@ export class ProductController {
             id_product: id
         }
 
-        const service = 
+        const service =
         new LoggingDecorator(
             new GetProductByIdService(this.productRepository),
             new NativeLogger(this.logger)

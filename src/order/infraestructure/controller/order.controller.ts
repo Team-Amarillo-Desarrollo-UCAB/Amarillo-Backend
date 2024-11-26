@@ -88,11 +88,11 @@ export class OrderController {
         type: CreateOrderResponseDTO
     })
     @ApiBody({
-        type: [CreateOrderEntryDTO], // Define el tipo como un array de CreateOrderEntryDTO
+        type: [CreateOrderEntryDTO],
         description: 'Array de entradas para crear una orden',
     })
     async createOrder(
-        @Body() request: CreateOrderRequestDTO, // Cambiamos el tipo de entrada a CreateOrderRequestDTO
+        @Body() request: CreateOrderRequestDTO,
     ): Promise<CreateOrderResponseDTO> {
 
         // Suscripción al evento 'OrderCreated'
