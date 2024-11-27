@@ -1,7 +1,7 @@
 import { AggregateRoot } from "src/common/domain/aggregate-root/aggregate-root";
 import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface";
 import { EnumUserRole } from "./user-role/user-role";
-import { UserCreated } from "./domain-event/user-created-event";
+import { UserCreated } from "./events/user-created-event";
 import { InvalidUser } from "./domain-exception/invalid-user";
 import { UserName } from "./value-object/user-name";
 import { UserEmail } from "./value-object/user-email";
@@ -15,7 +15,7 @@ export class User extends AggregateRoot<UserId> {
     private name: UserName;
     private email: UserEmail;
     private phone: UserPhone;
-    private image: UserImage
+    private image: UserImage;
     private role: UserRole;
 
     protected constructor(
