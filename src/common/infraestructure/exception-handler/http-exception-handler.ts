@@ -5,7 +5,7 @@ import {
     ForbiddenException,
     ConflictException,
 } from '@nestjs/common';
-import { IExceptionHandler } from 'src/common/Application/exception-handler/exception-handler.interface'
+import { IExceptionHandler } from 'src/common/application/exception-handler/exception-handler.interface'
 import { DomainException } from 'src/common/domain/domain-exception/domain-exception';
 
 export class HttpExceptionHandler implements IExceptionHandler {

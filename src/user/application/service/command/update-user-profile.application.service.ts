@@ -1,14 +1,14 @@
+import { IApplicationService } from "src/common/application/application-services/application-service.interface"
+import { IEventHandler } from "src/common/application/event-handler/event-handler.interface"
+import { Result } from "src/common/domain/result-handler/Result"
+import { IUserRepository } from "src/user/domain/repositories/user-repository.interface"
+import { UserEmail } from "src/user/domain/value-object/user-email"
+import { UserName } from "src/user/domain/value-object/user-name"
+import { UserPhone } from "src/user/domain/value-object/user-phone"
+import { UpdateUserProfileServiceEntryDto } from "../../DTO/params/update-user-profile-service-entry.dto"
+import { UpdateUserProfileServiceResponseDto } from "../../DTO/responses/update-user-profile-service-response.dto"
 
-import { IApplicationService } from "src/common/Application/application-services/application-service.interface";
-import { Result } from "src/common/Domain/result-handler/Result";
-import { IUserRepository } from "src/user/domain/repositories/user-repository.interface";
-import { User } from "src/user/domain/user";
-import { UpdateUserProfileServiceEntryDto } from "../../dto/params/update-user-profile-service-entry.dto";
-import { UpdateUserProfileServiceResponseDto } from "../../DTO/responses/update-user-profile-service-response.dto";
-import { IEventHandler } from "src/common/Application/event-handler/event-handler.interface";
-import { UserName } from "src/user/domain/value-objects/user-name";
-import { UserPhone } from "src/user/domain/value-objects/user-phone";
-import { UserEmail } from "src/user/domain/value-objects/user-email";
+
 
 export class UpdateUserProfileAplicationService implements IApplicationService<UpdateUserProfileServiceEntryDto,UpdateUserProfileServiceResponseDto>{
     

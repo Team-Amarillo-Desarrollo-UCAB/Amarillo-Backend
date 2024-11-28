@@ -1,8 +1,8 @@
 import { CanActivate, ExecutionContext, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { Result } from "src/common/Domain/result-handler/Result";
+import { Result } from "src/common/domain/result-handler/Result";
 import { DataSource } from "typeorm";
-import { JwtPayload } from "./dto/jwt-payload.interface";
+import { JwtPayload } from "./DTO/jwt-payload.interface";
 import { OrmAccountRepository } from "src/user/infraestructure/repositories/orm-repositories/orm-account-repository";
 import { OrmUser } from "src/user/infraestructure/entities/orm-entities/user.entity";
 

@@ -1,4 +1,4 @@
-import { Result } from "src/common/Domain/result-handler/Result";
+import { Result } from "src/common/domain/result-handler/Result";
 import { UserQueryRepository } from "../user-query-repository.interface";
 import { Model } from "mongoose";
 import { UserNotFoundException } from "../../exceptions/user-not-found-exception";

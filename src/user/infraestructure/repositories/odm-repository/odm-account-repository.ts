@@ -1,4 +1,4 @@
-import { Result } from "src/common/Domain/result-handler/Result"
+import { Result } from "src/common/domain/result-handler/Result"
 import { UserNotFoundException } from "../../exceptions/user-not-found-exception";
 import { Model } from "mongoose";
 import { IAccountRepository } from "src/user/application/interface/account-user-repository.interface";

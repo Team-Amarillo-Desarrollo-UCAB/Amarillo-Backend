@@ -1,5 +1,5 @@
-import { ApplicationServiceEntryDto } from "src/common/Application/application-services/dto/application-service-entry.dto"
-import { PaginationDto } from "src/common/Infraestructure/dto/entry/pagination.dto"
+import { ApplicationServiceEntryDto } from "src/common/application/application-services/DTO/application-service-entry.dto"
+import { PaginationDto } from "src/common/infraestructure/dto/entry/pagination.dto"
 
 
 

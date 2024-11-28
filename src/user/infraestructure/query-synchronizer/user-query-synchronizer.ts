@@ -1,4 +1,4 @@
-import { Result } from "src/common/Domain/result-handler/Result";
+import { Result } from "src/common/domain/result-handler/Result";
 import { UserCreated } from "src/user/domain/events/user-created-event";
 import { Model } from "mongoose";
 import { UserEmailModified } from "src/user/domain/events/user-email-modified-event";

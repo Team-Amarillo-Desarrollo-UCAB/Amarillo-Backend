@@ -1,13 +1,13 @@
-import { IApplicationService } from "src/common/Application/application-services/application-service.interface";
-import { Result } from "src/common/Domain/result-handler/Result";
-import { OrmUser } from '../entities/orm-entities/user.entity';
-import { IdGenerator } from "src/common/Application/Id-generator/id-generator.interface";
-import { IEncryptor } from "src/common/Application/encryptor/encryptor.interface";
-import { IFileUploader } from "src/common/Application/file-uploader/file-uploader.interface";
-import { IAccountRepository } from './../../application/interface/account-user-repository.interface';
-import { UpdateUserProfileInfraServiceEntryDto } from "./DTO/update-user-profile-infra-service-entry-dto";
-import { UpdateUserProfileInfraServiceResponseDto } from "./DTO/update-user-profile-infra-service-response-dto";
-import { OdmUserEntity } from "../entities/odm-entities/odm-user.entity";
+import { IApplicationService } from "src/common/application/application-services/application-service.interface"
+import { IEncryptor } from "src/common/application/encryptor/encryptor.interface"
+import { IdGenerator } from "src/common/application/id-generator/id-generator.interface"
+import { Result } from "src/common/domain/result-handler/Result"
+import { IAccountRepository } from "src/user/application/interface/account-user-repository.interface"
+import { OdmUserEntity } from "../entities/odm-entities/odm-user.entity"
+import { OrmUser } from "../entities/orm-entities/user.entity"
+import { UpdateUserProfileInfraServiceEntryDto } from "./DTO/update-user-profile-infra-service-entry-dto"
+import { UpdateUserProfileInfraServiceResponseDto } from "./DTO/update-user-profile-infra-service-response-dto"
+
 
 export class UpdateUserProfileInfraService implements IApplicationService<UpdateUserProfileInfraServiceEntryDto,UpdateUserProfileInfraServiceResponseDto>{
     

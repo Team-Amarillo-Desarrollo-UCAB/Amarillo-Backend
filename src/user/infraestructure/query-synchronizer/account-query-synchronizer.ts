@@ -1,6 +1,9 @@
-import { Result } from "src/common/Domain/result-handler/Result";
+import { Result } from "src/common/domain/result-handler/Result";
 import { Model } from "mongoose";
 import { UserQueryRepository } from "../repositories/user-query-repository.interface";
+import { Querysynchronizer } from "src/common/infraestructure/query-synchronizer/query-synchronizer";
+import { OdmUserEntity } from "../entities/odm-entities/odm-user.entity";
+import { OrmUser } from "../entities/orm-entities/user.entity";
 
 export class AccountQuerySynchronizer implements Querysynchronizer<OrmUser>{
     

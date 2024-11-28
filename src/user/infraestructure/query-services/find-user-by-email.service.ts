@@ -1,9 +1,10 @@
-import { IApplicationService } from "src/common/Application/application-services/application-service.interface";
+import { IApplicationService } from "src/common/application/application-services/application-service.interface"
+import { Result } from "src/common/domain/result-handler/Result"
+import { OdmUserRepository } from "../repositories/odm-repository/odm-user-repository"
+import { FindUserByEmailEntryDTO } from "./dto/params/find-user-by-email.service.entry.dto"
+import { FindUserResponseDTO } from "./dto/response/find-user-by-id.service.response"
 
-import { Result } from "src/common/Domain/result-handler/Result";
-import { OdmUserRepository } from "../repositories/odm-repository/odm-user-repository";
-import { FindUserByEmailEntryDTO } from "./dto/params/find-user-by-email.service.entry.dto";
-import { FindUserResponseDTO } from "./dto/response/find-user-by-id.service.response";
+
 
 export class FindUserByEmail implements IApplicationService<FindUserByEmailEntryDTO,FindUserResponseDTO>{
     

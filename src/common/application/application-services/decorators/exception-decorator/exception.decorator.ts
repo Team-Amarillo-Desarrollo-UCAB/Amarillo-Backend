@@ -1,4 +1,4 @@
-import { Result } from "src/common/Domain/result-handler/Result"
+import { Result } from "src/common/domain/result-handler/Result"
 import { ApplicationServiceDecorator } from "../application-service.decorator"
 import { ApplicationServiceEntryDto } from "../../DTO/application-service-entry.dto"
 import { IApplicationService } from "../../application-service.interface"
@@ -18,7 +18,7 @@ export class ExceptionDecorator<D extends ApplicationServiceEntryDto, R> extends
             const result = await this.applicationService.execute(data)
             if (result.isSuccess())
                 return result
-            this.exceptionHandler.HandleException(result.ErrorName, result.Message, result.Error)
+            this.exceptionHandler.HandleException(result.Message, result.Message, result.Error)
         } catch (error) {
             this.exceptionHandler.HandleException(error.status, error.message, error)
         }
