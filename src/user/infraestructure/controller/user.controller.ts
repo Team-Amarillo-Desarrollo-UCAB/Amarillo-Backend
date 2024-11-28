@@ -1,4 +1,4 @@
-import { Controller, Inject } from "@nestjs/common";
+import { Controller, Inject, Post } from "@nestjs/common";
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { DataSource } from "typeorm";
 
@@ -31,6 +31,8 @@ import { OrmAccountRepository } from "../repositories/orm-repositories/orm-accou
 import { UpdateUserProfileInfraServiceEntryDto } from "../services/DTO/update-user-profile-infra-service-entry-dto";
 import { UpdateUserProfileInfraService } from "../services/update-user-profile-infra.service";
 import { RabbitEventBus } from "src/common/infraestructure/rabbit-event-handler/rabbit-event-handler";
+import { IFileUploader } from "src/common/application/file-uploader/file-uploader.interface";
+import { CloudinaryFileUploader } from "src/common/infraestructure/cloudinary-file-uploader/cloudinary-file-uploader";
 
 
 //UserMapper
@@ -41,27 +43,28 @@ export class UserController {
   private readonly userRepository: OrmUserRepository
   private readonly logger: Logger = new Logger("UserController")
   private readonly imageTransformer: ImageTransformer
+  private readonly fileUploader: IFileUploader
   private readonly idGenerator: IdGenerator<string>
   private readonly encryptor: IEncryptor
   private readonly userQuerySyncronizer: UserQuerySynchronizer
   private readonly odmAccountRepository: IAccountRepository<OdmUserEntity>
   private readonly ormAccountRepository: IAccountRepository<OrmUser>
+  private readonly eventBus = RabbitEventBus.getInstance();
     
   constructor(
     @Inject('DataSource') private readonly dataSource: DataSource,
-    @InjectModel('User') private userModel: Model<OdmUserEntity>
   ) {
-    this.odmUserRepository = new OdmUserRepository(userModel)
-    this.encryptor = new EncryptorBcrypt()
-    this.userRepository = new OrmUserRepository(new UserMapper(), dataSource)
-    this.imageTransformer = new ImageTransformer()
     this.idGenerator = new UuidGenerator()
-    this.userQuerySyncronizer = new UserQuerySynchronizer(this.odmUserRepository, userModel)
-
+    this.imageTransformer = new ImageTransformer()
+    this.fileUploader = new CloudinaryFileUploader()
+    this.userRepository = new OrmUserRepository(new UserMapper(), dataSource)
+    this.encryptor = new EncryptorBcrypt()
     this.ormAccountRepository = new OrmAccountRepository( dataSource )
-    this.odmAccountRepository = new OdmAccountRepository( userModel )
-
+    //this.odmUserRepository = new OdmUserRepository(userModel)
+    // this.userQuerySyncronizer = new UserQuerySynchronizer(this.odmUserRepository, userModel)
+    // this.odmAccountRepository = new OdmAccountRepository( userModel )
   }
+
 
   @Put('update')
   @UseGuards(JwtAuthGuard)

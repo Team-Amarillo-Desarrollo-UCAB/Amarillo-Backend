@@ -5,6 +5,8 @@ import { IEventSubscriber } from "src/common/application/event-handler/subscribe
 import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface"
 import { OrderCreated } from "src/order/domain/domain-event/order-created-event"
 import { testCreated } from "src/product/infraestructure/controller/test-event"
+import { UserCreated } from 'src/user/domain/events/user-created-event'
+import { UserName } from 'src/user/domain/value-object/user-name'
 
 
 export class RabbitEventBus implements IEventHandler {
@@ -100,6 +102,15 @@ export class RabbitEventBus implements IEventHandler {
                                 new Date(event_data.fecha_creacion),
                                 event_data.montoTotal, 
                                 event_data.detalles
+                            );
+                            break;
+                        case 'UserCreated':
+                            event = UserCreated.create(
+                                event_data.userId,
+                                event_data.userName,
+                                event_data.userPhone, 
+                                event_data.userEmail,
+                                event_data.userRole
                             );
                             break;
                     }
