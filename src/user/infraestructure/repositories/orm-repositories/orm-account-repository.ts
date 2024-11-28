@@ -1,9 +1,9 @@
 import { Repository, DataSource } from 'typeorm'
 
-import { IAccountRepository } from './../../application/interface/account-user-repository.interface';
-import { OrmUser } from './../entities/user.entity';
+import { IAccountRepository } from '../../../application/interface/account-user-repository.interface';
+import { OrmUser } from '../../entities/orm-entities/user.entity';
 import { Result } from "src/common/Domain/result-handler/Result"
-import { UserNotFoundException } from '../exceptions/user-not-found-exception';
+import { UserNotFoundException } from '../../exceptions/user-not-found-exception';
 
 export class OrmAccountRepository extends Repository<OrmUser> implements IAccountRepository<OrmUser> {
 

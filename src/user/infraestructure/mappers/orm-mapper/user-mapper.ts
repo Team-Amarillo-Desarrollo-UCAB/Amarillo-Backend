@@ -1,6 +1,6 @@
 import { IMapper } from "src/common/application/mappers/mapper.interface";
 import { User } from "src/user/domain/user";
-import { OrmUser } from "../entities/user.entity";
+import { OrmUser } from "../../entities/orm-entities/user.entity";
 import { UserId } from "src/user/domain/value-object/user-id";
 import { UserName } from "src/user/domain/value-object/user-name";
 import { UserPhone } from "src/user/domain/value-object/user-phone";

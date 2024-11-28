@@ -3,8 +3,8 @@ import { JwtService } from "@nestjs/jwt";
 import { Result } from "src/common/Domain/result-handler/Result";
 import { DataSource } from "typeorm";
 import { JwtPayload } from "./dto/jwt-payload.interface";
-import { OrmAccountRepository } from "src/user/infraestructure/repositories/account-repository";
-import { OrmUser } from "src/user/infraestructure/entities/user.entity";
+import { OrmAccountRepository } from "src/user/infraestructure/repositories/orm-repositories/orm-account-repository";
+import { OrmUser } from "src/user/infraestructure/entities/orm-entities/user.entity";
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
