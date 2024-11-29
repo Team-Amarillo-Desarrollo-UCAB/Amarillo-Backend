@@ -33,19 +33,24 @@ export class SignUpUserApplicationService implements IApplicationService<SignUpE
     
     async execute(signUpDto: SignUpEntryDto): Promise<Result<SignUpResponseDto>> {
         
-        const findResult = await this.userRepository.verifyUserExistenceByEmail( signUpDto.email )
-        if ( !findResult.isSuccess() ) return Result.fail( findResult.Error, findResult.StatusCode, findResult.Message )
+        // const findResult = await this.userRepository.verifyUserExistenceByEmail( signUpDto.email )
+        // if ( !findResult.isSuccess() ) return Result.fail( findResult.Error, findResult.StatusCode, findResult.Message )
 
         const idUser = await this.uuidGenerator.generateId()
-
+        console.log("xd",signUpDto)
+        const image = UserImage.create(signUpDto.image)
+        console.log(image)
         const create = User.create(
             UserId.create(idUser), 
             UserName.create(signUpDto.name), 
             UserPhone.create(signUpDto.phone), 
             UserEmail.create(signUpDto.email),
-            UserImage.create(signUpDto.image),
+            image,
             UserRole.create(signUpDto.role)
         )
+
+        console.log("xd",create)
+
         const userResult = await this.userRepository.saveUserAggregate( create )
         if ( !userResult.isSuccess() ) return Result.fail( userResult.Error, userResult.StatusCode, userResult.Message )        
         

@@ -69,12 +69,21 @@ export class User extends AggregateRoot<UserId> {
         }
     }
     protected ensureValidState(): void {
+        console.log("")
+        console.log(this.name)
+        console.log(this.phone)
+        console.log(this.email)
+        console.log(this.role)
+        console.log(this.image)
+
+
         if (
             !this.name ||
             !this.phone ||
             !this.email ||
-            !this.role ||
-            !this.image
+            !this.role 
+            // ||
+            // !this.image
         )
             throw new InvalidUser('El usuario tiene que ser valido');
     }

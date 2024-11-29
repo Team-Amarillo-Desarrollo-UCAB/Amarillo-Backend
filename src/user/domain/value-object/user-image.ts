@@ -4,8 +4,11 @@ export class UserImage implements IValueObject<UserImage> {
   private readonly url: string;
 
   protected constructor(url: string) {
-    if (url.length < 5) 
-        throw new Error('Invalid url');
+    if (url.length < 5){
+
+      //throw new Error('Invalid url');
+    } 
+    console.log("Url", url)
     this.url = url;
   }
 
@@ -17,7 +20,7 @@ export class UserImage implements IValueObject<UserImage> {
     return this.url === valueObject.Image;
   }
 
-  static create(url: string) {
+  static create(url: string): UserImage {
     return new UserImage(url);
   }
 }

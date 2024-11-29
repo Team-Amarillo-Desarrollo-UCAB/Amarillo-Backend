@@ -22,11 +22,7 @@ import { UserNameModified } from "src/user/domain/events/user-name-modified-even
 import { UserPhoneModified } from "src/user/domain/events/user-phone-modified-event";
 import { userUpdateEntryInfraestructureDto } from "../DTO/entry/user-update-entry-infraestructure";
 import { UpdateUserProfileSwaggerResponseDto } from "../DTO/response/update-user-profile-swagger-response.dto";
-import { OdmUserEntity } from "../entities/odm-entities/odm-user.entity";
 import { OrmUser } from "../entities/orm-entities/user.entity";
-import { UserQuerySynchronizer } from "../query-synchronizer/user-query-synchronizer";
-import { OdmAccountRepository } from "../repositories/odm-repository/odm-account-repository";
-import { OdmUserRepository } from "../repositories/odm-repository/odm-user-repository";
 import { OrmAccountRepository } from "../repositories/orm-repositories/orm-account-repository";
 import { UpdateUserProfileInfraServiceEntryDto } from "../services/DTO/update-user-profile-infra-service-entry-dto";
 import { UpdateUserProfileInfraService } from "../services/update-user-profile-infra.service";
@@ -39,15 +35,12 @@ import { CloudinaryFileUploader } from "src/common/infraestructure/cloudinary-fi
 @ApiTags('User')
 @Controller('user')
 export class UserController {
-  private readonly odmUserRepository: OdmUserRepository
   private readonly userRepository: OrmUserRepository
   private readonly logger: Logger = new Logger("UserController")
   private readonly imageTransformer: ImageTransformer
   private readonly fileUploader: IFileUploader
   private readonly idGenerator: IdGenerator<string>
   private readonly encryptor: IEncryptor
-  private readonly userQuerySyncronizer: UserQuerySynchronizer
-  private readonly odmAccountRepository: IAccountRepository<OdmUserEntity>
   private readonly ormAccountRepository: IAccountRepository<OrmUser>
   private readonly eventBus = RabbitEventBus.getInstance();
     
@@ -60,9 +53,6 @@ export class UserController {
     this.userRepository = new OrmUserRepository(new UserMapper(), dataSource)
     this.encryptor = new EncryptorBcrypt()
     this.ormAccountRepository = new OrmAccountRepository( dataSource )
-    //this.odmUserRepository = new OdmUserRepository(userModel)
-    // this.userQuerySyncronizer = new UserQuerySynchronizer(this.odmUserRepository, userModel)
-    // this.odmAccountRepository = new OdmAccountRepository( userModel )
   }
 
 
@@ -80,20 +70,9 @@ export class UserController {
     
     if (updateEntryDTO.image) image = await this.imageTransformer.base64ToFile(updateEntryDTO.image)
 
-    if (updateEntryDTO.email) 
-      eventBus.subscribe('UserEmailModified', async (event: UserEmailModified) => {
-        await this.userQuerySyncronizer.execute(event)
-      })
 
-    if (updateEntryDTO.name) 
-      eventBus.subscribe('UserNameModified', async (event: UserNameModified) => {
-        await this.userQuerySyncronizer.execute(event)
-      })
-      
-    if (updateEntryDTO.phone) 
-      await eventBus.subscribe('UserPhoneModified', async (event: UserPhoneModified) => {
-        await this.userQuerySyncronizer.execute(event);
-      })
+
+
     
     const userUpdateDto: UpdateUserProfileServiceEntryDto = { userId: user.id, ...updateEntryDTO }
 
@@ -119,7 +98,6 @@ export class UserController {
     //         new PerformanceDecorator(
               new UpdateUserProfileInfraService(
                 this.ormAccountRepository,
-                this.odmAccountRepository,
                 this.idGenerator,
                 this.encryptor
               );

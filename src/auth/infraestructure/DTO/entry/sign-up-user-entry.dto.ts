@@ -25,4 +25,8 @@ export class SignUpUserEntryInfraDto {
     @IsString()
     phone: string
 
+    @ApiProperty({ example: 'xd teta' })
+    @IsString()
+    image: string
+
 }

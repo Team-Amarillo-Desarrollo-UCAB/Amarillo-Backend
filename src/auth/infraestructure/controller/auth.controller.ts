@@ -30,11 +30,13 @@ import { async } from "rxjs";
 import { Querysynchronizer } from "src/common/infraestructure/query-synchronizer/query-synchronizer";
 import { IAccountRepository } from "src/user/application/interface/account-user-repository.interface";
 import { IUserRepository } from "src/user/domain/repositories/user-repository.interface";
-import { OdmUserEntity } from "src/user/infraestructure/entities/odm-entities/odm-user.entity";
 import { NodemailerEmailSender } from "src/common/infraestructure/utils/nodemailer-email-sender.infraestructure";
 import { SignUpEntryDto } from "src/auth/application/DTO/entry/sign-up-entry.application.dto";
 import { SignUpUserApplicationService } from "src/auth/application/services/sign-up-user-service.application.service";
 import { EnumUserRole } from "src/user/domain/user-role/user-role";
+import { OrmUserRepository } from "src/user/infraestructure/repositories/orm-repositories/orm-user-repository";
+import { UserMapper } from "src/user/infraestructure/mappers/orm-mapper/user-mapper";
+import { OrmAccountRepository } from "src/user/infraestructure/repositories/orm-repositories/orm-account-repository";
 //import { OdmUserEntity } from "src/user/infraestructure/entities/odm-entities/odm-user.entity";
 //import { InjectModel } from "@nestjs/mongoose";
 
@@ -49,7 +51,6 @@ export class AuthController {
 
 
     private readonly ormAccountRepository: IAccountRepository<OrmUser>
-    private readonly odmAccountRepository: IAccountRepository<OdmUserEntity>
     private readonly userRepository: IUserRepository
     private readonly syncroInfraUser: Querysynchronizer<OrmUser>
     private secretCodes = []
@@ -63,13 +64,8 @@ export class AuthController {
         this.uuidGenerator = new UuidGenerator()
         this.tokenGenerator = new JwtGenerator(jwtAuthService)
         this.encryptor = new EncryptorBcrypt()
-
-        /*
-         this.syncroInfraUser = new AccountQuerySynchronizer( new OdmUserRepository( userModel ), userModel )
-        this.userRepository = new OrmUserRepository( new OrmUserMapper(), dataSource )
-        this.odmAccountRepository = new OdmAccountRepository( userModel )
+        this.userRepository = new OrmUserRepository( new UserMapper(), dataSource )
         this.ormAccountRepository = new OrmAccountRepository( dataSource )
-        */
     }
 
     @Post('register')
@@ -111,7 +107,7 @@ export class AuthController {
             email: data.email,
             name: data.name,
             phone: data.phone,
-            image: "",
+            image: data.image,
             role: EnumUserRole.CLIENT //CAMBIAR
         }));
 
