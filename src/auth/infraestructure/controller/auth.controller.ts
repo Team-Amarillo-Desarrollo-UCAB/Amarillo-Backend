@@ -126,7 +126,6 @@ export class AuthController {
                         this.ormAccountRepository,
                         getCodeUpdateDto.email,
                         new SecretCodeGenerator(),
-                        
                     ), 
                     new NativeLogger(this.logger)
                // ),
@@ -138,7 +137,10 @@ export class AuthController {
         this.secretCodes = this.secretCodes.filter( e => e.email != result.Value.email )
         this.secretCodes.push( result.Value )
         console.log( this.secretCodes )
-        return { date: result.Value.date }
+        return { 
+            date: result.Value.date,
+            code: result.Value.code
+         } 
     }
 /*
     @Put('change/password')
