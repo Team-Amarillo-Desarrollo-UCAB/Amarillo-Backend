@@ -31,6 +31,14 @@ import { ForgetPasswordEntryInfraDto } from "../DTO/entry/forget-password-entry.
 import { ForgetPasswordSwaggerResponseDto } from "../DTO/response/forget-password-response.dto";
 import { GetCodeUpdatePasswordUserInfraService } from "../infra-service/get-code-update-password-service.infra.service";
 import { SecretCodeGenerator } from "../secret-code-generator/secret-code-generator";
+import { CodeValidateEntryInfraDto } from "../DTO/entry/code-validate-entry.dto";
+import { ValidateCodeForgetPasswordSwaggerResponseDto } from "../DTO/response/val-code-swagger-response.dto";
+import { ExceptionDecorator } from "src/common/application/application-services/decorators/exception-decorator/exception.decorator";
+import { PerformanceDecorator } from "src/common/application/application-services/decorators/performance-decorator/performance-decorator";
+import { HttpExceptionHandler } from "src/common/infraestructure/exception-handler/http-exception-handler-code";
+import { ChangePasswordEntryInfraDto } from "../DTO/entry/change-password-entry.dto";
+import { ChangePasswordSwaggerResponseDto } from "../DTO/response/change-password-response.dto";
+import { ChangePasswordUserInfraService } from "../infra-service/change-password-user-service.infra.service";
 //import { GetCodeUpdatePasswordUserInfraService } from "../infra-service/get-code-update-password-service.infra.service";
 
 @ApiTags('auth')
@@ -142,7 +150,7 @@ export class AuthController {
             code: result.Value.code
          } 
     }
-/*
+
     @Put('change/password')
     @ApiOkResponse({ description: 'Cambiar la contraseña del usuario', type: ChangePasswordSwaggerResponseDto })
     async changePasswordUser(@Body() updatePasswordDto: ChangePasswordEntryInfraDto ) {     
@@ -150,27 +158,31 @@ export class AuthController {
         const result = this.signCode(updatePasswordDto.code, updatePasswordDto.email)  
         if ( !result ) throw new BadRequestException('invalid secret code')
         const data = { userId: 'none',  ...updatePasswordDto }
-        const service = new ExceptionDecorator( 
-            new LoggingDecorator(
-                new PerformanceDecorator(
+        const service = //new ExceptionDecorator( 
+            new LoggingDecorator(  
+                //new PerformanceDecorator(
                     new ChangePasswordUserInfraService(
                         this.ormAccountRepository,
-                        this.encryptor,
-                        this.odmAccountRepository
+                        this.encryptor
                     ), 
                     new NativeLogger(this.logger)
-                ),
-                new NativeLogger(this.logger)
-            ),
-            new HttpExceptionHandler()
-        )
-        await service.execute(data)
+             //   ),
+                //new NativeLogger(this.logger)
+            )
+           // new HttpExceptionHandler()
+        //)
+        const result2 = await service.execute(data)
+        // return { 
+        //     previous_password: result2.Value,
+        //     new_password: result2.Value.code
+        //  } 
     }
-    
+
     @Post('code/validate')
     @ApiOkResponse({  description: 'Validar codigo de cambio de contraseña', type: ValidateCodeForgetPasswordSwaggerResponseDto })
     async validateCodeForgetPassword( @Body() codeValDto: CodeValidateEntryInfraDto ) {  
         if ( !this.validateCode( codeValDto.code, codeValDto.email ) ) throw new BadRequestException('invalid secret code')
+        console.log( "Se ha validado exitosamente la clave temporal" )
     }
 
     private validateCode( code: string, email: string ) {
@@ -189,7 +201,7 @@ export class AuthController {
         this.secretCodes = this.secretCodes.filter( e => (e.code != code && e.email != email) )
         return true
     }
-*/
+
     private async cleanSecretCodes() {
         var nowTime = new Date().getTime()
         this.secretCodes = this.secretCodes.filter( e => {
