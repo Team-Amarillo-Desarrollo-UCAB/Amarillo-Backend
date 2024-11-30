@@ -4,9 +4,9 @@ import * as nodemailer from "nodemailer";
 import { IEmailSender } from "src/common/application/email-sender/email-sender.interface.application"
 
 export class NodemailerEmailSender implements IEmailSender {
-    private userGmail = "jamalcuent@gmail.com";
-    private passAppGmail = "aauo ubdh gehy xyjp";
-    private senderName = process.env.APP_NAME
+    private userGmail = "godely.inf@gmail.com";
+    private passAppGmail = "thee ojdl caau ogbm";//"aauo ubdh gehy xyjp";
+    private senderName = "GoDely"
     private transporter = null
 
     constructor() {
@@ -15,6 +15,7 @@ export class NodemailerEmailSender implements IEmailSender {
             auth: {
                 user: this.userGmail,
                 pass: this.passAppGmail,
+                name: this.senderName
             },
         });
     }
@@ -27,7 +28,7 @@ export class NodemailerEmailSender implements IEmailSender {
                 throw new Error("Transporte no configurado")
 
             const mailOptions = {
-                from: this.userGmail,
+                from: '"GoDely" <this.userGmail>',
                 to: emailReceiver,
                 subject: '¡Tu orden ha sido creada exitosamente!',
                 html: `
@@ -138,7 +139,7 @@ export class NodemailerEmailSender implements IEmailSender {
                 throw new Error("Transporte no configurado")
 
             const mailOptions = {
-                from: this.userGmail,
+                from: '"GoDely" <this.userGmail>',
                 to: emailReceiver,
                 subject: '¡Te damos la bienvenida al sistema GoDely!',
                 html: `
@@ -216,6 +217,116 @@ export class NodemailerEmailSender implements IEmailSender {
                             <p>¡Gracias por tu registrarte! Te has registrado con los siguientes datos.</p>
                             <p class="order-id">Id Usuario: #${user_id}</p>
                             <p>Estamos emocionados que formes parte del sistema GoDely.</p>
+                        </div>
+                        <div class="footer">
+                            <p>GoDely, el mejor servicio de delivery del país 😉.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                `
+            };
+
+            this.transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.log("Error al enviar correo:", error);
+                } else {
+                    console.log("Correo enviado:", info.response);
+                }
+            });
+
+        } catch (error) {
+
+        }
+
+    }
+
+    async sendCode(emailReceiver: string, nameReceiver: string, code: string) {
+
+        try {
+
+            if (!this.transporter)
+                throw new Error("Transporte no configurado")
+
+            const mailOptions = {
+                from: '"GoDely" <this.userGmail>',
+                to: emailReceiver,
+                subject: 'Código de verificación',
+                html: `
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Tu código de confirmación</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            background-color: #f4f4f4;
+                            margin: 0;
+                            padding: 0;
+                            color: #333;
+                        }
+                        .container {
+                            width: 100%;
+                            max-width: 600px;
+                            margin: 20px auto;
+                            background-color: #fff;
+                            padding: 20px;
+                            border-radius: 5px;
+                            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                        }
+                        .logo {
+                            text-align: center;
+                            margin-bottom: 10px;
+                        }
+                        .logo img {
+                            width: 80%;
+                        }
+                        .header {
+                            background-color: #F77523;
+                            padding: 20px;
+                            text-align: center;
+                            color: #fff;
+                            border-radius: 5px 5px 0 0;
+                        }
+                        .header h1 {
+                            margin: 0;
+                        }
+                        .content {
+                            padding: 20px;
+                            text-align: center;
+                        }
+                        .content p {
+                            font-size: 16px;
+                            line-height: 1.5;
+                            color: #666;
+                        }
+                        .order-id {
+                            font-size: 24px;
+                            font-weight: bold;
+                            color: #333;
+                        }
+                        .footer {
+                            text-align: center;
+                            font-size: 12px;
+                            color: #999;
+                            margin-top: 20px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="logo"> 
+                            <img src="https://res.cloudinary.com/dxttqmyxu/image/upload/v1731617091/nwgc64gwc22rypvbq2vj.jpg" alt="GoDely Logo"  height="50">
+                        </div>
+                        <div class="header">
+                            <h1>Código de confirmación de identidad</h1>
+                        </div>
+                        <div class="content">
+                            <p>Ingresa el siguiente código de confirmación para verificar tu identidad.</p>
+                            <p class="order-id">Código: #${code}</p>
+                            <p>En caso de que se trate de un error, omita este mensaje.</p>
                         </div>
                         <div class="footer">
                             <p>GoDely, el mejor servicio de delivery del país 😉.</p>

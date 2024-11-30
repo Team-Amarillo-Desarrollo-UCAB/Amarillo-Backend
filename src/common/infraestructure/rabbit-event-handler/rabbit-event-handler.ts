@@ -114,6 +114,16 @@ export class RabbitEventBus implements IEventHandler {
                                 event_data.userRole
                             );
                             break;
+                        case 'GetCode':
+                            event = UserCreated.create(
+                                event_data.userId,
+                                event_data.userName,
+                                event_data.userPhone, 
+                                event_data.userEmail,
+                                event_data.userImage,
+                                event_data.userRole
+                            );
+                            break;
                     }
                     await callback(event)
                     channel.ack(message)
