@@ -110,6 +110,7 @@ export class RabbitEventBus implements IEventHandler {
                                 event_data.userName,
                                 event_data.userPhone, 
                                 event_data.userEmail,
+                                event_data.userImage,
                                 event_data.userRole
                             );
                             break;

@@ -7,6 +7,7 @@ export class UserCreated extends DomainEvent{
         public userName: string,
         public userPhone: string,
         public userEmail: string,
+        public userImage: string,
         public userRole: EnumUserRole
     ) {
         super();
@@ -17,6 +18,7 @@ export class UserCreated extends DomainEvent{
         userName: string,
         userPhone: string,
         userEmail: string,
+        userImage: string,
         userRole: EnumUserRole
     ): UserCreated {
         return new UserCreated(
@@ -24,6 +26,7 @@ export class UserCreated extends DomainEvent{
             userName,
             userPhone,
             userEmail,
+            userImage,
             userRole
         );
     }

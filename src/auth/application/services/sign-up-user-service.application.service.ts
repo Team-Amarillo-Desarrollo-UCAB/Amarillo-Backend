@@ -12,6 +12,7 @@ import { UserPhone } from "src/user/domain/value-object/user-phone"
 import { UserRole } from "src/user/domain/value-object/user-role"
 import { SignUpEntryDto } from "../DTO/entry/sign-up-entry.application.dto"
 import { SignUpResponseDto } from "../DTO/response/sign-up-response.application.dto"
+import { IFileUploader } from "src/common/application/file-uploader/file-uploader.interface"
 
 
 
@@ -20,43 +21,42 @@ export class SignUpUserApplicationService implements IApplicationService<SignUpE
     private readonly userRepository: IUserRepository
     private readonly uuidGenerator: IdGenerator<string>
     private readonly eventHandler: IEventHandler
+    private readonly fileUploader: IFileUploader
         
     constructor(
         eventHandler: IEventHandler,
         userRepository: IUserRepository,
         uuidGenerator: IdGenerator<string>,
+        fileUploader: IFileUploader
     ){
         this.userRepository = userRepository
         this.uuidGenerator = uuidGenerator
         this.eventHandler = eventHandler
+        this.fileUploader = fileUploader
     }
     
     async execute(signUpDto: SignUpEntryDto): Promise<Result<SignUpResponseDto>> {
         
-        // const findResult = await this.userRepository.verifyUserExistenceByEmail( signUpDto.email )
-        // if ( !findResult.isSuccess() ) return Result.fail( findResult.Error, findResult.StatusCode, findResult.Message )
+        const findResult = await this.userRepository.verifyUserExistenceByEmail( signUpDto.email )
+        if ( !findResult.isSuccess() ) return Result.fail( findResult.Error, findResult.StatusCode, findResult.Message )
 
         const idUser = await this.uuidGenerator.generateId()
-        console.log("xd",signUpDto)
-        const image = UserImage.create(signUpDto.image)
-        console.log(image)
+        const image_url = await this.fileUploader.UploadFile(signUpDto.image)
         const create = User.create(
             UserId.create(idUser), 
             UserName.create(signUpDto.name), 
             UserPhone.create(signUpDto.phone), 
             UserEmail.create(signUpDto.email),
-            image,
+            UserImage.create(image_url),
             UserRole.create(signUpDto.role)
         )
 
-        console.log("xd",create)
-
         const userResult = await this.userRepository.saveUserAggregate( create )
-        if ( !userResult.isSuccess() ) return Result.fail( userResult.Error, userResult.StatusCode, userResult.Message )        
+        if ( !userResult.isSuccess() ) return Result.fail( new Error("Usuario no creado"), 404, "Usuario no creado")        
         
         await this.eventHandler.publish( create.pullEvents() )
 
-        const answer = { 
+        const answer: SignUpResponseDto = { 
             id: idUser,
             email: signUpDto.email,
             name: signUpDto.name 

@@ -29,6 +29,8 @@ import { UpdateUserProfileInfraService } from "../services/update-user-profile-i
 import { RabbitEventBus } from "src/common/infraestructure/rabbit-event-handler/rabbit-event-handler";
 import { IFileUploader } from "src/common/application/file-uploader/file-uploader.interface";
 import { CloudinaryFileUploader } from "src/common/infraestructure/cloudinary-file-uploader/cloudinary-file-uploader";
+import { LoggingDecorator } from "src/common/application/application-services/decorators/logging-decorator/logging.decorator";
+import { NativeLogger } from "src/common/infraestructure/logger/logger";
 
 
 //UserMapper
@@ -78,16 +80,16 @@ export class UserController {
 
     const updateUserProfileService = 
     //   new ExceptionDecorator(
-    //     new LoggingDecorator(
+         new LoggingDecorator(
     //       new PerformanceDecorator(
             new UpdateUserProfileAplicationService(
               this.userRepository, eventBus
-            );
-        //     new NativeLogger(this.logger),
+            ),
+             new NativeLogger(this.logger),
         //   ),
         //   new NativeLogger(this.logger),
         // ), new HttpExceptionHandler()
-    //);
+    );
 
     const resultUpdate = (await updateUserProfileService.execute(userUpdateDto))
     

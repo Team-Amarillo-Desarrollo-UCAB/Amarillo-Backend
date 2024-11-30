@@ -27,7 +27,6 @@ export class OrmAccountRepository extends Repository<OrmUser> implements IAccoun
             const list_users: OrmUser[] = [];
             for (const user of OrmUsers){ list_users.push(user) }
             return Result.success<OrmUser[]>(list_users, 200);
-            //return Result.fail<OrmUser[]>( new UserNotFoundException(), 403, 'Non-existing users')
             }
         } catch (error) {
             return Result.fail<OrmUser[]>( new Error( error.message ), error.code, error.message )

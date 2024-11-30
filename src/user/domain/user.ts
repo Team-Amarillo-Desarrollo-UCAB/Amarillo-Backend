@@ -34,6 +34,7 @@ export class User extends AggregateRoot<UserId> {
             name.Name,
             phone.Phone,
             email.Email,
+            image.Image,
             role.Role
         );
         super(id,userCreated);
@@ -53,6 +54,7 @@ export class User extends AggregateRoot<UserId> {
                 this.phone = UserPhone.create(userCreated.userPhone)
                 this.email = UserEmail.create(userCreated.userEmail)
                 this.role = UserRole.create(userCreated.userRole)
+                this.image = UserImage.create(userCreated.userImage)    
                 break;
             case 'UserNameModified':
                 const userNameModified: UserNameModified = event as UserNameModified;
@@ -81,9 +83,8 @@ export class User extends AggregateRoot<UserId> {
             !this.name ||
             !this.phone ||
             !this.email ||
-            !this.role 
-            // ||
-            // !this.image
+            !this.role  ||
+            !this.image
         )
             throw new InvalidUser('El usuario tiene que ser valido');
     }

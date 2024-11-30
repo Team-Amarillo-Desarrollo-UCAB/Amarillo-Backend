@@ -8,5 +8,6 @@ export class SignUpEntryDto implements ApplicationServiceEntryDto {
     name: string
     phone: string
     image: string
+    password: string
     role: EnumUserRole
 }

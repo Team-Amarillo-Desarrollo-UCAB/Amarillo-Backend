@@ -37,6 +37,8 @@ import { EnumUserRole } from "src/user/domain/user-role/user-role";
 import { OrmUserRepository } from "src/user/infraestructure/repositories/orm-repositories/orm-user-repository";
 import { UserMapper } from "src/user/infraestructure/mappers/orm-mapper/user-mapper";
 import { OrmAccountRepository } from "src/user/infraestructure/repositories/orm-repositories/orm-account-repository";
+import { IFileUploader } from "src/common/application/file-uploader/file-uploader.interface";
+import { CloudinaryFileUploader } from "src/common/infraestructure/cloudinary-file-uploader/cloudinary-file-uploader";
 //import { OdmUserEntity } from "src/user/infraestructure/entities/odm-entities/odm-user.entity";
 //import { InjectModel } from "@nestjs/mongoose";
 
@@ -48,7 +50,7 @@ export class AuthController {
     private readonly tokenGenerator: IJwtGenerator<string>
     private readonly encryptor: IEncryptor
     private readonly eventBus = RabbitEventBus.getInstance();
-
+    private readonly fileUploader: IFileUploader
 
     private readonly ormAccountRepository: IAccountRepository<OrmUser>
     private readonly userRepository: IUserRepository
@@ -56,9 +58,9 @@ export class AuthController {
     private secretCodes = []
 
     constructor(
-       // @InjectModel('User') private userModel: Model<OdmUserEntity>,
         @Inject('DataSource') private readonly dataSource: DataSource,
         private jwtAuthService: JwtService
+        
     ) {
         this.logger = new Logger('AuthController')
         this.uuidGenerator = new UuidGenerator()
@@ -66,6 +68,7 @@ export class AuthController {
         this.encryptor = new EncryptorBcrypt()
         this.userRepository = new OrmUserRepository( new UserMapper(), dataSource )
         this.ormAccountRepository = new OrmAccountRepository( dataSource )
+        this.fileUploader = new CloudinaryFileUploader()
     }
 
     @Post('register')
@@ -79,7 +82,6 @@ export class AuthController {
         if ( !data.type ) data = { type: 'CLIENT', ...data }
 
         const plainToHash = await this.encryptor.hashPassword(signUpDto.password)
-
         this.eventBus.subscribe('UserCreated', async (event: UserCreated) => {
             const sender = new NodemailerEmailSender();
             const user_id = event.userId;
@@ -89,14 +91,15 @@ export class AuthController {
 
         const signUpApplicationService = 
         //new ExceptionDecorator( 
-        //     new LoggingDecorator(
+             new LoggingDecorator(
         //         new PerformanceDecorator(    
                     new SignUpUserApplicationService(
                         this.eventBus,
                         this.userRepository,
-                        this.uuidGenerator
-            //         ), 
-            //         new NativeLogger(this.logger)
+                        this.uuidGenerator, 
+                        this.fileUploader
+                     ), 
+                     new NativeLogger(this.logger)
             //     ),
             //     new NativeLogger(this.logger)
             // ),
@@ -108,7 +111,8 @@ export class AuthController {
             name: data.name,
             phone: data.phone,
             image: data.image,
-            role: EnumUserRole.CLIENT //CAMBIAR
+            password: plainToHash,
+            role: data.type //CAMBIAR
         }));
 
         return { id: resultService.Value.id }
