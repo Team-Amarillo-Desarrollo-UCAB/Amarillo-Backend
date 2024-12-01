@@ -1,9 +1,9 @@
-import { IApplicationService } from "src/common/Application/application-services/application-service.interface";
-import { Result } from "src/common/Domain/result-handler/Result";
-import { IEncryptor } from "../../../common/Application/encryptor/encryptor.interface";
+import { IApplicationService } from "src/common/application/application-services/application-service.interface";
+import { IEncryptor } from "../../../common/application/encryptor/encryptor.interface";
 import { OrmUser } from "src/user/infraestructure/entities/orm-entities/user.entity";
 import { IAccountRepository } from "src/user/application/interface/account-user-repository.interface";
 import { ChangePasswordEntryDto } from "./dto/entry/change-password-entry.infraestructure.dto";
+import { Result } from "src/common/domain/result-handler/Result";
 
 
 export class ChangePasswordUserInfraService implements IApplicationService<ChangePasswordEntryDto, boolean> {

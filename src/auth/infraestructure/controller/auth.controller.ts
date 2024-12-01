@@ -33,9 +33,6 @@ import { GetCodeUpdatePasswordUserInfraService } from "../infra-service/get-code
 import { SecretCodeGenerator } from "../secret-code-generator/secret-code-generator";
 import { CodeValidateEntryInfraDto } from "../DTO/entry/code-validate-entry.dto";
 import { ValidateCodeForgetPasswordSwaggerResponseDto } from "../DTO/response/val-code-swagger-response.dto";
-import { ExceptionDecorator } from "src/common/application/application-services/decorators/exception-decorator/exception.decorator";
-import { PerformanceDecorator } from "src/common/application/application-services/decorators/performance-decorator/performance-decorator";
-import { HttpExceptionHandler } from "src/common/infraestructure/exception-handler/http-exception-handler-code";
 import { ChangePasswordEntryInfraDto } from "../DTO/entry/change-password-entry.dto";
 import { ChangePasswordSwaggerResponseDto } from "../DTO/response/change-password-response.dto";
 import { ChangePasswordUserInfraService } from "../infra-service/change-password-user-service.infra.service";
@@ -44,12 +41,10 @@ import { LogInUserResponseDto } from "../DTO/response/log-in-user-reponses.dto";
 import { LogInUserEntryInfraDto } from "../DTO/entry/log-in-user-entry.dto";
 import { LogInUserServiceEntryDto } from "../services/DTO/entry/log-in-entry.infraestructure.dto";
 import { PerformanceDecorator } from "src/common/application/application-services/decorators/performance-decorator/performance-decorator";
-import { LoggingDecorator } from "src/common/application/application-services/decorators/logging-decorator/logging.decorator";
-import { NativeLogger } from "src/common/infraestructure/logger/logger";
 import { LogInUserInfraService } from "../services/log-in-user-service.infraestructure.service";
-import { OrmAccountRepository } from "src/user/infraestructure/repositories/account-repository";
-import { IAccountRepository } from "src/user/application/interface/account-user-repository.interface";
-import { OrmUser } from "src/user/infraestructure/entities/user.entity";
+// import { OrmAccountRepository } from "src/user/infraestructure/repositories/account-repository";
+// import { IAccountRepository } from "src/user/application/interface/account-user-repository.interface";
+// import { OrmUser } from "src/user/infraestructure/entities/user.entity";
 import { ExceptionDecorator } from "src/common/application/application-services/decorators/exception-decorator/exception.decorator";
 import { IExceptionHandler } from "src/common/application/exception-handler/exception-handler.interface";
 import { HttpExceptionHandler } from "src/common/infraestructure/exception-handler/http-exception-handler-code";
@@ -98,6 +93,10 @@ export class AuthController {
 
         const plainToHash = await this.encryptor.hashPassword(signUpDto.password)
         this.eventBus.subscribe('UserCreated', async (event: UserCreated) => {
+            const ormUser = OrmUser.create( 
+                event.userId, event.userName, event.userPhone, event.userEmail, event.userImage, plainToHash, data.type, 
+            )
+            this.ormAccountRepository.saveUser( ormUser )
             const sender = new NodemailerEmailSender();
             const user_id = event.userId;
             sender.sendWelcomeEmail(event.userEmail, "Jamal", user_id);

@@ -1,12 +1,11 @@
-import { IApplicationService } from "src/common/Application/application-services/application-service.interface";
-import { Result } from "src/common/Domain/result-handler/Result";
-import { IEmailSender } from "src/common/Application/email-sender/email-sender.interface.application";
+import { IApplicationService } from "src/common/application/application-services/application-service.interface";
 import { ForgetPasswordEntryDto } from "./dto/entry/forget-password-entry.infraestructure.dto";
 import { GetCodeServiceResponseDto } from "./dto/response/get-code-service-response";
 import { OrmUser } from "src/user/infraestructure/entities/orm-entities/user.entity";
 import { ICodeGenerator } from "src/common/application/code-generator/code-generator.interface";
 import { IAccountRepository } from "src/user/application/interface/account-user-repository.interface";
 import { NodemailerEmailSender } from "src/common/infraestructure/utils/nodemailer-email-sender.infraestructure";
+import { Result } from "src/common/domain/result-handler/Result";
 
 export class GetCodeUpdatePasswordUserInfraService implements IApplicationService<ForgetPasswordEntryDto, GetCodeServiceResponseDto> {
 

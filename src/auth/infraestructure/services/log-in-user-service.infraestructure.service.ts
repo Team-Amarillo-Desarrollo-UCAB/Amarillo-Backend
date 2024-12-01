@@ -2,11 +2,11 @@ import { IApplicationService } from "src/common/application/application-services
 import { LogInUserServiceEntryDto } from "./DTO/entry/log-in-entry.infraestructure.dto";
 import { LogInServiceResponseDto } from "./DTO/response/log-in-response.dto";
 import { IAccountRepository } from "src/user/application/interface/account-user-repository.interface";
-import { OrmUser } from "src/user/infraestructure/entities/user.entity";
 import { IJwtGenerator } from "src/common/application/jwt-generator/jwt-generator.interface";
 import { IEncryptor } from "src/common/application/encryptor/encryptor.interface";
 import { Result } from "src/common/domain/result-handler/Result";
 import { IncorrectPasswordException } from "src/user/infraestructure/exceptions/incorrect-password-exception";
+import { OrmUser } from "src/user/infraestructure/entities/orm-entities/user.entity";
 
 export class LogInUserInfraService implements IApplicationService<LogInUserServiceEntryDto, LogInServiceResponseDto> {
 
