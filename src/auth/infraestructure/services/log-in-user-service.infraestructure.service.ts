@@ -25,6 +25,7 @@ export class LogInUserInfraService implements IApplicationService<LogInUserServi
     }
 
     async execute(logInDto: LogInUserServiceEntryDto): Promise<Result<LogInServiceResponseDto>> {
+        console.log(this.accountRepository)
         const findResult = await this.accountRepository.findUserByEmail(logInDto.email)
         if (!findResult.isSuccess())
             return Result.fail(findResult.Error, findResult.StatusCode, findResult.Message)

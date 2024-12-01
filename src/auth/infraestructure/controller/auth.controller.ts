@@ -234,19 +234,17 @@ export class AuthController {
     async logInUser(
         @Body() logInDto: LogInUserEntryInfraDto
     ) {
-
         const entry: LogInUserServiceEntryDto = {
             userId: "none",
             email: logInDto.email,
             password: logInDto.password
         }
-
         const service =
             new ExceptionDecorator(
                 new PerformanceDecorator(
                     new LoggingDecorator(
                         new LogInUserInfraService(
-                            this.accountRepository,
+                            this.ormAccountRepository,
                             this.tokenGenerator,
                             this.encryptor
                         ),
