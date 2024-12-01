@@ -44,7 +44,6 @@ export class userUpdateEntryInfraestructureDto{
         example: "base64 string"
     })
     @IsOptional()
-    @IsBase64()
     image?: string
 
 }

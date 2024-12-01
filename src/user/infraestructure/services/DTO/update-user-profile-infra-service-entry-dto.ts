@@ -4,6 +4,6 @@ export interface UpdateUserProfileInfraServiceEntryDto extends ApplicationServic
 
     userId: string;
     password?: string;
-    image?: File
+    image?: string;
 
 }

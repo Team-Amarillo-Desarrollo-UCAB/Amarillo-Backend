@@ -68,16 +68,11 @@ export class UserController {
   })
   async updateUser(@GetUser() user, @Body() updateEntryDTO: userUpdateEntryInfraestructureDto) {
     const eventBus = RabbitEventBus.getInstance()
-    let image: File = null
-    
-    if (updateEntryDTO.image) image = await this.imageTransformer.base64ToFile(updateEntryDTO.image)
-
-
-
-
+    // let image: File = null
+    // if (updateEntryDTO.image) image = await this.imageTransformer.base64ToFile(updateEntryDTO.image)
     
     const userUpdateDto: UpdateUserProfileServiceEntryDto = { userId: user.id, ...updateEntryDTO }
-
+    console.log("hola")
     const updateUserProfileService = 
     //   new ExceptionDecorator(
          new LoggingDecorator(
@@ -101,7 +96,8 @@ export class UserController {
               new UpdateUserProfileInfraService(
                 this.ormAccountRepository,
                 this.idGenerator,
-                this.encryptor
+                this.encryptor,
+                this.fileUploader
               );
     //           new NativeLogger(this.logger),
     //         ),
@@ -112,12 +108,13 @@ export class UserController {
     //     this.auditingRepository,
     //     this.idGenerator
     //   );
-
+    
     if (updateEntryDTO.password || updateEntryDTO.image) {
+      console.log("hola")
       const userInfraUpdateDto: UpdateUserProfileInfraServiceEntryDto = {
         userId: user.id,
         password: updateEntryDTO.password,
-        image: image
+        image: updateEntryDTO.image,
       }
       const updateInfraResult = await updateUserProfileInfraService.execute(userInfraUpdateDto)
       if (!updateInfraResult.isSuccess()) return updateInfraResult.Error

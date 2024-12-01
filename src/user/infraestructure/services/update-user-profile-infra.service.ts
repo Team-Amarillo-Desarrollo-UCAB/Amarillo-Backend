@@ -6,6 +6,7 @@ import { IAccountRepository } from "src/user/application/interface/account-user-
 import { OrmUser } from "../entities/orm-entities/user.entity"
 import { UpdateUserProfileInfraServiceEntryDto } from "./DTO/update-user-profile-infra-service-entry-dto"
 import { UpdateUserProfileInfraServiceResponseDto } from "./DTO/update-user-profile-infra-service-response-dto"
+import { IFileUploader } from "src/common/application/file-uploader/file-uploader.interface"
 
 
 export class UpdateUserProfileInfraService implements IApplicationService<UpdateUserProfileInfraServiceEntryDto,UpdateUserProfileInfraServiceResponseDto>{
@@ -13,35 +14,36 @@ export class UpdateUserProfileInfraService implements IApplicationService<Update
     private readonly sqlRepository: IAccountRepository<OrmUser>
     private readonly idGenerator: IdGenerator<string>
     private readonly encryptor: IEncryptor
-    //private readonly fileUploader: IFileUploader
+    private readonly fileUploader: IFileUploader
 
     constructor ( 
         sqlRepository: IAccountRepository<OrmUser>,
         idGenerator: IdGenerator<string>,
         encryptor: IEncryptor,
-        // fileUploader: IFileUploader
+        fileUploader: IFileUploader
     ){
         this.sqlRepository = sqlRepository
         this.idGenerator = idGenerator
         this.encryptor = encryptor
-        //this.fileUploader = fileUploader
+        this.fileUploader = fileUploader
     }
 
     async execute(data: UpdateUserProfileInfraServiceEntryDto): Promise<Result<UpdateUserProfileInfraServiceResponseDto>> {
-        
+        console.log(data)
         const user = await this.sqlRepository.findUserById(data.userId)
         
         if(!user.isSuccess())
             return Result.fail<UpdateUserProfileInfraServiceResponseDto>(user.Error,user.StatusCode,user.Message)
-
+        
         const userResult = user.Value
+        const image_url = await this.fileUploader.UploadFile(data.image)
         
         const userUpdate: OrmUser = await OrmUser.create(
             userResult.id,
             userResult.name,
             userResult.phone,
             userResult.email,
-           // (data.image) ? await this.fileUploader.UploadFile( data.image, await this.idGenerator.generateId() ) : userResult.image,
+            image_url,
             (data.password) ? await this.encryptor.hashPassword(data.password) : userResult.password,
         )
         

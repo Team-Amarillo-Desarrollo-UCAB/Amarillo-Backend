@@ -28,9 +28,8 @@ export class CreateProductService implements IApplicationService<CreateProductSe
     }
 
     async execute(data: CreateProductServiceEntryDTO): Promise<Result<CreateProductServiceResponseDTO>> {
-
-        const image_url = await this.fileUploader.UploadFile(data.imagen)
-
+        console.log(data.image)
+        const image_url = await this.fileUploader.UploadFile(data.image)
         const producto = Product.create(
             ProductId.create(await this.idGenerator.generateId()),
             ProductName.create(data.nombre),

@@ -24,7 +24,7 @@ export class UpdateUserProfileAplicationService implements IApplicationService<U
     }
 
     async execute(data: UpdateUserProfileServiceEntryDto): Promise<Result<UpdateUserProfileServiceResponseDto>> {
-
+console.log("hola")
         if ( data.email ) {
             const verifyEmail = await this.userRepository.verifyUserExistenceByEmail(data.email)
             if ( !verifyEmail.isSuccess() ) return Result.fail( verifyEmail.Error, verifyEmail.StatusCode, verifyEmail.Message )
