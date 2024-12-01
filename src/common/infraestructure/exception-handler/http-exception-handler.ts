@@ -1,4 +1,4 @@
-import {
+/*import {
     BadRequestException,
     NotFoundException,
     InternalServerErrorException,
@@ -21,6 +21,16 @@ export class HttpExceptionHandler implements IExceptionHandler {
             case "InvalidUserPhone":
                 return this.BadRequest(message, error);
             case "UserNotFoundException":
+                return this.NotFound(message, error);
+            case "InvalidProduct":
+                return this.BadRequest(message, error);
+            case "InvalidProductName":
+                return this.BadRequest(message, error);
+            case "InvalidProductDescription":
+                return this.BadRequest(message, error);
+            case "InvalidProductStock":
+                return this.BadRequest(message, error);
+            case "ProductNotFoundException":
                 return this.NotFound(message, error);
             default:
                 return this.InternalServerError(message, error);
@@ -46,4 +56,4 @@ export class HttpExceptionHandler implements IExceptionHandler {
     private InternalServerError(msg: string, error?: any): void {
         throw new InternalServerErrorException(msg, error);
     }
-}
+}*/

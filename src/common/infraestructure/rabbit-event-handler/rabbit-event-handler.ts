@@ -50,7 +50,7 @@ export class RabbitEventBus implements IEventHandler {
         }
     }
 
-    public async publish(events: DomainEvent[]): Promise<void> {
+    async publish(events: DomainEvent[]): Promise<void> {
         if (!this.connection) {
             throw new Error("RabbitMQ connection not initialized.");
         }
@@ -90,11 +90,6 @@ export class RabbitEventBus implements IEventHandler {
                     console.log("evento: ",event_data)
                     let event: DomainEvent
                     switch(eventName){
-                        case 'testCreated':
-                            event = testCreated.create(
-                                event_data.msg
-                            )
-                            break;
                         case 'OrderCreated':
                             event = OrderCreated.create(
                                 event_data.id,

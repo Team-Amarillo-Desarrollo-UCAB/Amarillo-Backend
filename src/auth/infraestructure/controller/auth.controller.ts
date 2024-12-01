@@ -40,6 +40,19 @@ import { ChangePasswordEntryInfraDto } from "../DTO/entry/change-password-entry.
 import { ChangePasswordSwaggerResponseDto } from "../DTO/response/change-password-response.dto";
 import { ChangePasswordUserInfraService } from "../infra-service/change-password-user-service.infra.service";
 //import { GetCodeUpdatePasswordUserInfraService } from "../infra-service/get-code-update-password-service.infra.service";
+import { LogInUserResponseDto } from "../DTO/response/log-in-user-reponses.dto";
+import { LogInUserEntryInfraDto } from "../DTO/entry/log-in-user-entry.dto";
+import { LogInUserServiceEntryDto } from "../services/DTO/entry/log-in-entry.infraestructure.dto";
+import { PerformanceDecorator } from "src/common/application/application-services/decorators/performance-decorator/performance-decorator";
+import { LoggingDecorator } from "src/common/application/application-services/decorators/logging-decorator/logging.decorator";
+import { NativeLogger } from "src/common/infraestructure/logger/logger";
+import { LogInUserInfraService } from "../services/log-in-user-service.infraestructure.service";
+import { OrmAccountRepository } from "src/user/infraestructure/repositories/account-repository";
+import { IAccountRepository } from "src/user/application/interface/account-user-repository.interface";
+import { OrmUser } from "src/user/infraestructure/entities/user.entity";
+import { ExceptionDecorator } from "src/common/application/application-services/decorators/exception-decorator/exception.decorator";
+import { IExceptionHandler } from "src/common/application/exception-handler/exception-handler.interface";
+import { HttpExceptionHandler } from "src/common/infraestructure/exception-handler/http-exception-handler-code";
 
 @ApiTags('auth')
 @Controller('auth')
@@ -55,6 +68,9 @@ export class AuthController {
     private readonly userRepository: IUserRepository
     private readonly syncroInfraUser: Querysynchronizer<OrmUser>
     private secretCodes = []
+    private readonly exceptionHandler: IExceptionHandler
+
+    private accountRepository: IAccountRepository<OrmUser>
 
     constructor(
         @Inject('DataSource') private readonly dataSource: DataSource,
@@ -208,5 +224,49 @@ export class AuthController {
             var diff = (nowTime - e.date)/1000
             if ( diff <= 600 ) return e
         })
+        this.accountRepository = new OrmAccountRepository(this.dataSource)
     }
+
+    @Post('login')
+    @ApiOkResponse({
+        description: 'Iniciar sesion de usuario',
+        type: LogInUserResponseDto
+    })
+    async logInUser(
+        @Body() logInDto: LogInUserEntryInfraDto
+    ) {
+
+        const entry: LogInUserServiceEntryDto = {
+            userId: "none",
+            email: logInDto.email,
+            password: logInDto.password
+        }
+
+        const service =
+            new ExceptionDecorator(
+                new PerformanceDecorator(
+                    new LoggingDecorator(
+                        new LogInUserInfraService(
+                            this.accountRepository,
+                            this.tokenGenerator,
+                            this.encryptor
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new HttpExceptionHandler(),
+            )
+
+
+        const result = await service.execute(entry)
+
+        const response: LogInUserResponseDto = {
+            ...result.Value
+        }
+
+        return response
+
+    }
+
 }

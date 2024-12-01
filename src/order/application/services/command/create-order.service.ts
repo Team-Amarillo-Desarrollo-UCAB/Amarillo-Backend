@@ -35,6 +35,7 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
 
         let monto_total: number = 0;
 
+        // TODO: Deberia ser un servicio de aplicacion o un metodo de la entidad orden?
         for (const detalle of data.entry) {
             const producto = await this.productRepository.findProductById(detalle.id_producto);
 

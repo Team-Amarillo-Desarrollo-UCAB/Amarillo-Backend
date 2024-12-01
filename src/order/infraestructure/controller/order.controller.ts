@@ -10,9 +10,10 @@ import {
     ParseUUIDPipe,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Post,
-    Query
+    Query,
+    UseGuards
 } from "@nestjs/common";
-import { ApiBody, ApiOkResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { DataSource } from "typeorm";
 
 import { GetProductResponseDTO } from "src/product/infraestructure/DTO/response/get-product-response.dto";
@@ -30,8 +31,6 @@ import { RabbitEventBus } from "src/common/infraestructure/rabbit-event-handler/
 import { IOrderRepository } from "src/order/domain/repositories/order-repository.interface";
 import { OrderRepository } from "../repositories/order-repository";
 import { IMapper } from "src/common/application/mappers/mapper.interface";
-import { Order } from "src/order/domain/order";
-import { OrmOrder } from "../entites/order.entity";
 import { CreateOrderEntryDTO } from "../DTO/entry/create-order-entry-dto";
 import { CreateOrderResponseDTO } from "../DTO/response/create-order-response";
 import { CreateOrderEntryServiceDTO } from "src/order/application/DTO/entry/create-order-entry-service";
@@ -42,17 +41,17 @@ import { ProductMapper } from "src/product/infraestructure/mappers/product-mappe
 import { OrderMapper } from "../mappers/order-mapper";
 import { CreateDetalleService } from "../services/command/create-detalle-orden.service";
 import { DetalleRepository } from "../repositories/detalle_orden.respoitory";
-import { CreateDetalleServiceEntry } from "../services/DTO/entry/create-detalle-service-entry";
 import { CreateEstadoOrdenService } from "../services/command/create-estado-orden.service";
 import { EstadoOrdenRepository } from "../repositories/estado_orden.repository";
 import { EstadoRepository } from "../repositories/estado.repository";
 import { NodemailerEmailSender } from "src/common/infraestructure/utils/nodemailer-email-sender.infraestructure";
 import { OrderCreated } from "src/order/domain/domain-event/order-created-event";
-import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface";
 import { CreateOrderRequestDTO } from "../DTO/entry/create-order-request-dto";
 import { GetOrderByIdReponseDTO } from "../DTO/response/get-order-by-id-response";
 import { GetOrderByIdEntryServiceDTO } from "src/order/application/DTO/entry/get-order-entry-service.dto";
 import { GetOrderByIdService } from "src/order/application/services/queries/get-order-by-id.service";
+import { JwtAuthGuard } from "src/auth/infraestructure/jwt/decorator/jwt-auth.guard";
+import { GetUser } from "src/auth/infraestructure/jwt/decorator/get-user.param.decorator";
 
 @ApiTags("Order")
 @Controller("order")
@@ -82,7 +81,10 @@ export class OrderController {
         this.estadoRepository = new EstadoRepository(dataSource)
     }
 
+    // TODO: Probar la validacion con el bearer token
     @Post('create')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @ApiOkResponse({
         description: 'Crea una nueva orden en la base de datos',
         type: CreateOrderResponseDTO
@@ -92,6 +94,7 @@ export class OrderController {
         description: 'Array de entradas para crear una orden',
     })
     async createOrder(
+        @GetUser() user,
         @Body() request: CreateOrderRequestDTO,
     ): Promise<CreateOrderResponseDTO> {
 
@@ -104,7 +107,7 @@ export class OrderController {
 
         // Mapeo de datos para el servicio
         const data: CreateOrderEntryServiceDTO = {
-            userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+            userId: user.id,
             entry: request.entry.map((entry) => ({
                 ...entry,
             })),

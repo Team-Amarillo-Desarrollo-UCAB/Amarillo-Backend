@@ -18,7 +18,7 @@ export class ExceptionDecorator<D extends ApplicationServiceEntryDto, R> extends
             const result = await this.applicationService.execute(data)
             if (result.isSuccess())
                 return result
-            this.exceptionHandler.HandleException(result.Message, result.Message, result.Error)
+            this.exceptionHandler.HandleException(result.StatusCode, result.Message, result.Error)
         } catch (error) {
             this.exceptionHandler.HandleException(error.status, error.message, error)
         }
