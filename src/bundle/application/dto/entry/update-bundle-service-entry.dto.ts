@@ -1,7 +1,7 @@
 import { ApplicationServiceEntryDto } from '../../../../../src/common/application/application-services/DTO/application-service-entry.dto';
 
 export interface UpdateBundleServiceEntryDto extends ApplicationServiceEntryDto{
-    
+    id:string
     name?: string
     description?: string
     images?:string [ ]// base-64

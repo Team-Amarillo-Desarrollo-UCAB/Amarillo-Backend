@@ -190,8 +190,9 @@ export class Bundle extends AggregateRoot<BundleID> {
         !this.bundleCategories ||
         !this.bundleImages ||
         this.bundleCategories.length === 0 || // Al menos una categoría
-        this.bundleImages.length === 0 || // Al menos una imagen
-        this.bundleProducts.length < 2 // Al menos dos productos
+        this.bundleImages.length === 0||  // Al menos una imagen
+        this.bundleProducts.length===0
+        
       ) {
         throw new InvalidBundleException("ERROR: El bundle debe ser creado correctamente con sus propiedades obligatorias");
       }

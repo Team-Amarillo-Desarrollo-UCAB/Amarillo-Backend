@@ -2,18 +2,15 @@ import { IValueObject } from "src/common/domain/value-object/value-object.interf
 import { InvalidCaducityDateException } from "../exceptions/invalid-bundle-caducity-date.exception";
 
 export class BundleCaducityDate implements IValueObject<BundleCaducityDate> {
-  private readonly caducityDate: Date;
+  private readonly caducityDate?: Date;
 
   protected constructor(caducityDate: Date) {
-    // Validar que la fecha no sea nula o indefinida
-    if (!caducityDate) {
-      throw new InvalidCaducityDateException("La fecha de caducidad no puede estar vacía.");
-    }
 
-    // Validar que la fecha no sea una fecha pasada
-    if (caducityDate < new Date()) {
+
+    if (caducityDate && caducityDate < new Date(new Date().toISOString().slice(0, 19))) {
       throw new InvalidCaducityDateException("La fecha de caducidad no puede ser una fecha pasada.");
-    }
+  }
+  
 
     this.caducityDate = caducityDate;
   }
@@ -31,14 +28,5 @@ export class BundleCaducityDate implements IValueObject<BundleCaducityDate> {
   // Crea una nueva instancia desde un objeto `Date`
   static create(caducityDate: Date): BundleCaducityDate {
     return new BundleCaducityDate(caducityDate);
-  }
-
-  // Crea una nueva instancia desde una cadena
-  static fromString(dateString: string): BundleCaducityDate {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
-      throw new InvalidCaducityDateException("La fecha de caducidad proporcionada no es válida.");
-    }
-    return new BundleCaducityDate(date);
   }
 }

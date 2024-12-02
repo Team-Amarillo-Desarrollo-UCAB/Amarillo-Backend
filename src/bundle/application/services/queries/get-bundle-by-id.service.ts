@@ -20,6 +20,7 @@ export class GetBundleByIdService implements IApplicationService<GetBundleByIdSe
         }
 
         const response: GetBundleByIdServiceResponseDTO = {
+            id: bundle.Value.Id.Value,
             name: bundle.Value.name.Value,
             description: bundle.Value.description.Value,
             images: bundle.Value.images.map(i => i.Value),

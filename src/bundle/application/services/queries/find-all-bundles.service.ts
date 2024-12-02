@@ -27,16 +27,20 @@ export class FindAllBundlesApplicationService
 
     const response: GetAllBundlesServiceResponseDTO[] = []
 
-    const bundlesDto = bundlesResult.Value.map(async(bundle) => response.push({
+        bundlesResult.Value.map(async(bundle) => response.push({
         //en endpoint comun no se define la colección de productos y/o categorías en el response...
         id:bundle.Id.Value,
         name: bundle.name.Value,
+        description: bundle.description.Value,
         images: bundle.images.map(i => i.Value),
         price: bundle.price.Price,
         currency:bundle.price.Currency,
         weight: bundle.weight.Weight,
         measurement:bundle.weight.Measurement,
         stock:bundle.stock.Value,
+        category: bundle.categories.map(i=>i.Value),
+        productId:bundle.products.map(i=>i.Id),
+        caducityDate:bundle.caducityDate.Value
         //discount
     }));
 

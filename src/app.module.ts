@@ -9,6 +9,9 @@ import { ProductController } from './product/infraestructure/controller/product.
 import { AuthController } from './auth/infraestructure/controller/auth.controller';
 import { CategoryController } from './category/infraestructure/controller/category.controller';
 import { OrderController } from './order/infraestructure/controller/order.controller';
+import { BundleController } from './bundle/infraestructure/controller/bundle.controller';
+import { CategoriesExistenceService } from './bundle/application/services/queries/categories-existence-check.service';
+import { ProductsExistenceService } from './bundle/application/services/queries/product-existence-check.service';
 
 @Module({
   imports: [
@@ -34,12 +37,17 @@ import { OrderController } from './order/infraestructure/controller/order.contro
     ProductController,
     AuthController,
     CategoryController,
-    OrderController
+    OrderController,
+    BundleController
   ],
   providers: [
     Logger,
     Logger,
-    postgresDatabaseProvider
+    postgresDatabaseProvider,
+    CategoriesExistenceService,
+    ProductsExistenceService
   ],
+  exports: [CategoriesExistenceService,ProductsExistenceService],
+
 })
 export class AppModule {}

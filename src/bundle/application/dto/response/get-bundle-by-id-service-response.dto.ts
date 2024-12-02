@@ -1,4 +1,5 @@
 export interface GetBundleByIdServiceResponseDTO{
+    id:string
     name: string
     description: string
     images:string [ ] //base-64

@@ -3,7 +3,7 @@ import { CategoryID } from "src/category/domain/value-objects/category-id";
 import { Result } from "src/common/domain/result-handler/Result";
 
 export class CategoriesExistenceService{
-    constructor(private readonly categoryRepository:ICategoryRepository){
+    constructor(private readonly categoryRepository: ICategoryRepository){
         this.categoryRepository=categoryRepository;
     }
 
@@ -17,8 +17,10 @@ export class CategoriesExistenceService{
                 return Result.fail(new Error('ERROR: La categoría no existe en la BD'),404,'Categoría no existe en BD')
             }else{
                 categories.push(catID)
-                return Result.success(categories,200)
+                
             }
+
         }
+        return Result.success(categories,200) 
     }
 }
