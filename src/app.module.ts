@@ -12,6 +12,7 @@ import { OrderController } from './order/infraestructure/controller/order.contro
 import { BundleController } from './bundle/infraestructure/controller/bundle.controller';
 import { CategoriesExistenceService } from './bundle/application/services/queries/categories-existence-check.service';
 import { ProductsExistenceService } from './bundle/application/services/queries/product-existence-check.service';
+import { DiscountController } from './discount/infraestructure/controller/discount.controller';
 
 @Module({
   imports: [
@@ -38,7 +39,8 @@ import { ProductsExistenceService } from './bundle/application/services/queries/
     AuthController,
     CategoryController,
     OrderController,
-    BundleController
+    BundleController,
+    DiscountController
   ],
   providers: [
     Logger,
