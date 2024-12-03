@@ -1,8 +1,9 @@
-import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryColumn } from "typeorm";
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryColumn } from "typeorm";
 import { HistoricoPrecio } from "./historico-precio.entity";
 import { UnidadMedida } from "src/product/domain/enum/UnidadMedida";
 import { OrmCategory } from "src/category/infraestructure/entities/orm-category";
 import { Detalle_Orden } from "src/order/infraestructure/entites/detalle_orden.entity";
+import { OrmBundle } from "src/bundle/infraestructure/entities/bundle-orm.entity";
 
 @Entity({ name: "producto" })
 export class OrmProduct {
