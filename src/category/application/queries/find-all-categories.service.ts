@@ -16,7 +16,7 @@ export class FindAllCategoriesApplicationService
   async execute(data: GetAllCategoriesServiceEntryDTO): Promise<Result<GetAllCategoriesServiceResponseDTO[]>> {
     data.page = data.page * data.limit - data.limit;
     // Obtener todas las categorías desde el repositorio
-    const categoriesResult = await this.categoryRepository.findAllCategories(data.page,data.limit);
+    const categoriesResult = await this.categoryRepository.findAllCategories(data.page,data.limit,data.categoryName || '',data.discount|| '');
 
     
 

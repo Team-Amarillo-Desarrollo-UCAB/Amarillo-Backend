@@ -32,17 +32,16 @@ export class CreateCategoryApplicationService
     //revisar este try catch creo que no aplica
     // Generar un ID para el icono de la categoría
     const iconId = await this.idGenerator.generateId();
-    console.log('iconId', iconId);
 
     // Subir el archivo de icono y obtener la URL resultante
-    //const iconUrl = await this.fileUploader.UploadFile(data.icon, iconId);
-    //console.log('iconUrl', iconUrl);
+    const iconUrl = await this.fileUploader.UploadFile(data.icon);
+    
 
     // Crear la entidad de categoría con sus respectivos V.O
     const category = Category.create(
       CategoryID.create(await this.idGenerator.generateId()), // Genera un ID único para la categoría
       CategoryName.create(data.name),// Crea el V.O del nombre
-      CategoryImage.create(data.icon)// Crea el V.O de la imagen con la URL
+      CategoryImage.create(iconUrl)// Crea el V.O de la imagen con la URL
     );
 
     // Guarda la categoría en el repositorio pertinente :)

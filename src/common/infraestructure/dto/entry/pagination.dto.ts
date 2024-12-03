@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsOptional, IsPositive, Min } from 'class-validator';
+import { IsOptional, IsPositive, IsString, Min } from 'class-validator';
 
 export class PaginationDto {
   @ApiProperty({ required: false, default: 10, minimum: 1 })
@@ -11,7 +11,7 @@ export class PaginationDto {
 
   @ApiProperty({ required: false, default: 1, minimum: 1 })
   @IsOptional()
-  @Min(1)
+  @Min(1, { message: 'El valor de page debe ser al menos 1' }) // Validación estricta
   @Type(() => Number) // enableImplicitConversions: true
   page?: number = 1;
 }
