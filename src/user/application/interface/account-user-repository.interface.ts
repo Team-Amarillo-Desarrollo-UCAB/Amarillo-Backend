@@ -1,4 +1,4 @@
-import { Result } from "src/common/Domain/result-handler/Result";
+import { Result } from "src/common/domain/result-handler/Result";
 
 export interface IAccountRepository<T> {
     saveUser(user: T): Promise<Result<boolean>>;
