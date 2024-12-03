@@ -16,10 +16,10 @@ import {
 import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { DataSource } from "typeorm";
 
-import { GetProductResponseDTO } from "src/product/infraestructure/DTO/response/get-product-response.dto";
+import { GetProductResponseDTO } from "src/product/infraestructure/dto/response/get-product-response.dto";
 import { LoggingDecorator } from "src/common/application/application-services/decorators/logging-decorator/logging.decorator";
 import { NativeLogger } from "src/common/infraestructure/logger/logger";
-import { GetProductByIdServiceEntryDTO } from "src/product/aplication/DTO/entry/get-product-by-id-service-entry.dto";
+import { GetProductByIdServiceEntryDTO } from "src/product/aplication/dto/entry/get-product-by-id-service-entry.dto";
 import { CreateProductService } from "src/product/aplication/service/commands/create-product.service";
 import { IdGenerator } from "src/common/application/id-generator/id-generator.interface";
 import { UuidGenerator } from "src/common/infraestructure/id-generator/uuid-generator";
@@ -31,9 +31,9 @@ import { RabbitEventBus } from "src/common/infraestructure/rabbit-event-handler/
 import { IOrderRepository } from "src/order/domain/repositories/order-repository.interface";
 import { OrderRepository } from "../repositories/order-repository";
 import { IMapper } from "src/common/application/mappers/mapper.interface";
-import { CreateOrderEntryDTO } from "../DTO/entry/create-order-entry-dto";
-import { CreateOrderResponseDTO } from "../DTO/response/create-order-response";
-import { CreateOrderEntryServiceDTO } from "src/order/application/DTO/entry/create-order-entry-service";
+import { CreateOrderEntryDTO } from "../dto/entry/create-order-entry-dto";
+import { CreateOrderResponseDTO } from "../dto/response/create-order-response";
+import { CreateOrderEntryServiceDTO } from "src/order/application/dto/entry/create-order-entry-service";
 import { CreateOrderService } from "src/order/application/services/command/create-order.service";
 import { IProductRepository } from "src/product/domain/repositories/product-repository.interface";
 import { OrmProductRepository } from "src/product/infraestructure/repositories/product-repository";
@@ -46,9 +46,9 @@ import { EstadoOrdenRepository } from "../repositories/estado_orden.repository";
 import { EstadoRepository } from "../repositories/estado.repository";
 import { NodemailerEmailSender } from "src/common/infraestructure/utils/nodemailer-email-sender.infraestructure";
 import { OrderCreated } from "src/order/domain/domain-event/order-created-event";
-import { CreateOrderRequestDTO } from "../DTO/entry/create-order-request-dto";
-import { GetOrderByIdReponseDTO } from "../DTO/response/get-order-by-id-response";
-import { GetOrderByIdEntryServiceDTO } from "src/order/application/DTO/entry/get-order-entry-service.dto";
+import { CreateOrderRequestDTO } from "../dto/entry/create-order-request-dto";
+import { GetOrderByIdReponseDTO } from "../dto/response/get-order-by-id-response";
+import { GetOrderByIdEntryServiceDTO } from "src/order/application/dto/entry/get-order-entry-service.dto";
 import { GetOrderByIdService } from "src/order/application/services/queries/get-order-by-id.service";
 import { JwtAuthGuard } from "src/auth/infraestructure/jwt/decorator/jwt-auth.guard";
 import { GetUser } from "src/auth/infraestructure/jwt/decorator/get-user.param.decorator";

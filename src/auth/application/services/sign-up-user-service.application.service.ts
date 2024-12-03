@@ -10,8 +10,8 @@ import { UserImage } from "src/user/domain/value-object/user-image"
 import { UserName } from "src/user/domain/value-object/user-name"
 import { UserPhone } from "src/user/domain/value-object/user-phone"
 import { UserRole } from "src/user/domain/value-object/user-role"
-import { SignUpEntryDto } from "../DTO/entry/sign-up-entry.application.dto"
-import { SignUpResponseDto } from "../DTO/response/sign-up-response.application.dto"
+import { SignUpEntryDto } from "../dto/entry/sign-up-entry.application.dto"
+import { SignUpResponseDto } from "../dto/response/sign-up-response.application.dto"
 import { IFileUploader } from "src/common/application/file-uploader/file-uploader.interface"
 
 

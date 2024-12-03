@@ -1,4 +1,4 @@
-import { ApplicationServiceEntryDto } from "src/common/application/application-services/DTO/application-service-entry.dto"
+import { ApplicationServiceEntryDto } from "src/common/application/application-services/dto/application-service-entry.dto"
 import { EnumUserRole } from "src/user/domain/user-role/user-role"
 
 

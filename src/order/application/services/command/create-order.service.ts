@@ -1,8 +1,8 @@
 import { IApplicationService } from "src/common/application/application-services/application-service.interface";
 import { Result } from "src/common/domain/result-handler/Result";
 import { IdGenerator } from "src/common/application/id-generator/id-generator.interface";
-import { CreateOrderEntryServiceDTO } from "../../DTO/entry/create-order-entry-service";
-import { CreateOrderResponseServiceDTO } from "../../DTO/response/create-order-response-service.dto";
+import { CreateOrderEntryServiceDTO } from "../../dto/entry/create-order-entry-service";
+import { CreateOrderResponseServiceDTO } from "../../dto/response/create-order-response-service.dto";
 import { IOrderRepository } from "src/order/domain/repositories/order-repository.interface";
 import { Order } from "src/order/domain/order";
 import { OrderId } from "src/order/domain/value-object/order-id";
