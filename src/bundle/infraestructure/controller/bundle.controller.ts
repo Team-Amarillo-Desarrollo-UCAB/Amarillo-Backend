@@ -12,7 +12,7 @@ import {
   } from '@nestjs/common';
   import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
   import { DataSource } from 'typeorm';
-  import { CreateBundleEntryDTO } from '../DTO/entry/create-bundle-entry.dto';
+  import { CreateBundleEntryDTO } from '../dto/entry/create-bundle-entry.dto';
   import { CreateBundleServiceEntryDto } from 'src/bundle/application/dto/entry/create-bundle-service-entry.dto';
   import { GetBundleByIdServiceEntryDTO } from 'src/bundle/application/dto/entry/get-bundle-by-id-service-entry.dto';
   import { LoggingDecorator } from 'src/common/application/application-services/decorators/logging-decorator/logging.decorator';
