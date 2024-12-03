@@ -3,7 +3,7 @@ import { ApplicationServiceEntryDto } from "src/common/application/application-s
 
 export interface GetAllBundlesServiceEntryDTO extends ApplicationServiceEntryDto{
 
-    perpage?: number
+    limit?: number
     page?: number
     category?:string[];
     name?:string; 

@@ -40,6 +40,9 @@ import { OrmCategoryRepository } from 'src/category/infraestructure/repositories
 import { OrmCategoryMapper } from 'src/category/infraestructure/mappers/orm-category-mapper';
 import { OrmProductRepository } from 'src/product/infraestructure/repositories/product-repository';
 import { ProductMapper } from '../../../product/infraestructure/mappers/product-mapper';
+import { DiscountExistenceService } from '../../application/services/queries/discount-existence-check.service';
+import { OrmDiscountRepository } from '../../../discount/infraestructure/repositories/orm-discount.repository';
+import { OrmDiscountMapper } from '../../../discount/infraestructure/mappers/discount.mapper';
   
 
 @ApiTags("Bundle")
@@ -55,7 +58,8 @@ export class BundleController {
   constructor(
     @Inject('DataSource') private readonly dataSource: DataSource,
     private readonly categoriesExistenceService: CategoriesExistenceService,
-    private readonly productExistenceService: ProductsExistenceService, 
+    private readonly productExistenceService: ProductsExistenceService,
+    private readonly discountExistenceService: DiscountExistenceService
 
   ) {
     this.bundleRepository = new OrmBundleRepository(
@@ -66,6 +70,7 @@ export class BundleController {
     this.fileUploader = new CloudinaryFileUploader();
     this.categoriesExistenceService=new CategoriesExistenceService(new OrmCategoryRepository(new OrmCategoryMapper(),this.dataSource))
     this.productExistenceService= new ProductsExistenceService(new OrmProductRepository(new ProductMapper(),this.dataSource))
+    this.discountExistenceService = new DiscountExistenceService(new OrmDiscountRepository(new OrmDiscountMapper(),this.dataSource))
   }
 
   /**
@@ -94,7 +99,8 @@ export class BundleController {
         this.idGenerator,
         this.fileUploader,
         this.categoriesExistenceService,//
-        this.productExistenceService
+        this.productExistenceService,
+        this.discountExistenceService
       ),
       new NativeLogger(this.logger)
     ),
@@ -164,12 +170,19 @@ export class BundleController {
         ),
         new HttpExceptionHandler()
       );
+
+      console.log("Page en controller paginacion Query =",paginacion.page)
+      console.log("Limit en controller paginacion Query =",paginacion.limit)
+
   
       const data: GetAllBundlesServiceEntryDTO = {
         userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
         ...paginacion,
         ...queryEntryParams,
       };
+
+      console.log("Page en controller data vari =",data.page)
+      console.log("Limit en controller data vari =",data.limit)
   
       const result = await service.execute(data);
   
@@ -186,7 +199,10 @@ export class BundleController {
         images: bundle.images, // Corregido: Se incluye `images`
         weight: bundle.weight,
         measurement: bundle.measurement,
-        stock: bundle.stock
+        stock: bundle.stock,
+        category: bundle.category,
+        productId: bundle.productId,
+        discount: bundle.discount
       }));
   
       return response;

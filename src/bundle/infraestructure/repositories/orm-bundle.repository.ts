@@ -17,32 +17,37 @@ export class OrmBundleRepository extends Repository<OrmBundle> implements IBundl
 
       async findAllBundles(
         page: number = 1,
-        perpage: number = 10,
+        limit: number = 10,
         category?: string[],
         name?: string,
         price?: number,
         popular?: string,
         discount?: string
     ): Promise<Result<Bundle[]>> {
-        // Validación para asegurar que page y perpage son números válidos
-        page = Number(page) || 1; // Si no es número, se asigna 1
-        perpage = Number(perpage) || 10; // Si no es número, se asigna 10
+        // // Validación para asegurar que page y perpage son números válidos
+        // page = Number(page) || 1; // Si no es número, se asigna 1
+        // limit = Number(limit) || 10; // Si no es número, se asigna 10
     
         if (page < 1) {
             page = 1; // Forzar valores mínimos
         }
+
+        console.log("Page:",page)
+        console.log("Limit:",limit)
     
-        const offset = (page - 1) * perpage; // Calcular offset para paginación
+        const offset = (page - 1) * limit; // Calcular offset para paginación
         console.log('Offset calculado:', offset);
     
         const queryBuilder = this.createQueryBuilder('bundle');
     
+        console.log("Antes del if de categoryy")
+        console.log("La category antes de entrar a if category:",category)
         // Filtrar por categoría
         if (category && category.length > 0) {
             console.log('Filtrando por categorías:', category);
             queryBuilder.andWhere(
                 `bundle.categories::jsonb @> :categories`, 
-                { categories: JSON.stringify(category) }
+                { categories: category },
             );
         }
     
@@ -55,7 +60,7 @@ export class OrmBundleRepository extends Repository<OrmBundle> implements IBundl
         // Filtrar por precio
         if (price) {
             console.log('Filtrando por precio:', price);
-            queryBuilder.andWhere('bundle.price <= :price', { price });
+            queryBuilder.andWhere('bundle.price = :price', { price });
         }
     
         // Filtrar por popularidad
@@ -71,7 +76,7 @@ export class OrmBundleRepository extends Repository<OrmBundle> implements IBundl
         }
     
         // Paginación
-        queryBuilder.skip(offset).take(perpage); // Usar offset y perpage
+        queryBuilder.skip(offset).take(limit); // Usar offset y perpage
     
         try {
             const bundles = await queryBuilder.getMany(); // Ejecutar consulta

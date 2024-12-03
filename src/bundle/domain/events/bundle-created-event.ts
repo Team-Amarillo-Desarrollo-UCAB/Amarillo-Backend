@@ -5,6 +5,7 @@ import { BundleImage } from "../value-objects/bundle-image";
 import { CategoryID } from "src/category/domain/value-objects/category-id";
 import { Measurement } from "../enum/measurement-enum";
 import { BundleCurrency } from "../enum/bundle-currency-enum";
+import { DiscountID } from "src/discount/domain/value-objects/discount-id";
 
 export class BundleCreated extends DomainEvent {
     protected constructor(
@@ -19,7 +20,8 @@ export class BundleCreated extends DomainEvent {
         public images: BundleImage[],
         public stock: number,
         public products:ProductId[], 
-        public bundleCaducityDate?: Date
+        public bundleCaducityDate?: Date,
+        public discount?: string
     ) {
         super();
     }
@@ -36,7 +38,8 @@ export class BundleCreated extends DomainEvent {
         images: BundleImage[],
         stock: number,
         products:ProductId[],
-        bundleCaducityDate?: Date
+        bundleCaducityDate?: Date,
+        discount?: string
     ): BundleCreated {
         return new BundleCreated(
             id,
@@ -50,7 +53,8 @@ export class BundleCreated extends DomainEvent {
             images,
             stock,
             products,
-            bundleCaducityDate
+            bundleCaducityDate,
+            discount
         );
     }
 }

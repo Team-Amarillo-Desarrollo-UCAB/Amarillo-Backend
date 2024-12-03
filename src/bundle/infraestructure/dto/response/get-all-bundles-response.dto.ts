@@ -29,16 +29,14 @@ export class GetAllBundlesResponseDTO {
     @Min(0)
     stock: number;
 
-    // Al usr descuentos en algún momento, descomentar la siguiente parte y agregar validación.
-    // @IsArray() 
-    // @ArrayMinSize(1) // 
-    // @ValidateNested({ each: true }) // Si los descuentos son objetos, valida cada uno
-    // discount: [{
-    //     @IsString() 
-    //     id: string;
+    @IsArray()
+    @IsString({ each: true })
+    category: string[];
 
-    //     @IsNumber()
-    //     @Min(0) 
-    //     percentage: number; 
-    // }];
+    @IsArray()
+    @IsString({ each: true })
+    productId: string[];
+
+    @IsString()
+    discount: string;
 }

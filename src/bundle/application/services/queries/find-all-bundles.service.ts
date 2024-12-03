@@ -15,8 +15,8 @@ export class FindAllBundlesApplicationService
   }
 
   async execute(data: GetAllBundlesServiceEntryDTO): Promise<Result<GetAllBundlesServiceResponseDTO[]>> {
-    data.page = data.page * data.perpage - data.perpage;
-    const bundlesResult = await this.bundleRepository.findAllBundles(data.page, data.perpage, data.category, data.name, data.price, data.popular, data.discount);
+    data.page = data.page * data.limit - data.limit;
+    const bundlesResult = await this.bundleRepository.findAllBundles(data.page, data.limit, data.category, data.name, data.price, data.popular, data.discount);
 
     
 
@@ -40,8 +40,8 @@ export class FindAllBundlesApplicationService
         stock:bundle.stock.Value,
         category: bundle.categories.map(i=>i.Value),
         productId:bundle.products.map(i=>i.Id),
-        caducityDate:bundle.caducityDate.Value
-        //discount
+        caducityDate:bundle.caducityDate.Value,
+        discount: bundle.Discount.Value
     }));
 
     return Result.success(response, 202);

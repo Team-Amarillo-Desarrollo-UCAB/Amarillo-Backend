@@ -13,6 +13,7 @@ import { BundleController } from './bundle/infraestructure/controller/bundle.con
 import { CategoriesExistenceService } from './bundle/application/services/queries/categories-existence-check.service';
 import { ProductsExistenceService } from './bundle/application/services/queries/product-existence-check.service';
 import { DiscountController } from './discount/infraestructure/controller/discount.controller';
+import { DiscountExistenceService } from './bundle/application/services/queries/discount-existence-check.service';
 
 @Module({
   imports: [
@@ -47,9 +48,10 @@ import { DiscountController } from './discount/infraestructure/controller/discou
     Logger,
     postgresDatabaseProvider,
     CategoriesExistenceService,
-    ProductsExistenceService
+    ProductsExistenceService,
+    DiscountExistenceService
   ],
-  exports: [CategoriesExistenceService,ProductsExistenceService],
+  exports: [CategoriesExistenceService,ProductsExistenceService,DiscountExistenceService],
 
 })
 export class AppModule {}

@@ -14,4 +14,5 @@ export interface GetBundleByNameServiceResponseDTO{
     ]
     productId:string[ ]
     caducityDate?:Date
+    discount:string
  }

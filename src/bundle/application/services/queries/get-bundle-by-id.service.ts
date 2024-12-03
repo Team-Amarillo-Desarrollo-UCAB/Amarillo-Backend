@@ -32,6 +32,7 @@ export class GetBundleByIdService implements IApplicationService<GetBundleByIdSe
             category:bundle.Value.categories.map(i => i.Value),
             productId:bundle.Value.products.map(i => i.Id),
             caducityDate:bundle.Value.caducityDate.Value,
+            discount: bundle.Value.Discount.Value
         };
 
         return Result.success(response, 202);

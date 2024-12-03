@@ -76,4 +76,11 @@ export class CreateBundleEntryDTO {
     @IsOptional() 
     @IsDate()      
     caducityDate?: Date;
+
+    @ApiProperty({
+        example: 'UUID'
+    })
+    @IsString()
+    @IsOptional()
+    discount?: string;
 }

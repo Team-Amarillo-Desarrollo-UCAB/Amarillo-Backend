@@ -18,6 +18,7 @@ import { BundleWeightModified } from "./events/bundle-weight-modified-event"; //
 import { BundleCaducityDateModified } from "./events/bundle-caducity-date-modified-event"; // nuevo evento
 import { InvalidBundleException } from "./exceptions/invalid-bundle.exception";
 import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface";
+import { DiscountID } from "src/discount/domain/value-objects/discount-id";
 
 export class Bundle extends AggregateRoot<BundleID> {
     // Definición de atributos de la entidad
@@ -30,6 +31,7 @@ export class Bundle extends AggregateRoot<BundleID> {
     private bundleStock: BundleStock;
     private bundleProducts: ProductId[];
     private bundleCaducityDate?: BundleCaducityDate;
+    private discount?: DiscountID
   
     // Constructor privado
     private constructor(
@@ -42,7 +44,8 @@ export class Bundle extends AggregateRoot<BundleID> {
       bundleImages: BundleImage[],
       bundleStock: BundleStock,
       bundleProducts: ProductId[],
-      bundleCaducityDate: BundleCaducityDate
+      bundleCaducityDate: BundleCaducityDate,
+      discount?: DiscountID
     ) {
 
       const bundleCreated = BundleCreated.create(
@@ -72,6 +75,7 @@ export class Bundle extends AggregateRoot<BundleID> {
       this.bundleStock = bundleStock;
       this.bundleProducts = bundleProducts;
       this.bundleCaducityDate = bundleCaducityDate;
+      this.discount=discount;
   
       this.ensureValidState();
     }
@@ -87,7 +91,8 @@ export class Bundle extends AggregateRoot<BundleID> {
       bundleImages: BundleImage[],
       bundleStock: BundleStock,
       bundleProducts: ProductId[],
-      bundleCaducityDate?: BundleCaducityDate
+      bundleCaducityDate?: BundleCaducityDate,
+      discount?:DiscountID
     ): Bundle {
       return new Bundle(
         id,
@@ -99,7 +104,8 @@ export class Bundle extends AggregateRoot<BundleID> {
         bundleImages,
         bundleStock,
         bundleProducts,
-        bundleCaducityDate
+        bundleCaducityDate,
+        discount
       );
     }
   
@@ -117,6 +123,7 @@ export class Bundle extends AggregateRoot<BundleID> {
           this.bundleStock = BundleStock.create(created.stock);
           this.bundleProducts = created.products.map(p => ProductId.create(p.Id));
           this.bundleCaducityDate = created.bundleCaducityDate ? BundleCaducityDate.create(created.bundleCaducityDate):undefined;
+          this.discount= DiscountID.create(created.discount)
           break;
 
         case 'BundleNameModified':
@@ -234,5 +241,9 @@ export class Bundle extends AggregateRoot<BundleID> {
   
     get caducityDate(): BundleCaducityDate | undefined {
       return this.bundleCaducityDate;
+    }
+
+    get Discount(): DiscountID | undefined{
+      return this.discount;
     }
 }

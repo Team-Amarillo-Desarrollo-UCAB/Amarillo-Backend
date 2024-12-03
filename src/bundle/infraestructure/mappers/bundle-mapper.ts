@@ -11,6 +11,7 @@ import { BundleCaducityDate } from "src/bundle/domain/value-objects/bundle-caduc
 import { CategoryID } from "src/category/domain/value-objects/category-id";
 import { ProductId } from "src/product/domain/value-objects/product-id";
 import { BundleStock } from "src/bundle/domain/value-objects/bundle-stock";
+import { DiscountID } from "src/discount/domain/value-objects/discount-id";
 
 
 export class BundleMapper implements IMapper<Bundle, OrmBundle> {
@@ -20,6 +21,12 @@ export class BundleMapper implements IMapper<Bundle, OrmBundle> {
 
         if(domain.caducityDate && domain.caducityDate.Value){
             ormCaducityDate = domain.caducityDate.Value
+        }
+
+        let ormDiscount = null;
+
+        if(domain.Discount && domain.Discount.Value){
+            ormDiscount = domain.Discount.Value
         }
 
         const bundle = OrmBundle.create(
@@ -34,7 +41,8 @@ export class BundleMapper implements IMapper<Bundle, OrmBundle> {
             domain.stock.Value,
             domain.categories.map(i=>i.Value),
             domain.categories.map(i=>i.Value),
-            ormCaducityDate
+            ormCaducityDate,
+            ormDiscount
         );
 
         return bundle;
@@ -63,7 +71,8 @@ export class BundleMapper implements IMapper<Bundle, OrmBundle> {
             bundleImages,
             stock,
             products,
-            BundleCaducityDate.create(persistence.caducityDate) ? BundleCaducityDate.create(persistence.caducityDate) : undefined
+            BundleCaducityDate.create(persistence.caducityDate) ? BundleCaducityDate.create(persistence.caducityDate) : undefined,
+            DiscountID.create(persistence.discount) ? DiscountID.create(persistence.discount): undefined
         );
 
         return bundle;

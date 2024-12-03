@@ -4,7 +4,6 @@ import { IsInt, IsOptional, IsPositive, IsString,IsArray} from 'class-validator'
 export class BundleParamsEntryDTO {
 
     @IsOptional()
-    @IsArray()
     @IsString({ each: true })
     @ApiProperty({ required: false})
     category?: string[];  

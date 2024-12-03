@@ -17,5 +17,6 @@ export interface UpdateBundleServiceEntryDto extends ApplicationServiceEntryDto{
     ]
     caducityDate?:Date
     productId?:string[ ]
+    discount?:string
 
 }

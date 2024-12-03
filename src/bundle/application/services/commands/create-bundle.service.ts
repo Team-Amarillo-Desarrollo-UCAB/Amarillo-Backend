@@ -16,6 +16,8 @@ import { BundleStock } from 'src/bundle/domain/value-objects/bundle-stock';
 import { BundleWeight } from 'src/bundle/domain/value-objects/bundle-weight';
 import { CategoriesExistenceService } from '../queries/categories-existence-check.service';
 import { ProductsExistenceService } from '../queries/product-existence-check.service';
+import { DiscountExistenceService } from '../queries/discount-existence-check.service';
+import { DiscountID } from 'src/discount/domain/value-objects/discount-id';
 
 export class CreateBundleApplicationService
   implements IApplicationService<CreateBundleServiceEntryDto, CreateBundleServiceResponseDTO>
@@ -25,19 +27,22 @@ export class CreateBundleApplicationService
   private readonly fileUploader: IFileUploader;
   private readonly categorieExistenceService: CategoriesExistenceService;
   private readonly productExistenceService: ProductsExistenceService;
+  private readonly discountExistenceService:DiscountExistenceService;
 
   constructor(
     bundleRepository: IBundleRepository,
     idGenerator: IdGenerator<string>,
     fileUploader: IFileUploader,
     categorieExistenceService: CategoriesExistenceService, // Inyección del servicio de categorías
-    productExistenceService: ProductsExistenceService // Inyección del servicio de productos
+    productExistenceService: ProductsExistenceService, // Inyección del servicio de productos
+    discountExistenceService: DiscountExistenceService//Inyección del servicio de descuento (check)
   ) {
     this.bundleRepository = bundleRepository;
     this.idGenerator = idGenerator;
     this.fileUploader = fileUploader;
     this.categorieExistenceService = categorieExistenceService;
     this.productExistenceService = productExistenceService;
+    this.discountExistenceService=discountExistenceService
   }
 
   async execute(data: CreateBundleServiceEntryDto): Promise<Result<CreateBundleServiceResponseDTO>> {
@@ -58,6 +63,17 @@ export class CreateBundleApplicationService
       return Result.fail(productResult.Error, productResult.StatusCode, productResult.Message);
     }
 
+
+    const discountResult = await this.discountExistenceService.discountExistenceCheck(data.discount);
+
+    if(data.discount){
+
+      if (!discountResult.isSuccess()) {
+        return Result.fail(discountResult.Error, discountResult.StatusCode, discountResult.Message);
+      }
+    }
+
+
     const iconUrls = await Promise.all(
       data.images.map(async (image) => {
         return this.fileUploader.UploadFile(image); // Subir cada imagen individualmente
@@ -77,7 +93,8 @@ export class CreateBundleApplicationService
       bundleImages, // Crea el V.O con el array de URLs
       BundleStock.create(data.stock), // Crea el V.O del stock
       productResult.Value, // Productos validado
-      data.caducityDate ? BundleCaducityDate.create(data.caducityDate) : null // Crea el V.O opcional para caducidad
+      data.caducityDate ? BundleCaducityDate.create(data.caducityDate) : null, // Crea el V.O opcional para caducidad
+      discountResult.Value ? DiscountID.create(data.discount):null
     );
 
     // Guarda el bundle en el repositorio pertinente :)
@@ -99,6 +116,7 @@ export class CreateBundleApplicationService
       category: bundle.categories.map((category) => category.Value),
       productId: bundle.products.map((product) => product.Id),
       caducityDate: bundle.caducityDate?.Value ?? null,
+      discount: bundle.Discount?.Value ?? null,
     };
 
     // Retorna éxito si el bundle se guarda correctamente

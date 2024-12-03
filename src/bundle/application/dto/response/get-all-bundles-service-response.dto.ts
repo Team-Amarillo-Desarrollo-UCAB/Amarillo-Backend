@@ -8,15 +8,9 @@ export interface GetAllBundlesServiceResponseDTO{
     weight: number
     measurement: string //(kg,gr,mg,ml,lt,cm3)
     stock: number
-    category: string[
-    // {
-    // id: string
-    // }
-    ]
-    productId:string[ ]
     caducityDate?:Date
-    // discount:[{
-    // id:string,
-    // percentage:number //SOLO PORCENTAJE (0.20, 0.50…etc)
-    // }]
+    category: string[]
+    productId:string[ ]
+
+    discount?:string
 }

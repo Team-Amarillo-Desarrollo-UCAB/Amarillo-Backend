@@ -3,7 +3,7 @@ import { Bundle } from '../bundle.entity';
 
 //esto es un puerto y habran adapters en infraestructura
 export interface IBundleRepository {
-    findAllBundles(page: number, perpage: number, category?:string[], name?:string, price?:number, popular?:string, discount?:string): Promise<Result<Bundle[]>>;
+    findAllBundles(page: number, limit: number, category?:string[], name?:string, price?:number, popular?:string, discount?:string): Promise<Result<Bundle[]>>;
 
     addBundle(bundle:Bundle): Promise<Result<Bundle>>;
 

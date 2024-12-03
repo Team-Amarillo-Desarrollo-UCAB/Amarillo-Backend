@@ -50,6 +50,10 @@ export class OrmBundle {
     @Column('date', { nullable: true })
     caducityDate?: Date;
 
+    @Column('varchar', { nullable: true })
+    discount?: string;
+
+
     static create(
         id: string,
         name: string,
@@ -62,7 +66,8 @@ export class OrmBundle {
         stock: number,
         categories: string[],
         productId: string[],
-        caducityDate?: Date//
+        caducityDate?: Date,
+        discount?:string
     ): OrmBundle {
         const bundle = new OrmBundle();
         bundle.id = id;
@@ -77,6 +82,7 @@ export class OrmBundle {
         bundle.categories = categories;
         bundle.productId = productId;
         bundle.caducityDate = caducityDate;
+        bundle.discount=discount;
         return bundle;
     }
 
