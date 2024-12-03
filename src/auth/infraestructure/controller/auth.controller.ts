@@ -1,5 +1,5 @@
-import { BadRequestException, Body, Controller, Logger, Post, Put } from "@nestjs/common";
-import { ApiBody, ApiOkResponse, ApiTags } from "@nestjs/swagger";
+import { BadRequestException, Body, Controller, Get, Logger, Post, Put, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { Inject } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { DataSource } from "typeorm";
@@ -48,6 +48,10 @@ import { LogInUserInfraService } from "../services/log-in-user-service.infraestr
 import { ExceptionDecorator } from "src/common/application/application-services/decorators/exception-decorator/exception.decorator";
 import { IExceptionHandler } from "src/common/application/exception-handler/exception-handler.interface";
 import { HttpExceptionHandler } from "src/common/infraestructure/exception-handler/http-exception-handler-code";
+import { Result } from "src/common/domain/result-handler/Result";
+import { GetUser } from "../jwt/decorator/get-user.param.decorator";
+import { JwtAuthGuard } from "../jwt/decorator/jwt-auth.guard";
+import { CurrentUserSwaggerResponseDto } from "../DTO/response/current-user-swagger-response.dto";
 
 @ApiTags('auth')
 @Controller('auth')
@@ -264,6 +268,20 @@ export class AuthController {
 
         return response
 
+    }
+
+    @Get('current')
+    @UseGuards(JwtAuthGuard)
+    @ApiOkResponse({ description: 'Obtener usuario actual', type: CurrentUserSwaggerResponseDto })
+    @ApiBearerAuth()
+    async currentUser( @GetUser() user ) {  
+        return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            phone: user.phone,
+            image: user.image
+        } 
     }
 
 }

@@ -5,8 +5,6 @@ import { DataSource } from "typeorm";
 import { OrmUserRepository } from "../repositories/orm-repositories/orm-user-repository";
 import { UserMapper } from "../mappers/orm-mapper/user-mapper";
 import {Body, Logger, Put, UseGuards} from '@nestjs/common'
-import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
 import { GetUser } from "src/auth/infraestructure/jwt/decorator/get-user.param.decorator";
 import { JwtAuthGuard } from "src/auth/infraestructure/jwt/decorator/jwt-auth.guard";
 import { IEncryptor } from "src/common/application/encryptor/encryptor.interface";
@@ -17,9 +15,6 @@ import { ImageTransformer } from "src/common/infraestructure/image-helper/image-
 import { UpdateUserProfileServiceEntryDto } from "src/user/application/DTO/params/update-user-profile-service-entry.dto";
 import { IAccountRepository } from "src/user/application/interface/account-user-repository.interface";
 import { UpdateUserProfileAplicationService } from "src/user/application/service/command/update-user-profile.application.service";
-import { UserEmailModified } from "src/user/domain/events/user-email-modified-event";
-import { UserNameModified } from "src/user/domain/events/user-name-modified-event";
-import { UserPhoneModified } from "src/user/domain/events/user-phone-modified-event";
 import { userUpdateEntryInfraestructureDto } from "../DTO/entry/user-update-entry-infraestructure";
 import { UpdateUserProfileSwaggerResponseDto } from "../DTO/response/update-user-profile-swagger-response.dto";
 import { OrmUser } from "../entities/orm-entities/user.entity";
@@ -72,7 +67,6 @@ export class UserController {
     // if (updateEntryDTO.image) image = await this.imageTransformer.base64ToFile(updateEntryDTO.image)
     
     const userUpdateDto: UpdateUserProfileServiceEntryDto = { userId: user.id, ...updateEntryDTO }
-    console.log("hola")
     const updateUserProfileService = 
     //   new ExceptionDecorator(
          new LoggingDecorator(
@@ -110,7 +104,6 @@ export class UserController {
     //   );
     
     if (updateEntryDTO.password || updateEntryDTO.image) {
-      console.log("hola")
       const userInfraUpdateDto: UpdateUserProfileInfraServiceEntryDto = {
         userId: user.id,
         password: updateEntryDTO.password,

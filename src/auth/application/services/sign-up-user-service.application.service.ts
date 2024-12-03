@@ -22,6 +22,7 @@ export class SignUpUserApplicationService implements IApplicationService<SignUpE
     private readonly uuidGenerator: IdGenerator<string>
     private readonly eventHandler: IEventHandler
     private readonly fileUploader: IFileUploader
+
         
     constructor(
         eventHandler: IEventHandler,
@@ -36,12 +37,14 @@ export class SignUpUserApplicationService implements IApplicationService<SignUpE
     }
     
     async execute(signUpDto: SignUpEntryDto): Promise<Result<SignUpResponseDto>> {
-        
+        let image_url = 'https://cdn-icons-png.flaticon.com/512/10337/10337609.png'
         const findResult = await this.userRepository.verifyUserExistenceByEmail( signUpDto.email )
         if ( !findResult.isSuccess() ) return Result.fail( findResult.Error, findResult.StatusCode, findResult.Message )
 
         const idUser = await this.uuidGenerator.generateId()
-        const image_url = await this.fileUploader.UploadFile(signUpDto.image)
+        if (signUpDto.image){
+            image_url = await this.fileUploader.UploadFile(signUpDto.image)
+        }
         const create = User.create(
             UserId.create(idUser), 
             UserName.create(signUpDto.name), 
