@@ -1,7 +1,7 @@
 import { ApplicationServiceEntryDto } from "src/common/application/application-services/DTO/application-service-entry.dto"
 import { UnidadMedida } from "src/product/domain/enum/UnidadMedida"
 
-export interface CreateProductServiceEntryDTO extends ApplicationServiceEntryDto{
+export interface CreateProductServiceEntryDTO extends ApplicationServiceEntryDto {
 
     nombre: string
 
@@ -12,11 +12,17 @@ export interface CreateProductServiceEntryDTO extends ApplicationServiceEntryDto
     cantidad_medida: number
 
     precio: number
-    
+
     moneda: string
 
     stock: number
 
-    imagen?: string
+    image: string
+
+    category: [
+        {
+            id: string
+        }
+    ]
 
 }

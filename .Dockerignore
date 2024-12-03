@@ -20,3 +20,4 @@ README.md
 nodemon.json
 
 /postgres
+/database-local

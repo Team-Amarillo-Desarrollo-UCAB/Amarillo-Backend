@@ -16,20 +16,35 @@ import { ProductCantidadMedida } from "src/product/domain/value-objects/product-
 import { ProductCurrency } from "src/product/domain/value-objects/product-precio/product-currency";
 import { ProductAmount } from "src/product/domain/value-objects/product-precio/product-amount";
 import { IFileUploader } from "src/common/application/file-uploader/file-uploader.interface";
+import { IEventHandler } from "src/common/application/event-handler/event-handler.interface";
+import { ICategoryRepository } from "src/category/domain/repositories/category-repository.interface";
+import { CategoryID } from "src/category/domain/value-objects/category-id";
 
 export class CreateProductService implements IApplicationService<CreateProductServiceEntryDTO, CreateProductServiceResponseDTO> {
 
     constructor(
         private readonly productRepository: IProductRepository,
+        private readonly categoryRepository: ICategoryRepository,
         private readonly fileUploader: IFileUploader,
         private readonly idGenerator: IdGenerator<string>,
+        private readonly eventBus: IEventHandler
     ) {
 
     }
 
     async execute(data: CreateProductServiceEntryDTO): Promise<Result<CreateProductServiceResponseDTO>> {
 
-        const image_url = await this.fileUploader.UploadFile(data.imagen)
+        const image_url = await this.fileUploader.UploadFile(data.image)
+
+        let categorias: CategoryID[] = []
+
+        for (const categoria of data.category) {
+            const category = await this.categoryRepository.findCategoryById(categoria.id)
+            if (!category.isSuccess()) {
+                return Result.fail<CreateProductServiceResponseDTO>(category.Error, category.StatusCode, category.Message)
+            }
+            categorias.push(category.Value.Id)
+        }
 
         const producto = Product.create(
             ProductId.create(await this.idGenerator.generateId()),
@@ -44,7 +59,8 @@ export class CreateProductService implements IApplicationService<CreateProductSe
                 ProductCurrency.create(data.moneda)
             ),
             ProductImage.create(image_url),
-            ProductStock.create(data.stock)
+            ProductStock.create(data.stock),
+            categorias
         )
         const result = await this.productRepository.saveProductAggregate(producto)
 
@@ -61,6 +77,8 @@ export class CreateProductService implements IApplicationService<CreateProductSe
             moneda: data.moneda,
             stock: data.stock
         }
+
+        await this.eventBus.publish(producto.pullEvents())
 
         return Result.success(response, 200)
     }

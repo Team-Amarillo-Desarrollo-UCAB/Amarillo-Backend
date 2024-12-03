@@ -1,14 +1,14 @@
 import { IValueObject } from "src/common/domain/value-object/value-object.interface";
 
-export class ProductCurrency implements IValueObject<ProductCurrency>{
+export class ProductCurrency implements IValueObject<ProductCurrency> {
     // Sera "$" o "USD"
     private readonly currency: string;
 
-    protected constructor(currency: string){
+    protected constructor(currency: string) {
         this.currency = currency
     }
 
-    get Currency(): string{
+    get Currency(): string {
         return this.currency
     }
 
@@ -16,8 +16,8 @@ export class ProductCurrency implements IValueObject<ProductCurrency>{
         return this.currency === valueObject.Currency
     }
 
-    static create(currency: string): ProductCurrency{
+    static create(currency: string): ProductCurrency {
         return new ProductCurrency(currency);
     }
-    
+
 }

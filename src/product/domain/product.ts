@@ -13,6 +13,9 @@ import { ProductCreated } from "./domain-event/product-created-event";
 import { ProductCantidadMedida } from "./value-objects/product-unit/product-cantidad-medida";
 import { ProductAmount } from "./value-objects/product-precio/product-amount";
 import { ProductCurrency } from "./value-objects/product-precio/product-currency";
+import { CategoryID } from "src/category/domain/value-objects/category-id";
+import { ProductPriceModified } from "./domain-event/product-price-modified";
+import { ProductStockModified } from "./domain-event/product-stock-modified";
 
 export class Product extends AggregateRoot<ProductId> {
 
@@ -23,7 +26,8 @@ export class Product extends AggregateRoot<ProductId> {
         private unit: ProductUnit,
         private price: ProductPrice,
         private image: ProductImage,
-        private stock: ProductStock
+        private stock: ProductStock,
+        private categories: CategoryID[]
     ) {
         const event = ProductCreated.create(
             id.Id,
@@ -34,7 +38,8 @@ export class Product extends AggregateRoot<ProductId> {
             price.Amount,
             price.Currency,
             image.Image,
-            stock.Stock
+            stock.Stock,
+            categories
         );
         super(id, event)
     }
@@ -71,9 +76,52 @@ export class Product extends AggregateRoot<ProductId> {
         return this.stock.Stock;
     }
 
+    get Categories(): CategoryID[] {
+        return this.categories
+    }
+
+    decreaseStock(stock: ProductStock) {
+        if (stock.Stock < this.stock.Stock)
+            this.stock = stock
+    }
+
+    increaseStock(stock: ProductStock) {
+        if (stock.Stock > this.stock.Stock)
+            this.stock = stock
+    }
+
+    modifieStock(stock: ProductStock) {
+        if (!this.stock.equals(stock)) {
+            this.stock = stock
+            const event = ProductStockModified.create(
+                this.Id.Id,
+                this.stock.Stock
+            )
+            this.events.push(event)
+        }
+
+    }
+
+    modifiedPrice(precio: ProductPrice) {
+
+        if (!this.price.equals(precio)) {
+            this.price = precio
+            const event = ProductPriceModified.create(
+                this.Id.Id,
+                this.price.Amount,
+                this.price.Currency
+            )
+            this.events.push(event)
+        }
+
+
+    }
+
+
     protected applyEvent(event: DomainEvent): void {
         switch (event.eventName) {
             //patron estado o estrategia, esto es una cochinada el switch case
+            // Otra opcion es no manejarlo de esta forma, discutir luego del parcial :)
             case 'ProductCreated':
                 const productCreated: ProductCreated = event as ProductCreated;
                 this.name = ProductName.create(productCreated.name)
@@ -88,7 +136,9 @@ export class Product extends AggregateRoot<ProductId> {
                 )
                 this.image = ProductImage.create(productCreated.image)
                 this.stock = ProductStock.create(productCreated.stock)
+                this.categories = productCreated.categories
                 break;
+
         }
     }
     protected ensureValidState(): void {
@@ -100,7 +150,7 @@ export class Product extends AggregateRoot<ProductId> {
             !this.image ||
             !this.stock
         )
-        throw new Error('El producto tiene que ser valido');
+            throw new Error('El producto tiene que ser valido');
     }
 
     static create(
@@ -110,7 +160,8 @@ export class Product extends AggregateRoot<ProductId> {
         unit: ProductUnit,
         price: ProductPrice,
         image: ProductImage,
-        stock: ProductStock
+        stock: ProductStock,
+        categories: CategoryID[]
     ): Product {
         return new Product(
             id,
@@ -119,7 +170,8 @@ export class Product extends AggregateRoot<ProductId> {
             unit,
             price,
             image,
-            stock
+            stock,
+            categories
         )
     }
 
