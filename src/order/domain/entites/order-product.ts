@@ -1,17 +1,43 @@
 import { Entity } from "src/common/domain/entity/entity";
 import { ProductId } from "src/product/domain/value-objects/product-id";
-import { OrderDetalleId } from "../value-object/order-detalle.ts/order-detalle-id";
-import { OrderDetalleCantidad } from "../value-object/order-detalle.ts/order-detalle-cantidad";
+import { OrderProductName } from "../value-object/order-product/order-product-name";
+import { OrderProductCantidad } from "../value-object/order-product/order-product-cantidad";
+import { OrderProductPrice } from "../value-object/order-product/order-product-price";
 
 export class OrderProduct extends Entity<ProductId> {
 
     protected constructor(
         id: ProductId,
-        private readonly cantidad: OrderDetalleCantidad
+        private readonly name: OrderProductName,
+        private readonly cantidad: OrderProductCantidad,
+        private readonly precio: OrderProductPrice
     ) {
         super(id)
-        this.cantidad = cantidad
     }
 
+    Name(){
+        return this.name
+    }
+
+    Cantidad(){
+        return this.cantidad
+    }
+
+    Moneda(){
+        return this.precio.Currency
+    }
+
+    Precio(){
+        return this.precio
+    }
+
+    static create(
+        id: ProductId,
+        name: OrderProductName,
+        cantidad: OrderProductCantidad,
+        precio: OrderProductPrice
+    ) {
+        return new OrderProduct(id,name,cantidad,precio)
+    }
 
 }

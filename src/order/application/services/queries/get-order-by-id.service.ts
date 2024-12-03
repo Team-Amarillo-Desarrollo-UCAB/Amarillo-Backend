@@ -6,8 +6,8 @@ import { GetOrderByIdEntryServiceDTO } from "../../DTO/entry/get-order-entry-ser
 import { GetOrderByIdResponseServiceDTO } from "../../DTO/response/get-order-response-service.dto";
 
 export class GetOrderByIdService implements IApplicationService
-<GetOrderByIdEntryServiceDTO, 
-GetOrderByIdResponseServiceDTO> {
+    <GetOrderByIdEntryServiceDTO,
+        GetOrderByIdResponseServiceDTO> {
 
     private readonly orderRepository: IOrderRepository
 
@@ -24,16 +24,16 @@ GetOrderByIdResponseServiceDTO> {
 
         const response: GetOrderByIdResponseServiceDTO = {
             id_orden: orden.Value.Id.Id,
-            detalle: orden.Value.Detalles.map((detalle) => ({
-                id_producto: detalle.ProductoId.Id,  
-                cantidad_producto: detalle.Cantidad.Cantidad
+            detalle: orden.Value.Productos.map((product) => ({
+                id_producto: product.Id.Id,
+                cantidad_producto: product.Cantidad().Value
             })),
-            monto_total: orden.Value.Monto,
-            fecha_creacion: orden.Value.Fecha_creacion,
-            estado: orden.Value.Estado
+            monto_total: orden.Value.Monto.Total,
+            fecha_creacion: orden.Value.Fecha_creacion.Date_creation,
+            estado: orden.Value.Estado.Estado
         }
 
-        return Result.success(response,202)
+        return Result.success(response, 202)
 
     }
 

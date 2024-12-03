@@ -1,5 +1,5 @@
 import { IValueObject } from "src/common/domain/value-object/value-object.interface"
-import { EnumOrderEstados } from "../order-estados-enum"
+import { EnumOrderEstados } from "../enum/order-estados-enum"
 
 export class OrderEstado implements IValueObject<OrderEstado>{
 

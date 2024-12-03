@@ -4,6 +4,7 @@ import { CreateDetalleServiceResponseDTO } from "../DTO/response/create-detalle-
 import { Result } from "src/common/domain/result-handler/Result";
 import { DetalleRepository } from "../../repositories/detalle_orden.respoitory";
 import { Detalle_Orden } from "../../entites/detalle_orden.entity";
+import { IdGenerator } from "src/common/application/id-generator/id-generator.interface";
 
 export class CreateDetalleService implements IApplicationService
 <CreateDetalleServiceEntry,
@@ -11,6 +12,7 @@ CreateDetalleServiceResponseDTO>{
 
     constructor(
         private readonly detalleRepository: DetalleRepository,
+        private readonly idGenerator: IdGenerator<string>
     ){
     }
 
@@ -18,7 +20,7 @@ CreateDetalleServiceResponseDTO>{
 
         for(const d of data.detalle_info){
             const detalle = Detalle_Orden.create(
-                d.id_detalle,
+                await this.idGenerator.generateId(),
                 d.cantidad,
                 data.id_orden,
                 d.id_producto,

@@ -9,6 +9,7 @@ import { ProductController } from './product/infraestructure/controller/product.
 import { AuthController } from './auth/infraestructure/controller/auth.controller';
 import { CategoryController } from './category/infraestructure/controller/category.controller';
 import { OrderController } from './order/infraestructure/controller/order.controller';
+import { CuponController } from './cupon/infraestructure/controller/cupon.controller';
 
 @Module({
   imports: [
@@ -27,14 +28,15 @@ import { OrderController } from './order/infraestructure/controller/order.contro
         }
       }
     }),
-      
+
   ],
   controllers: [//con
     UserController,
     ProductController,
     AuthController,
     CategoryController,
-    OrderController
+    OrderController,
+    CuponController
   ],
   providers: [
     Logger,
@@ -42,4 +44,4 @@ import { OrderController } from './order/infraestructure/controller/order.contro
     postgresDatabaseProvider
   ],
 })
-export class AppModule {}
+export class AppModule { }
