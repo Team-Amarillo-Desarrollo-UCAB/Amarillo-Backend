@@ -17,7 +17,7 @@ export interface CreateProductServiceEntryDTO extends ApplicationServiceEntryDto
 
     stock: number
 
-    image: string
+    image?: string
 
     category: [
         {
