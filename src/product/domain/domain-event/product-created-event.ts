@@ -1,5 +1,6 @@
 import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface";
 import { UnidadMedida } from "../enum/UnidadMedida";
+import { CategoryID } from "src/category/domain/value-objects/category-id";
 
 export class ProductCreated extends DomainEvent {
     protected constructor(
@@ -11,7 +12,8 @@ export class ProductCreated extends DomainEvent {
         public amount: number,
         public currency: string,
         public image: string,
-        public stock: number
+        public stock: number,
+        public categories: CategoryID[]
     ) {
         super();
     }
@@ -25,7 +27,8 @@ export class ProductCreated extends DomainEvent {
         amount: number,
         currency: string,
         image: string,
-        stock: number
+        stock: number,
+        categories: CategoryID[]
     ): ProductCreated {
         return new ProductCreated(
             id,
@@ -36,7 +39,8 @@ export class ProductCreated extends DomainEvent {
             amount,
             currency,
             image,
-            stock
+            stock,
+            categories
         );
     }
 }

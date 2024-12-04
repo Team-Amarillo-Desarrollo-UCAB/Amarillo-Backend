@@ -10,8 +10,8 @@ import { IOrderRepository } from "src/order/domain/repositories/order-repository
 import { OrderMapper } from "../../mappers/order-mapper";
 
 export class CreateEstadoOrdenService implements IApplicationService
-<CreateEstadoOrdenServiceEntry,
-CreateEstadoOrdenServiceResponseDTO>{
+    <CreateEstadoOrdenServiceEntry,
+        CreateEstadoOrdenServiceResponseDTO> {
 
     private readonly ordenMapper: OrderMapper
 
@@ -19,25 +19,23 @@ CreateEstadoOrdenServiceResponseDTO>{
         private readonly estadoOrdenRepository: EstadoOrdenRepository,
         private readonly estadoRepository: EstadoRepository,
         private readonly ordenRepository: IOrderRepository,
-        
-    ){
-        this.ordenMapper = new OrderMapper()
+        private ordenMappe: OrderMapper
+
+    ) {
+        this.ordenMapper = ordenMappe
     }
 
     async execute(data: CreateEstadoOrdenServiceEntry): Promise<Result<CreateEstadoOrdenServiceResponseDTO>> {
 
         const estado = await this.estadoRepository.findByName(data.estado)
-        console.log("estado:",estado.Value)
-        
-        if(!estado.isSuccess())
-            return Result.fail(estado.Error,estado.StatusCode,estado.Message)
+
+        if (!estado.isSuccess())
+            return Result.fail(estado.Error, estado.StatusCode, estado.Message)
 
         const orden = await this.ordenRepository.findOrderById(data.id_orden)
 
-        if(!orden.isSuccess())
-            return Result.fail(estado.Error,estado.StatusCode,estado.Message)
-
-        console.log("orden:",orden)
+        if (!orden.isSuccess())
+            return Result.fail(estado.Error, estado.StatusCode, estado.Message)
 
         const estado_orden = Estado_Orden.create(
             data.id_orden,
@@ -46,16 +44,14 @@ CreateEstadoOrdenServiceResponseDTO>{
             null
         )
 
-        console.log("Estado_orden: ",estado_orden)
-
         const result = await this.estadoOrdenRepository.saveEstadoOrden(estado_orden)
-        
-        if(!result.isSuccess()){
+
+        if (!result.isSuccess()) {
             console.log("Fallo en el save")
-            return Result.fail(result.Error,result.StatusCode,result.Message)
+            return Result.fail(result.Error, result.StatusCode, result.Message)
         }
 
-        return Result.success({id: data.id_orden},200)
+        return Result.success({ id: data.id_orden }, 200)
     }
 
     get name(): string {

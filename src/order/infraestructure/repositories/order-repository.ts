@@ -4,31 +4,55 @@ import { Result } from "src/common/domain/result-handler/Result";
 import { Order } from "src/order/domain/order";
 import { IOrderRepository } from "src/order/domain/repositories/order-repository.interface";
 import { OrmOrder } from "../entites/order.entity";
-import { DataSource, Repository } from "typeorm";
+import { DataSource, getRepository, Repository } from "typeorm";
+import { Detalle_Orden } from "../entites/detalle_orden.entity";
+import { Estado_Orden } from "../entites/Estado-orden/estado_orden.entity";
+import { Estado } from "../entites/Estado-orden/estado.entity";
 
-export class OrderRepository extends Repository<OrmOrder> implements IOrderRepository{
+export class OrderRepository extends Repository<OrmOrder> implements IOrderRepository {
 
     private readonly ormOrderMapper: IMapper<Order, OrmOrder>
 
-    constructor(ormOrderMapper: IMapper<Order, OrmOrder>,dataSource: DataSource ) {
+    private readonly ormDetalle_ordenRepository: Repository<Detalle_Orden>
+    private readonly ormEstadoOrdenRepository: Repository<Estado_Orden>
+    private readonly ormEstadoRepository: Repository<Estado>
+
+    constructor(ormOrderMapper: IMapper<Order, OrmOrder>, dataSource: DataSource) {
         super(OrmOrder, dataSource.createEntityManager());
         this.ormOrderMapper = ormOrderMapper
+
+        this.ormDetalle_ordenRepository = dataSource.getRepository(Detalle_Orden)
+        this.ormEstadoOrdenRepository = dataSource.getRepository(Estado_Orden)
+        this.ormEstadoRepository = dataSource.getRepository(Estado)
     }
 
     async saveOrderAggregate(order: Order): Promise<Result<Order>> {
-        try
-        {
+        try {
             const orden = await this.ormOrderMapper.fromDomainToPersistence(order)
-            console.log("orden: ",orden)
-            const resultado = await this.save(orden)
-            return Result.success<Order>( order, 200 )
-        } catch ( error )
-        {
-            return Result.fail<Order>( new Error( error.message ), error.code, error.message )
+            await this.save(orden)
+
+            const estado = await this.ormEstadoRepository.findOne({
+                where: { nombre: order.Estado.Estado }
+            });
+
+            const estado_orden = Estado_Orden.create(
+                order.Id.Id,
+                estado.id,
+                order.Fecha_creacion.Date_creation,
+                null
+            )
+
+            console.log("Estado orden para salvar:",estado_orden)
+
+            await this.ormEstadoOrdenRepository.save(estado_orden)
+
+            return Result.success<Order>(order, 200)
+        } catch (error) {
+            return Result.fail<Order>(new Error(error.message), error.code, error.message)
 
         }
     }
-    
+
     async findOrderById(id: string): Promise<Result<Order>> {
         const order = await this.findOne({
             where: { id: id }
@@ -37,7 +61,6 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
         if (!order)
             return Result.fail<Order>(new Error(`Orden con id ${id} no encontrado`), 404, `Orden con id ${id} no encontrado`)
 
-        console.log("orden por id: ",order)
 
         const resultado = await this.ormOrderMapper.fromPersistenceToDomain(order)
 

@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { Type } from "class-transformer";
 import { IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsString, ValidateNested } from "class-validator"
-import { EnumOrderEstados } from "src/order/domain/order-estados-enum";
+import { EnumOrderEstados } from "src/order/domain/enum/order-estados-enum";
 
 export class GetOrderByIdReponseDTO {
 

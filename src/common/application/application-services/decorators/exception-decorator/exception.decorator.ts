@@ -1,7 +1,7 @@
 import { Result } from "src/common/domain/result-handler/Result"
-import { ApplicationServiceDecorator } from "../application-service.decorator"
-import { ApplicationServiceEntryDto } from "../../dto/application-service-entry.dto"
 import { IApplicationService } from "../../application-service.interface"
+import { ApplicationServiceEntryDto } from "../../DTO/application-service-entry.dto"
+import { ApplicationServiceDecorator } from "../application-service.decorator"
 import { IExceptionHandler } from './../../../exception-handler/exception-handler.interface';
 
 export class ExceptionDecorator<D extends ApplicationServiceEntryDto, R> extends ApplicationServiceDecorator<D, R> implements IApplicationService<D, R> {

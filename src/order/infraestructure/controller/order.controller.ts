@@ -16,21 +16,16 @@ import {
 import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { DataSource } from "typeorm";
 
-import { GetProductResponseDTO } from "src/product/infraestructure/dto/response/get-product-response.dto";
 import { LoggingDecorator } from "src/common/application/application-services/decorators/logging-decorator/logging.decorator";
 import { NativeLogger } from "src/common/infraestructure/logger/logger";
-import { GetProductByIdServiceEntryDTO } from "src/product/aplication/dto/entry/get-product-by-id-service-entry.dto";
-import { CreateProductService } from "src/product/aplication/service/commands/create-product.service";
 import { IdGenerator } from "src/common/application/id-generator/id-generator.interface";
 import { UuidGenerator } from "src/common/infraestructure/id-generator/uuid-generator";
-import { PaginationDto } from "src/common/infraestructure/dto/entry/pagination.dto";
 import { IFileUploader } from "src/common/application/file-uploader/file-uploader.interface";
 import { ImageTransformer } from "src/common/infraestructure/image-helper/image-transformer";
 import { CloudinaryFileUploader } from "src/common/infraestructure/cloudinary-file-uploader/cloudinary-file-uploader";
 import { RabbitEventBus } from "src/common/infraestructure/rabbit-event-handler/rabbit-event-handler";
 import { IOrderRepository } from "src/order/domain/repositories/order-repository.interface";
 import { OrderRepository } from "../repositories/order-repository";
-import { IMapper } from "src/common/application/mappers/mapper.interface";
 import { CreateOrderEntryDTO } from "../dto/entry/create-order-entry-dto";
 import { CreateOrderResponseDTO } from "../dto/response/create-order-response";
 import { CreateOrderEntryServiceDTO } from "src/order/application/dto/entry/create-order-entry-service";
@@ -52,6 +47,17 @@ import { GetOrderByIdEntryServiceDTO } from "src/order/application/dto/entry/get
 import { GetOrderByIdService } from "src/order/application/services/queries/get-order-by-id.service";
 import { JwtAuthGuard } from "src/auth/infraestructure/jwt/decorator/jwt-auth.guard";
 import { GetUser } from "src/auth/infraestructure/jwt/decorator/get-user.param.decorator";
+import { OrderCalculationTotal } from "src/common/domain/domain-service/calcular-monto-orden";
+import { PaypalPaymentMethod } from "src/common/infraestructure/payment/paypal-payment-method";
+import { CreateOrderPayPalEntryDTO } from "../dto/entry/create-order-paypal-entry.dto";
+import { ExceptionDecorator } from "src/common/application/application-services/decorators/exception-decorator/exception.decorator";
+import { PerformanceDecorator } from "src/common/application/application-services/decorators/performance-decorator/performance-decorator";
+import { HttpExceptionHandler } from "src/common/infraestructure/exception-handler/http-exception-handler-code";
+import { ProductStock } from "src/product/domain/value-objects/product-stock";
+import { StripePaymentMethod } from "src/common/infraestructure/payment/stripe-payment-method";
+import { CreateOrderStripeEntryDTO } from '../dto/entry/create-order-stripe-entry.dto';
+import { OrmCategoryMapper } from "src/category/infraestructure/mappers/orm-category-mapper";
+import { OrmCategoryRepository } from "src/category/infraestructure/repositories/orm-category-repository";
 
 @ApiTags("Order")
 @Controller("order")
@@ -67,6 +73,8 @@ export class OrderController {
     private readonly detalleRepository: DetalleRepository
     private readonly estadoOrdenRepository: EstadoOrdenRepository
     private readonly estadoRepository: EstadoRepository
+    private readonly categoryRepository: OrmCategoryRepository
+
 
     constructor(
         @Inject('DataSource') private readonly dataSource: DataSource
@@ -74,8 +82,15 @@ export class OrderController {
         this.idGenerator = new UuidGenerator();
         this.imageTransformer = new ImageTransformer();
         this.fileUploader = new CloudinaryFileUploader()
-        this.orderRepository = new OrderRepository(new OrderMapper, dataSource)
-        this.productRepository = new OrmProductRepository(new ProductMapper(), dataSource)
+        this.orderRepository = new OrderRepository(new OrderMapper(this.idGenerator), dataSource)
+        this.categoryRepository = new OrmCategoryRepository(new OrmCategoryMapper(), dataSource)
+        this.productRepository =
+            new OrmProductRepository(
+                new ProductMapper(
+                    new OrmCategoryMapper(),
+                    this.categoryRepository,
+                ), dataSource
+            )
         this.detalleRepository = new DetalleRepository(dataSource)
         this.estadoOrdenRepository = new EstadoOrdenRepository(dataSource)
         this.estadoRepository = new EstadoRepository(dataSource)
@@ -83,7 +98,7 @@ export class OrderController {
 
     // TODO: Probar la validacion con el bearer token
     @Post('create')
-    @UseGuards(JwtAuthGuard)
+    //@UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOkResponse({
         description: 'Crea una nueva orden en la base de datos',
@@ -94,7 +109,7 @@ export class OrderController {
         description: 'Array de entradas para crear una orden',
     })
     async createOrder(
-        @GetUser() user,
+        //@GetUser() user,
         @Body() request: CreateOrderRequestDTO,
     ): Promise<CreateOrderResponseDTO> {
 
@@ -102,15 +117,20 @@ export class OrderController {
         this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
             const sender = new NodemailerEmailSender();
             const order_id = event.id;
-            sender.sendEmail("nadinechancay2010@gmail.com", "Jamal", order_id);
+            sender.sendEmail("bastidasluigi05@gmail.com", "Jamal", order_id);
         });
 
         // Mapeo de datos para el servicio
         const data: CreateOrderEntryServiceDTO = {
-            userId: user.id,
-            entry: request.entry.map((entry) => ({
-                ...entry,
-            })),
+            userId: "user.id",
+            products: await Promise.all(
+                request.entry.map(async (detalle) => {
+                    return {
+                        id: detalle.id_producto,
+                        quantity: detalle.cantidad_producto
+                    }
+                })
+            )
         };
 
         const service =
@@ -119,13 +139,19 @@ export class OrderController {
                     this.orderRepository,
                     this.productRepository,
                     this.idGenerator,
-                    this.eventBus
+                    this.eventBus,
+                    new OrderCalculationTotal(
+                        new PaypalPaymentMethod(
+                            "bastidasluigi05@gmail.com",
+                            this.idGenerator
+                        )
+                    )
                 ),
                 new NativeLogger(this.logger)
             )
 
         const result = await service.execute(data)
-        
+
         // TODO: Esto sera reemplazado por el aspecto de HTTPExceptionHandler
         if (!result.isSuccess())
             throw result.Error
@@ -135,7 +161,8 @@ export class OrderController {
         const service_create_detalle =
             new LoggingDecorator(
                 new CreateDetalleService(
-                    this.detalleRepository
+                    this.detalleRepository,
+                    this.idGenerator
                 ),
                 new NativeLogger(this.logger)
             )
@@ -157,7 +184,8 @@ export class OrderController {
                 new CreateEstadoOrdenService(
                     this.estadoOrdenRepository,
                     this.estadoRepository,
-                    this.orderRepository
+                    this.orderRepository,
+                    new OrderMapper(this.idGenerator)
                 ),
                 new NativeLogger(this.logger)
             )
@@ -171,8 +199,6 @@ export class OrderController {
 
         if (!result_create_estado_orden.isSuccess())
             throw new Error("Relacion estado orden no creada")
-
-        console.log("Estado_orden creado")
 
         const response: CreateOrderResponseDTO = {
             id_order: result.Value.id_orden
@@ -209,7 +235,7 @@ export class OrderController {
         if (!result.isSuccess())
             throw result.Error
 
-        console.log("Resultado del servicio: ",result.Value)
+        console.log("Resultado del servicio: ", result.Value)
 
         const response: GetOrderByIdReponseDTO = {
             id_orden: id,
@@ -218,7 +244,203 @@ export class OrderController {
 
         return response
 
-    }   
+    }
+
+    @Post('pay/paypal')
+    async orderPayPaypal(
+        @Body() request: CreateOrderPayPalEntryDTO,
+    ) {
+
+        // Envia correo electronico para informar de la creacion de la orden
+        await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
+            console.log("enviado")
+            const sender = new NodemailerEmailSender();
+            const order_id = event.id;
+            sender.sendEmail("bastidasluigi05@gmail.com", "Jamal", order_id);
+        });
+
+        // Decrementa el stock de los productos elegidos en la orden
+        await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
+            event.productos.map(async (product) => {
+                const result = await this.productRepository.findProductById(product.Id.Id)
+                result.Value.decreaseStock(ProductStock.create(product.Cantidad().Value))
+                await this.productRepository.saveProductAggregate(result.Value)
+            })
+        })
+
+        // Persistencia de la base de datos para los detalles de una orden
+        await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
+            const service =
+                new ExceptionDecorator(
+                    new LoggingDecorator(
+                        new CreateDetalleService(
+                            this.detalleRepository,
+                            this.idGenerator
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    new HttpExceptionHandler()
+                )
+
+            const data = {
+                userId: "",
+                id_orden: event.id,
+                detalle_info: event.productos.map((detalle) => ({
+                    id_producto: detalle.Id.Id,
+                    cantidad: detalle.Cantidad().Value
+                })),
+            }
+
+            await service.execute(data)
+        });
+
+        // Persistencia de la base de datos para los detalles de una orden
+        await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
+            const service =
+                new ExceptionDecorator(
+                    new LoggingDecorator(
+                        new CreateEstadoOrdenService(
+                            this.estadoOrdenRepository,
+                            this.estadoRepository,
+                            this.orderRepository,
+                            new OrderMapper(this.idGenerator)
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    new HttpExceptionHandler()
+                )
+
+            const data = {
+                userId: "",
+                id_orden: event.id,
+                fecha_inicio: event.fecha_creacion,
+                estado: event.estado
+            }
+
+            await service.execute(data)
+        });
+
+        const data: CreateOrderEntryServiceDTO = {
+            userId: "",
+            products: request.products
+        };
+
+        console.log(data)
+
+        const service =
+            new ExceptionDecorator(
+                new LoggingDecorator(
+                    new PerformanceDecorator(
+                        new CreateOrderService(
+                            this.orderRepository,
+                            this.productRepository,
+                            this.idGenerator,
+                            this.eventBus,
+                            new OrderCalculationTotal(
+                                new PaypalPaymentMethod(
+                                    request.email,
+                                    this.idGenerator
+                                )
+                            )
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new HttpExceptionHandler()
+            )
+
+        const result = await service.execute(data)
+
+        return result.Value
+    }
+
+    @Post('pay/stripe')
+    async orderPayStripe(
+        @Body() request: CreateOrderStripeEntryDTO,
+    ) {
+
+        // Envia correo electronico para informar de la creacion de la orden
+        await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
+            const sender = new NodemailerEmailSender();
+            const order_id = event.id;
+            sender.sendEmail("bastidasluigi05@gmail.com", "Jamal", order_id);
+        });
+
+        // Decrementa el stock de los productos elegidos en la orden
+        await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
+            const productos = event.productos
+
+            for (const p of productos) {
+                const result = await this.productRepository.findProductById(p.Id.Id)
+                result.Value.decreaseStock(ProductStock.create(p.Cantidad().Value))
+                await this.productRepository.saveProductAggregate(result.Value)
+            }
+
+        })
+
+        // Persistencia de la base de datos para los detalles de una orden
+        await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
+            const service =
+                new ExceptionDecorator(
+                    new LoggingDecorator(
+                        new PerformanceDecorator(
+                            new CreateDetalleService(
+                                this.detalleRepository,
+                                this.idGenerator
+                            ),
+                            new NativeLogger(this.logger)
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    new HttpExceptionHandler()
+                )
+            const data = {
+                userId: "",
+                id_orden: event.id,
+                detalle_info: event.productos!.map((detalle) => ({
+                    id_producto: detalle.Id.Id,
+                    cantidad: detalle.Cantidad().Value
+                })),
+            }
+
+            await service.execute(data)
+        });
+
+        const data: CreateOrderEntryServiceDTO = {
+            userId: "",
+            products: request.products
+        };
+
+        console.log(data)
+
+        const service =
+            new ExceptionDecorator(
+                new LoggingDecorator(
+                    new PerformanceDecorator(
+                        new CreateOrderService(
+                            this.orderRepository,
+                            this.productRepository,
+                            this.idGenerator,
+                            this.eventBus,
+                            new OrderCalculationTotal(
+                                new StripePaymentMethod(
+                                    request.token,
+                                    this.idGenerator
+                                )
+                            )
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new HttpExceptionHandler()
+            )
+
+        const result = await service.execute(data)
+
+        return result.Value
+    }
 
 
 }

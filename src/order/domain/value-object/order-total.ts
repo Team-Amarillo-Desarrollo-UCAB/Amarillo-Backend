@@ -1,4 +1,5 @@
 import { IValueObject } from "src/common/domain/value-object/value-object.interface";
+import { InvalidOrderTotal } from "../domain-exception/invalid-order-total";
 
 export class OrderTotal implements IValueObject<OrderTotal> {
 
@@ -6,7 +7,7 @@ export class OrderTotal implements IValueObject<OrderTotal> {
         private readonly monto_total: number
     ) {
         if(monto_total < 0)
-            throw new Error("Monto total debe ser mayor a 0")
+            throw new InvalidOrderTotal("Monto total debe ser mayor a 0")
 
         this.monto_total = monto_total
     }
