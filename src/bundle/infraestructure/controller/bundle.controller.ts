@@ -69,7 +69,7 @@ export class BundleController {
     this.idGenerator = new UuidGenerator();
     this.fileUploader = new CloudinaryFileUploader();
     this.categoriesExistenceService=new CategoriesExistenceService(new OrmCategoryRepository(new OrmCategoryMapper(),this.dataSource))
-    this.productExistenceService= new ProductsExistenceService(new OrmProductRepository(new ProductMapper(),this.dataSource))
+    this.productExistenceService= new ProductsExistenceService(new OrmProductRepository(new ProductMapper(new OrmCategoryMapper(), new OrmCategoryRepository(new OrmCategoryMapper(),this.dataSource)),this.dataSource))
     this.discountExistenceService = new DiscountExistenceService(new OrmDiscountRepository(new OrmDiscountMapper(),this.dataSource))
   }
 

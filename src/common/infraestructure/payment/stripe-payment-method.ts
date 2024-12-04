@@ -1,5 +1,4 @@
 import Stripe from 'stripe'
-
 import { IPaymentMethod } from "src/common/domain/domain-service/determinar-metodo-pago.interface";
 import { Result } from "src/common/domain/result-handler/Result";
 import { Order } from "src/order/domain/order";
