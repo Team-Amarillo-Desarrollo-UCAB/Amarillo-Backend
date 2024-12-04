@@ -1,5 +1,6 @@
+import { OrmBundle } from 'src/bundle/infraestructure/entities/bundle-orm.entity';
 import { OrmProduct } from 'src/product/infraestructure/entities/product.entity';
-import { Column, Entity, PrimaryColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Column, Entity, PrimaryColumn, ManyToMany, JoinTable, ManyToOne, JoinColumn } from 'typeorm';
 //import { OrmProduct } from 'src/product/infrastructure/entities/orm-entities/orm-product';
 
 @Entity({ name: 'category' })
@@ -27,6 +28,7 @@ export class OrmCategory {
     }
   })  // Tabla de unión
   products: OrmProduct[];
+
 
   // Método estático para crear una instancia de categoría
   static create(
