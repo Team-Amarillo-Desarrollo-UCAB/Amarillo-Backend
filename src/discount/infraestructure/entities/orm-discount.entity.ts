@@ -1,0 +1,41 @@
+import { Entity, Column, PrimaryColumn } from 'typeorm';
+
+@Entity({ name: 'discount' }) // Nombre de la tabla en la base de datos
+export class OrmDiscount {
+  @PrimaryColumn({ type: 'uuid' })
+  id: string; 
+
+  @Column('varchar', { unique: true })
+  name: string; 
+
+  @Column('varchar')
+  description: string; 
+
+  @Column('float')
+  percentage: number; 
+
+  @Column({ type: 'timestamp' })
+  startDate: Date; 
+
+  @Column({ type: 'timestamp' })
+  deadline: Date; 
+
+
+  static create(
+    id: string,
+    name: string,
+    description: string,
+    percentage: number,
+    startDate: Date,
+    deadline: Date
+  ): OrmDiscount {
+    const discount = new OrmDiscount();
+    discount.id = id;
+    discount.name = name;
+    discount.description = description;
+    discount.percentage = percentage;
+    discount.startDate = startDate;
+    discount.deadline = deadline;
+    return discount;
+  }
+}
