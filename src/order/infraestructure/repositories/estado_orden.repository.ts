@@ -1,7 +1,7 @@
 import { DataSource, Repository } from "typeorm";
 import { Estado_Orden } from "../entites/Estado-orden/estado_orden.entity";
 import { Result } from "src/common/domain/result-handler/Result";
-import { EnumOrderEstados } from "src/order/domain/order-estados-enum";
+import { EnumOrderEstados } from "src/order/domain/enum/order-estados-enum";
 import { Estado } from "../entites/Estado-orden/estado.entity";
 
 export class EstadoOrdenRepository extends Repository<Estado_Orden>{
@@ -13,7 +13,6 @@ export class EstadoOrdenRepository extends Repository<Estado_Orden>{
     async saveEstadoOrden(estado_orden: Estado_Orden): Promise<Result<Estado_Orden>>{
         try
         {
-            console.log("Relacion estado orden recibida: ",estado_orden)
             const resultado = await this.save(estado_orden)
             return Result.success( resultado, 200 )
         } catch ( error )

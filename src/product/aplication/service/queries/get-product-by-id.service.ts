@@ -25,7 +25,7 @@ export class GetProductByIdService implements IApplicationService<GetProductById
             precio: producto.Value.Price,
             moneda: producto.Value.Moneda,
             stock: producto.Value.Stock,
-            unidad_medida: producto.Value.Unit,               
+            unidad_medida: producto.Value.Unit,
             cantidad_medida: producto.Value.CantidadMedida,
             image: producto.Value.Image
         }

@@ -1,55 +1,85 @@
 import { AggregateRoot } from "src/common/domain/aggregate-root/aggregate-root";
 import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface";
 import { OrderId } from "./value-object/order-id";
-import { EnumOrderEstados } from "./order-estados-enum";
+import { EnumOrderEstados } from "./enum/order-estados-enum";
 import { OrderEstado } from "./value-object/order-estado";
 import { OrderCreationDate } from './value-object/order-fecha-creacion';
 import { OrderTotal } from './value-object/order-total';
 import { OrderDetail } from "./entites/order-detail";
 import { OrderCreated } from "./domain-event/order-created-event";
+import { OrderProduct } from "./entites/order-product";
+import { OrderPayment } from "./entites/order-payment";
+import { OrderTotalCalculated } from "./domain-event/order-amount-calculated";
+import { InvalidOrder } from "./domain-exception/invalid-order";
 
 export class Order extends AggregateRoot<OrderId> {
 
     // TODO: Se creara el servicio de dominio para calcular el shipping fee y el monto total
     // TODO: Agregar la referencia al usuario?
+    private montoTotal: OrderTotal
+    private payment: OrderPayment
     protected constructor(
         id: OrderId,
         private estado: OrderEstado,
         private fecha_creacion: OrderCreationDate,
-        private montoTotal: OrderTotal,
-        private detalles: OrderDetail[],
+        private productos: OrderProduct[],
+        montoTotal?: OrderTotal,
+        //private detalles: OrderDetail[]
     ) {
 
-        const event = OrderCreated.create(
+        const event: OrderCreated = OrderCreated.create(
             id.Id,
             estado.Estado,
             fecha_creacion.Date_creation,
-            montoTotal.Total,
-            detalles
+            productos
         )
 
         super(id, event)
     }
 
     get Estado() {
-        return this.estado.Estado
+        return this.estado
     }
 
     get Fecha_creacion() {
-        return this.fecha_creacion.Date_creation
+        return this.fecha_creacion
     }
 
     get Monto() {
-        return this.montoTotal.Total
+        return this.montoTotal
     }
 
-    get Detalles() {
-        return this.detalles
+    get Productos():  OrderProduct[]{
+        return this.productos
+    }
+
+    get Moneda(){
+        return this.productos[0].Moneda()
+    }
+
+    calcularMontoProductos(): number{
+        let monto_productos = 0
+        for (const p of this.productos) {
+            monto_productos += p.Precio().Amount * p.Cantidad().Value
+        }
+        return monto_productos
     }
 
     // TODO: Implementación del metodo para cambiar el estado de la orden con sus validaciones
     cambiarEstado(estado: EnumOrderEstados): void {
+        if(!this.estado.equals(OrderEstado.create(estado))){
 
+            this.estado = OrderEstado.create(estado)
+
+        }
+    }
+
+    assignOrderCost(monto: number): void{
+        this.onEvent(OrderTotalCalculated.create(this.Id.Id,monto))
+    }
+
+    asignarMetodoPago(payment: OrderPayment): void{
+        this.payment ? this.payment = payment : null
     }
 
     protected applyEvent(event: DomainEvent): void {
@@ -59,8 +89,11 @@ export class Order extends AggregateRoot<OrderId> {
                 const orderCreated: OrderCreated = event as OrderCreated;
                 this.estado = OrderEstado.create(orderCreated.estado)
                 this.fecha_creacion = OrderCreationDate.create(orderCreated.fecha_creacion)
-                this.montoTotal = OrderTotal.create(orderCreated.montoTotal)
-                this.detalles = orderCreated.detalles
+                this.productos = orderCreated.productos
+                break;
+            case 'OrderTotalCalculated':
+                const orderTotalCalculated = event as OrderTotalCalculated
+                this.montoTotal = OrderTotal.create(orderTotalCalculated.total)
                 break;
         }
     }
@@ -69,25 +102,24 @@ export class Order extends AggregateRoot<OrderId> {
         if (
             !this.estado ||
             !this.fecha_creacion ||
-            !this.montoTotal ||
-            !this.detalles
+            !this.productos
         )
-        throw new Error('La orden tiene que ser valida');
+        throw new InvalidOrder('La orden tiene que ser valida');
     }
 
     static create(
         id: OrderId,
         estado: OrderEstado,
         fecha_creacion: OrderCreationDate,
-        montoTotal: OrderTotal,
-        detalles: OrderDetail[],
+        productos: OrderProduct[],
+        montoTotal?: OrderTotal
     ): Order{
         return new Order(
             id,
             estado,
             fecha_creacion,
-            montoTotal,
-            detalles
+            productos,
+            montoTotal ? montoTotal : null
         )
     }
 

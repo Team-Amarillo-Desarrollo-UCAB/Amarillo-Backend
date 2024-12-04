@@ -1,6 +1,6 @@
 import { DataSource, Repository } from "typeorm";
 import { Result } from "src/common/domain/result-handler/Result";
-import { EnumOrderEstados } from "src/order/domain/order-estados-enum";
+import { EnumOrderEstados } from "src/order/domain/enum/order-estados-enum";
 import { Estado } from "../entites/Estado-orden/estado.entity";
 
 export class EstadoRepository extends Repository<Estado>{

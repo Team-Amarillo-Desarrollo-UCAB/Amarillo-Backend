@@ -4,7 +4,9 @@ import { ApplicationServiceEntryDto } from "src/common/application/application-s
 export interface GetAllCategoriesServiceEntryDTO extends ApplicationServiceEntryDto{
 
     limit?: number
-    page?: number 
+    page?: number
+    categoryName?:string
+    discount?:string 
 
 
 }

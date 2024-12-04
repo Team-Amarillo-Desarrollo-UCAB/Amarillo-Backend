@@ -11,31 +11,45 @@ import { OrderDetail } from "src/order/domain/entites/order-detail";
 import { OrderDetalleId } from "src/order/domain/value-object/order-detalle.ts/order-detalle-id";
 import { ProductId } from "src/product/domain/value-objects/product-id";
 import { OrderDetalleCantidad } from "src/order/domain/value-object/order-detalle.ts/order-detalle-cantidad";
-import { EnumOrderEstados } from "src/order/domain/order-estados-enum";
+import { EnumOrderEstados } from "src/order/domain/enum/order-estados-enum";
+import { IdGenerator } from "src/common/application/id-generator/id-generator.interface";
+import { OrderProduct } from "src/order/domain/entites/order-product";
+import { OrderProductName } from "src/order/domain/value-object/order-product/order-product-name";
+import { OrderProductCantidad } from "src/order/domain/value-object/order-product/order-product-cantidad";
+import { OrderProductPrice } from "src/order/domain/value-object/order-product/order-product-price";
+import { OrderProductAmount } from "src/order/domain/value-object/order-product/order-product-amount";
+import { OrderProductCurrency } from "src/order/domain/value-object/order-product/order-product-currency";
+import { HistoricoPrecio } from "src/product/infraestructure/entities/historico-precio.entity";
 
 export class OrderMapper implements IMapper<Order, OrmOrder> {
 
+    private readonly idGenerator: IdGenerator<string>
+
+    constructor(
+        idGenerator: IdGenerator<string>
+    ) {
+        this.idGenerator = idGenerator
+    }
 
     async fromDomainToPersistence(domain: Order): Promise<OrmOrder> {
 
-        const detalles = domain.Detalles
         let ormDetalles: Detalle_Orden[] = []
 
-        for (const detalle of detalles) {
+        for (const producto of domain.Productos) {
             ormDetalles.push(
                 Detalle_Orden.create(
-                    detalle.Id.Id,
-                    detalle.Cantidad.Cantidad,
+                    await this.idGenerator.generateId(),
+                    producto.Cantidad().Value,
                     domain.Id.Id,
-                    detalle.ProductoId.Id
+                    producto.Id.Id,
                 )
             )
         }
 
         const order = OrmOrder.create(
             domain.Id.Id,
-            domain.Fecha_creacion,
-            domain.Monto,
+            domain.Fecha_creacion.Date_creation,
+            domain.Monto.Total,
             ormDetalles
         )
 
@@ -46,24 +60,40 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
 
         let estado: Estado_Orden
 
-
         for (const p of persistence.estados) {
             if (p.fecha_fin === null) {
                 estado = p
             }
         }
 
-        let detalles: OrderDetail[] = []
-        if (persistence.detalles)
-            for (const detalle of persistence.detalles)
-                detalles.push(OrderDetail.create(
-                    OrderDetalleId.create(detalle.id),
-                    ProductId.create(detalle.id_producto),
-                    OrderDetalleCantidad.create(detalle.cantidad)
-                ))
+        let productos: OrderProduct[] = []
+        let moneda: string = null
+        let precio: number = null
+        for (const detalle of persistence.detalles) {
+            if (detalle.producto) {
 
-        console.log("Orden persistenca: ", persistence)
-        console.log("Antes de crear")
+                let producto = detalle.producto
+                for (const h of producto.historicos) {
+                    if (!h.fecha_fin) {
+                        moneda = h.moneda.simbolo
+                        precio = h.precio
+                        break;
+                    }
+                }
+
+                productos.push(
+                    OrderProduct.create(
+                        ProductId.create(detalle.id_producto),
+                        OrderProductName.create(detalle.producto.name),
+                        OrderProductCantidad.create(detalle.cantidad),
+                        OrderProductPrice.create(
+                            OrderProductAmount.create(precio),
+                            OrderProductCurrency.create(moneda)
+                        )
+                    )
+                )
+            }
+        }
 
         const orderEstado = persistence.detalles.length === 0
             ? OrderEstado.create(EnumOrderEstados.CREATED)
@@ -76,8 +106,8 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
             OrderId.create(persistence.id),
             orderEstado,
             OrderCreationDate.create(persistence.fecha_creacion),
+            productos,
             OrderTotal.create(persistence.monto_total),
-            detalles
         )
 
         return order

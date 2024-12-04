@@ -9,6 +9,12 @@ import { ProductController } from './product/infraestructure/controller/product.
 import { AuthController } from './auth/infraestructure/controller/auth.controller';
 import { CategoryController } from './category/infraestructure/controller/category.controller';
 import { OrderController } from './order/infraestructure/controller/order.controller';
+import { CuponController } from './cupon/infraestructure/controller/cupon.controller';
+import { BundleController } from './bundle/infraestructure/controller/bundle.controller';
+import { CategoriesExistenceService } from './bundle/application/services/queries/categories-existence-check.service';
+import { ProductsExistenceService } from './bundle/application/services/queries/product-existence-check.service';
+import { DiscountController } from './discount/infraestructure/controller/discount.controller';
+import { DiscountExistenceService } from './bundle/application/services/queries/discount-existence-check.service';
 
 @Module({
   imports: [
@@ -27,19 +33,27 @@ import { OrderController } from './order/infraestructure/controller/order.contro
         }
       }
     }),
-      
+
   ],
   controllers: [//con
     UserController,
     ProductController,
     AuthController,
     CategoryController,
-    OrderController
+    OrderController,
+    CuponController,
+    BundleController,
+    DiscountController
   ],
   providers: [
     Logger,
     Logger,
-    postgresDatabaseProvider
+    postgresDatabaseProvider,
+    CategoriesExistenceService,
+    ProductsExistenceService,
+    DiscountExistenceService
   ],
+  exports: [CategoriesExistenceService,ProductsExistenceService,DiscountExistenceService],
+
 })
-export class AppModule {}
+export class AppModule { }
