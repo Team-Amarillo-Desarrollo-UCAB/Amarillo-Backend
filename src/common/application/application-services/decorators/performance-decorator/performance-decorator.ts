@@ -3,7 +3,7 @@ import { IApplicationService } from "../../application-service.interface"
 import { ApplicationServiceDecorator } from "../application-service.decorator" 
 import { ILogger } from "src/common/application/logger/logger.interface"
 import { LoggerDto } from "src/common/application/logger/dto/logs.dto"
-import { ApplicationServiceEntryDto } from "../../dto/application-service-entry.dto" 
+import { ApplicationServiceEntryDto } from "../../DTO/application-service-entry.dto" 
 
 
 export class PerformanceDecorator<D extends ApplicationServiceEntryDto, R> extends ApplicationServiceDecorator<D, R> implements IApplicationService<D, R>

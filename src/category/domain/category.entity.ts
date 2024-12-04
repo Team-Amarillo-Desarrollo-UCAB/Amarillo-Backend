@@ -5,6 +5,8 @@ import { CategoryName } from './value-objects/category-name';
 import { CategoryImage } from './value-objects/category-image';
 import { InvalidCategoryException } from './exceptions/invalid-category-exception';
 import { CategoryCreated } from './events/category-created-event';
+import { CategoryNameModified } from './events/category-name-modified-event';
+import { CategoryImageModified } from './events/category-image-modified-event';
 
 export class Category extends AggregateRoot<CategoryID> {
     private categoryName: CategoryName;
@@ -22,18 +24,37 @@ export class Category extends AggregateRoot<CategoryID> {
     }
 
     protected applyEvent(event: DomainEvent): void {
-        // Implementación específica del evento (solo se contempla uno)
-        switch (event.eventName){
-          case 'CategoryCreated':
-              const categoryCreated: CategoryCreated = event as CategoryCreated
-              this.categoryImage = CategoryImage.create(categoryCreated.icon)
-              this.categoryName = CategoryName.create(categoryCreated.name)
+      // Implementación específica del evento (solo se contempla uno)
+      switch (event.eventName) {
+        case 'CategoryCreated':
+          const categoryCreated: CategoryCreated = event as CategoryCreated;
+          this.categoryImage = CategoryImage.create(categoryCreated.icon);
+          this.categoryName = CategoryName.create(categoryCreated.name);
+          break;
+  
+        case 'CategoryNameModified':
+          const categoryNameModified: CategoryNameModified = event as CategoryNameModified;
+          this.categoryName = CategoryName.create(categoryNameModified.name);
+          break;
+  
+        case 'CategoryImageModified':
+          const categoryImageModified: CategoryImageModified = event as CategoryImageModified;
+          this.categoryImage = CategoryImage.create(categoryImageModified.image);
+          break;
       }
+    }
+
+    public updateName(name:CategoryName){
+      this.onEvent(CategoryNameModified.create(this.Id.Value,name.Value))
+    }
+
+    public updateImage(image:CategoryImage){
+      this.onEvent(CategoryImageModified.create(this.Id.Value,image.Value))
     }
 
     protected ensureValidState(): void {
       if ( !this.categoryName || !this.categoryImage)
-        throw new InvalidCategoryException()
+        throw new InvalidCategoryException("Nombre e imagen en categoría no deben estar vacíos")
     }
 
     getCategoryID(): CategoryID {

@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum, IsNumber, IsString, Length, Min } from "class-validator";
+import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsString, Length, Min } from "class-validator";
 import { UnidadMedida } from "src/product/domain/enum/UnidadMedida";
 
 export class CreateProductEntryDTO {
@@ -53,6 +53,18 @@ export class CreateProductEntryDTO {
         example: 'base64image',
     })
     @IsString()
-    image?: string;
+    image: string;
+
+    @ApiProperty({
+        example: 'id de las categorias',
+        type: {id: ''}
+    })
+    @IsArray()
+    @IsNotEmpty()
+    category: [
+        {
+            id: string
+        }
+    ]
 
 }
