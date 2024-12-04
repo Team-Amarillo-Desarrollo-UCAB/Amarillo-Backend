@@ -1,6 +1,6 @@
 import { IApplicationService } from "src/common/application/application-services/application-service.interface";
-import { CreateCuponServiceEntryDto } from "../DTO/entry/create-cupon-service-entry.dto";
-import { CreateCuponServiceResponseDto } from "../DTO/response/create-cupon-service-response.dto";
+import { CreateCuponServiceEntryDto } from "../dto/entry/create-cupon-service-entry.dto";
+import { CreateCuponServiceResponseDto } from "../dto/response/create-cupon-service-response.dto";
 import { Result } from "src/common/domain/result-handler/Result";
 import { ICuponRepository } from "src/cupon/domain/repositories/cupon-repository.interface";
 import { IdGenerator } from "src/common/application/id-generator/id-generator.interface";

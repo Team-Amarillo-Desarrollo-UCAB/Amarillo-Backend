@@ -5,15 +5,15 @@ import { IdGenerator } from "src/common/application/id-generator/id-generator.in
 import { DataSource } from "typeorm"
 import { CuponMapper } from "../mappers/cupon-mapper"
 import { UuidGenerator } from "src/common/infraestructure/id-generator/uuid-generator"
-import { CreateCuponEntryDto } from "./DTO/entry/create-cupon-entry.dto"
-import { CreateCuponResponseDto } from "./DTO/response/create-cupon-response.dto"
-import { CreateCuponServiceEntryDto } from "src/cupon/application/DTO/entry/create-cupon-service-entry.dto"
+import { CreateCuponServiceEntryDto } from "src/cupon/application/dto/entry/create-cupon-service-entry.dto"
 import { ExceptionDecorator } from "src/common/application/application-services/decorators/exception-decorator/exception.decorator"
 import { LoggingDecorator } from "src/common/application/application-services/decorators/logging-decorator/logging.decorator"
 import { HttpExceptionHandler } from "src/common/infraestructure/exception-handler/http-exception-handler-code"
 import { PerformanceDecorator } from "src/common/application/application-services/decorators/performance-decorator/performance-decorator"
 import { NativeLogger } from "src/common/infraestructure/logger/logger"
 import { CreateCuponService } from "src/cupon/application/command/create-cupon.service"
+import { CreateCuponEntryDto } from "./DTO/entry/create-cupon-entry.dto"
+import { CreateCuponResponseDto } from "./DTO/response/create-cupon-response.dto"
 
 @ApiTags("Cupon")
 @Controller('cupon')

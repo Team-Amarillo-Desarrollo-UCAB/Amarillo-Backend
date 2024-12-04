@@ -38,15 +38,15 @@ import { GetCategoryByNameServiceEntryDTO } from 'src/category/application/dto/e
 import { GetCategoryByNameResponseDTO } from '../dto/response/get-category-by-name-response.dto';
 import { GetCategoryByNameService } from 'src/category/application/queries/get-category-by-name.service';
 import { CloudinaryFileUploader } from 'src/common/infraestructure/cloudinary-file-uploader/cloudinary-file-uploader';
-import { GetCategoryByNameEntryDTO } from '../DTO/entry/get-category-by-name-entry.dto';
-import { UpdateCategoryEntryDTO } from '../DTO/entry/update-category-entry-infraestructure';
+import { GetCategoryByNameEntryDTO } from '../dto/entry/get-category-by-name-entry.dto';
+import { UpdateCategoryEntryDTO } from '../dto/entry/update-category-entry-infraestructure';
 import { UpdateCategoryApplicationService } from 'src/category/application/commands/update-category.service';
 import { EventBus } from 'src/common/infraestructure/event-bus/event-bus';
 import { DeleteCategoryServiceEntryDto } from 'src/category/application/dto/entry/delete-category-service-entry.dto';
-import { DeleteCategoryInfraEntryDto } from '../DTO/entry/delete-category-infra-enty.dto';
-import { DeleteCategoryInfraResponseDto } from '../DTO/response/delete-category-infra-response.dto';
+import { DeleteCategoryInfraEntryDto } from '../dto/entry/delete-category-infra-enty.dto';
+import { DeleteCategoryInfraResponseDto } from '../dto/response/delete-category-infra-response.dto';
 import { DeleteCategoryApplicationService } from 'src/category/application/commands/delete-category.service';
-import { CategoryParamsEntryDTO } from '../DTO/entry/category-params-entry.dto';
+import { CategoryParamsEntryDTO } from '../dto/entry/category-params-entry.dto';
 import { ExceptionDecorator } from 'src/common/application/application-services/decorators/exception-decorator/exception.decorator';
 import { HttpExceptionHandler } from 'src/common/infraestructure/exception-handler/http-exception-handler-code';
 
