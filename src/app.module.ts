@@ -15,6 +15,7 @@ import { CategoriesExistenceService } from './bundle/application/services/querie
 import { ProductsExistenceService } from './bundle/application/services/queries/product-existence-check.service';
 import { DiscountController } from './discount/infraestructure/controller/discount.controller';
 import { DiscountExistenceService } from './bundle/application/services/queries/discount-existence-check.service';
+import { PaymentMethodController } from './payment-method/infraestructure/controller/payment-method.controller';
 
 @Module({
   imports: [
@@ -43,7 +44,8 @@ import { DiscountExistenceService } from './bundle/application/services/queries/
     OrderController,
     CuponController,
     BundleController,
-    DiscountController
+    DiscountController,
+    PaymentMethodController
   ],
   providers: [
     Logger,

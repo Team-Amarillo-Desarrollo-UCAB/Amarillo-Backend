@@ -4,16 +4,19 @@ import { DomainEvent } from "src/common/domain/domain-event/domain-event.interfa
 import { PaymentMethodName } from "./value-objects/payment-method-name";
 import { PaymentMethodCreated } from "./domain-events/payment-method-created";
 import { InvalidPaymentMethod } from "./domain-exception/invalid-payment-method";
+import { PaymentMethodState } from './value-objects/payment-method-state';
 
 export class PaymentMethod extends AggregateRoot<PaymentMethodId> {
 
     private constructor(
         id: PaymentMethodId,
-        private nombre: PaymentMethodName
+        private nombre: PaymentMethodName,
+        private status: PaymentMethodState
     ) {
         const event = PaymentMethodCreated.create(
             id.Id,
-            nombre.Value()
+            nombre.Value(),
+            status.Value()
         )
         super(id, event)
     }
@@ -22,12 +25,17 @@ export class PaymentMethod extends AggregateRoot<PaymentMethodId> {
         return this.nombre
     }
 
+    Status(){
+        return this.status
+    }
+
     protected applyEvent(event: DomainEvent): void {
         switch (event.eventName) {
             //patron estado o estrategia, esto es una cochinada el switch case
             case 'PaymentMethodCreated':
                 const paymentMeodthCreated: PaymentMethodCreated = event as PaymentMethodCreated;
                 this.nombre = PaymentMethodName.create(paymentMeodthCreated.name)
+                this.status = PaymentMethodState.create(paymentMeodthCreated.status)
                 break;
         }
     }
@@ -41,9 +49,10 @@ export class PaymentMethod extends AggregateRoot<PaymentMethodId> {
 
     static create(
         id: PaymentMethodId,
-        nombre: PaymentMethodName
+        nombre: PaymentMethodName,
+        status: PaymentMethodState
     ) {
-        return new PaymentMethod(id, nombre)
+        return new PaymentMethod(id, nombre,status)
     }
 
 }

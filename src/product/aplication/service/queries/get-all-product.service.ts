@@ -29,7 +29,7 @@ export class GetAllProductService implements IApplicationService<GetAllProductSe
                     id_product: producto.Id.Id,
                     nombre: producto.Name,
                     precio: producto.Price,
-                    moneda: producto.Moneda,    
+                    moneda: producto.Moneda,
                     stock: producto.Stock,
                     image: producto.Image,
                     unidad_medida: producto.Unit,
@@ -39,7 +39,7 @@ export class GetAllProductService implements IApplicationService<GetAllProductSe
             }
         )
 
-        return Result.success(response,202)
+        return Result.success(response, 202)
     }
 
     get name(): string {

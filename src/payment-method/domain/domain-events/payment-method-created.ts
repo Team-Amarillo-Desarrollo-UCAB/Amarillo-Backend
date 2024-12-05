@@ -5,6 +5,7 @@ export class PaymentMethodCreated extends DomainEvent {
     protected constructor(
         public id: string,
         public name: EnumPaymentMethod,
+        public status: boolean
     ) {
         super();
     }
@@ -12,10 +13,15 @@ export class PaymentMethodCreated extends DomainEvent {
     public static create(
         id: string,
         name: EnumPaymentMethod,
-    ): PaymentMethodCreated {
+        status: boolean
+    ) {
+
         return new PaymentMethodCreated(
             id,
-            name
+            name,
+            status
+
         );
     }
+
 }

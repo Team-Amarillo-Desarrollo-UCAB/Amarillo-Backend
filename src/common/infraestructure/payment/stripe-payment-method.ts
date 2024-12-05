@@ -9,27 +9,43 @@ import { OrderPaymentId } from 'src/order/domain/value-object/oder-payment.ts/or
 import { OrderPaymentName } from 'src/order/domain/value-object/oder-payment.ts/order-payment-name';
 import { EnumPaymentMethod } from 'src/payment-method/domain/enum/PaymentMethod';
 import { OrderPaymentCurrency } from 'src/order/domain/value-object/oder-payment.ts/order-payment-currency';
+import { IPaymentMethodRepository } from 'src/payment-method/domain/repositories/payment-method-repository.interface';
 
 export class StripePaymentMethod implements IPaymentMethod {
 
     private readonly idGenerator: IdGenerator<string>
+    private readonly paymentMethodRepository: IPaymentMethodRepository
     private readonly stripe: Stripe
-    private idStripe: string
+    private readonly idPayment: string
+    private token: string
 
-    constructor(id: string, idGenerator: IdGenerator<string>) {
+    constructor(
+        id: string,
+        idGenerator: IdGenerator<string>,
+        paymentMethodRepository: IPaymentMethodRepository,
+        idPayment: string
+    ) {
         this.stripe = new Stripe(process.env.STRIPE_API_SECRET);
-        this.idStripe = id
+        this.token = id
         this.idGenerator = idGenerator
+        this.paymentMethodRepository = paymentMethodRepository
+        this.idPayment = idPayment
     }
 
     async execute(orden: Order): Promise<Result<Order>> {
         try {
+
+            const method = await this.paymentMethodRepository.findPaymentMethodById(this.idPayment)
+
+            if(!method.isSuccess())
+                return Result.fail<Order>(method.Error,404,method.Message)
+
             // Crea un PaymentIntent con el token del frontend;
             const paymentIntent = await this.stripe.paymentIntents.create({
                 amount: orden.Monto.Total * 100,
                 currency: 'usd',
                 confirm: true,
-                payment_method: this.idStripe,
+                payment_method: this.token,
                 payment_method_types: ['card'],
             });
 

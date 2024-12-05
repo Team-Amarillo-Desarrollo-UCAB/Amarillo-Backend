@@ -58,14 +58,14 @@ import { StripePaymentMethod } from "src/common/infraestructure/payment/stripe-p
 import { CreateOrderStripeEntryDTO } from '../dto/entry/create-order-stripe-entry.dto';
 import { OrmCategoryMapper } from "src/category/infraestructure/mappers/orm-category-mapper";
 import { OrmCategoryRepository } from "src/category/infraestructure/repositories/orm-category-repository";
+import { PaymentMethodRepository } from "src/payment-method/infraestructure/repositories/payment-method-repository";
+import { PaymentMethodMapper } from "src/payment-method/infraestructure/mappers/payment-method-mapper";
 
 @ApiTags("Order")
 @Controller("order")
 export class OrderController {
 
     private readonly idGenerator: IdGenerator<string>
-    private readonly fileUploader: IFileUploader
-    private readonly imageTransformer: ImageTransformer
     private readonly eventBus = RabbitEventBus.getInstance();
     private readonly orderRepository: IOrderRepository
     private readonly productRepository: IProductRepository
@@ -74,14 +74,13 @@ export class OrderController {
     private readonly estadoOrdenRepository: EstadoOrdenRepository
     private readonly estadoRepository: EstadoRepository
     private readonly categoryRepository: OrmCategoryRepository
+    private readonly paymentMethodRepository: PaymentMethodRepository
 
 
     constructor(
         @Inject('DataSource') private readonly dataSource: DataSource
     ) {
         this.idGenerator = new UuidGenerator();
-        this.imageTransformer = new ImageTransformer();
-        this.fileUploader = new CloudinaryFileUploader()
         this.orderRepository = new OrderRepository(new OrderMapper(this.idGenerator), dataSource)
         this.categoryRepository = new OrmCategoryRepository(new OrmCategoryMapper(), dataSource)
         this.productRepository =
@@ -94,6 +93,7 @@ export class OrderController {
         this.detalleRepository = new DetalleRepository(dataSource)
         this.estadoOrdenRepository = new EstadoOrdenRepository(dataSource)
         this.estadoRepository = new EstadoRepository(dataSource)
+        this.paymentMethodRepository = new PaymentMethodRepository(dataSource,new PaymentMethodMapper())
     }
 
     // TODO: Probar la validacion con el bearer token
@@ -426,7 +426,9 @@ export class OrderController {
                             new OrderCalculationTotal(
                                 new StripePaymentMethod(
                                     request.token,
-                                    this.idGenerator
+                                    this.idGenerator,
+                                    this.paymentMethodRepository,
+                                    request.idPayment
                                 )
                             )
                         ),

@@ -57,7 +57,6 @@ export class CreateProductEntryDTO {
 
     @ApiProperty({
         example: 'id de las categorias',
-        type: {id: ''}
     })
     @IsArray()
     @IsNotEmpty()
