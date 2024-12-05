@@ -9,6 +9,8 @@ import { ProductController } from './product/infraestructure/controller/product.
 import { AuthController } from './auth/infraestructure/controller/auth.controller';
 import { CategoryController } from './category/infraestructure/controller/category.controller';
 import { OrderController } from './order/infraestructure/controller/order.controller';
+import { CuponController } from './cupon/infraestructure/controller/cupon.controller';
+import { DiscountController } from './discount/infraestructure/controller/discount.controller';
 
 @Module({
   imports: [
@@ -34,12 +36,16 @@ import { OrderController } from './order/infraestructure/controller/order.contro
     ProductController,
     AuthController,
     CategoryController,
-    OrderController
+    OrderController,
+    CuponController,
+    DiscountController
   ],
   providers: [
     Logger,
     Logger,
-    postgresDatabaseProvider
+    postgresDatabaseProvider, 
+    // DiscountExistenceService
   ],
+  //exports: [DiscountExistenceService],
 })
 export class AppModule {}

@@ -56,7 +56,13 @@ export class Cupon extends AggregateRoot<CuponId>{
     }
 
     protected ensureValidState(): void {
-        throw new Error("Method not implemented.");
+        if (
+            !this.Amount ||
+            !this.Code ||
+            !this.ExpirationDate 
+
+        )
+        throw new Error('El cupon tiene que ser valido');
     }
 
     static create(

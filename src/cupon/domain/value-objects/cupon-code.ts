@@ -12,7 +12,7 @@ export class CuponCode implements IValueObject<CuponCode>{
     }
 
     equals(valueObject: CuponCode): boolean {
-        return this.code === valueObject.Code()
+        return this.code === valueObject.code
     }
 
     static create(code: string){
