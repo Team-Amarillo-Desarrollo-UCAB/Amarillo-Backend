@@ -5,4 +5,5 @@ export interface GetDiscountByIdServiceResponseDto{
     percentage: number;
     startDate: Date;
     deadline: Date;
+    image?: string;
 }

@@ -43,4 +43,9 @@ export class GetDiscountResponseDTO {
   })
   @IsDate()
   deadline: Date;
+  
+  @ApiProperty({
+    example: "https://res.cloudinary.com/dxttqmyxu/image/upload/v1731483047/kkizccq7zv9j37jg0hi3.png"
+})
+image?: string
 }
