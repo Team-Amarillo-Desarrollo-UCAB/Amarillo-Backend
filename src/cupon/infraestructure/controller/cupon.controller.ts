@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Logger, Param, Post, Query } from "@nestjs/common"
+import { Body, Controller, Delete, Get, Inject, Logger, Param, ParseUUIDPipe, Post, Query } from "@nestjs/common"
 import { ApiBody, ApiOkResponse, ApiTags } from "@nestjs/swagger"
 import { CuponRepository } from "../repositories/cupon-repository"
 import { IdGenerator } from "src/common/application/id-generator/id-generator.interface"
@@ -23,6 +23,10 @@ import { GetAllCuponServiceEntryDTO } from "src/cupon/application/dto/entry/get-
 import { GetCouponByCodeResponseDTO } from "./dto/response/get-coupon-by-code-response.dto"
 import { GetCouponByCodeServiceEntryDTO } from "src/cupon/application/dto/entry/get-coupon-by-code-service-entry.dto"
 import { GetCouponByCodeService } from "src/cupon/application/service/queries/get-coupon-by-code.service"
+import { DeleteCouponResponseDto } from "./dto/response/delete-cupon-response.dto"
+import { DeleteCouponEntryDto } from "./dto/entry/delete-coupon-entry.dto"
+import { DeleteCuponServiceEntryDto } from "src/cupon/application/dto/entry/delete-cupon-service-entry.dto"
+import { DeleteCouponApplicationService } from "src/cupon/application/command/delete-cupon.service"
 
 @ApiTags("Cupon")
 @Controller('cupon')
@@ -138,4 +142,42 @@ export class CuponController {
         return response
     }
 
+
+    @ApiOkResponse({
+        description: 'Elimina un copón por su ID',
+        type: DeleteCouponResponseDto,
+      })
+      @Delete('/delete/:id')
+      async deleteCategory(
+        @Param('id', ParseUUIDPipe) id: string,
+      ): Promise<DeleteCouponResponseDto> {
+        const infraEntryDto: DeleteCouponEntryDto = { cuponId: id };
+        //const eventBus = EventBus.getInstance()
+    
+        const serviceEntryDto: DeleteCuponServiceEntryDto = {
+            userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+            cuponId: infraEntryDto.cuponId
+        };
+    
+        const service = new LoggingDecorator(
+          new DeleteCouponApplicationService(this.cuponRepository),
+          new NativeLogger(this.logger)
+        );
+
+        const result = await service.execute(serviceEntryDto);
+    
+        if (!result.isSuccess()) {
+          this.logger.error(`Error eliminando cupón: ${result.Error.message}`);
+          throw result.Error;
+        }
+    
+        // Paso 4: Transformar la respuesta del servicio en un DTO de infraestructura
+        const infraResponseDto: DeleteCouponResponseDto = {
+          deletedId: result.Value.cuponId,
+          message: 'Categoría eliminada exitosamente.',
+        };
+    
+        // Paso 5: Retornar el DTO de infraestructura
+        return infraResponseDto;
+    }
 }
