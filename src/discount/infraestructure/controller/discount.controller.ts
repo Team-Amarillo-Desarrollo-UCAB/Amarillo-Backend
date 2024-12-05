@@ -27,6 +27,10 @@ import { CreateDiscountServiceEntryDto } from 'src/discount/application/dto/entr
 import { GetDiscountByIdServiceEntryDto } from 'src/discount/application/dto/entry/get-discount-by-id-service-entry.dto';
 import { IFileUploader } from 'src/common/application/file-uploader/file-uploader.interface';
 import { CloudinaryFileUploader } from 'src/common/infraestructure/cloudinary-file-uploader/cloudinary-file-uploader';
+import { GetAllDiscountsResponseDTO } from '../dto/response/get-all-discounts-response.dto';
+import { PaginationDto } from 'src/common/infraestructure/dto/entry/pagination.dto';
+import { GetAllDiscountService } from 'src/discount/application/services/queries/get-all-discount.service';
+import { GetAllDiscountServiceEntryDTO } from 'src/discount/application/dto/entry/get-all-discount-service.dto';
   
   
   @ApiTags('Discount')
@@ -98,6 +102,38 @@ import { CloudinaryFileUploader } from 'src/common/infraestructure/cloudinary-fi
   
       return 'Descuento creado exitosamente';
     }
+
+    @Get('many')
+    @ApiOkResponse({
+        description: 'Devuelve la informacion de todos los descuentos',
+        type: GetAllDiscountsResponseDTO,
+    })
+    async getAllProduct(
+        @Query() paginacion: PaginationDto
+    ) {
+        const service =
+        new LoggingDecorator(
+            new GetAllDiscountService(this.discountRepository),
+            new NativeLogger(this.logger)
+        )
+
+        const data: GetAllDiscountServiceEntryDTO = {
+            userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+            ...paginacion
+        }
+
+        const result = await service.execute(data)
+
+        if(!result.isSuccess())
+            return result.Error
+
+        const response: GetAllDiscountsResponseDTO[] = {
+            ...result.Value,
+        }
+
+        return response
+    }
+
   
   }
   

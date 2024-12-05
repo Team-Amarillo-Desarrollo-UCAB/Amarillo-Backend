@@ -16,6 +16,23 @@ export class OrmDiscountRepository
     super(OrmDiscount, dataSource.createEntityManager());
     this.ormDiscountMapper = ormDiscountMapper;
   }
+  async findAllDiscounts(page: number, limit: number): Promise<Result<Discount[]>> {
+    const discounts = await this.find({
+      skip: page,
+      take: limit
+  })
+
+  if(!discounts)
+      return Result.fail<Discount[]>(new Error(`Descuentos no almacenados`), 404, `Descuentos no almacenados`)
+  
+  const resultado = await Promise.all(
+    discounts.map(async (discount) => {
+        return await this.ormDiscountMapper.fromPersistenceToDomain(discount); // Retorna el Product
+      })
+  );
+
+  return Result.success<Discount[]>(resultado,202)
+}
 
 
   async addDiscount(discount: Discount): Promise<Result<Discount>> {
