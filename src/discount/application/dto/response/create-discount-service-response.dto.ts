@@ -5,4 +5,5 @@ export interface CreateDiscountServiceResponseDto{
     percentage: number;
     startDate: Date;
     deadline: Date;
+    image?: string;
 }

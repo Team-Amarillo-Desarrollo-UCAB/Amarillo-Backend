@@ -33,4 +33,10 @@ export class CreateDiscountEntryDTO {
   })
   @IsDate()
   deadline: Date;
+
+  @ApiProperty({
+    example: 'base64image',
+})
+@IsString()
+image?: string;
 }

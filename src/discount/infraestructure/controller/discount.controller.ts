@@ -25,6 +25,8 @@ import { CreateDiscountEntryDTO } from '../dto/entry/create-discount-entry.dto';
 import { CreateDiscountApplicationService } from 'src/discount/application/services/commands/create-discount.service';
 import { CreateDiscountServiceEntryDto } from 'src/discount/application/dto/entry/create-discount-service-entry.dto';
 import { GetDiscountByIdServiceEntryDto } from 'src/discount/application/dto/entry/get-discount-by-id-service-entry.dto';
+import { IFileUploader } from 'src/common/application/file-uploader/file-uploader.interface';
+import { CloudinaryFileUploader } from 'src/common/infraestructure/cloudinary-file-uploader/cloudinary-file-uploader';
   
   
   @ApiTags('Discount')
@@ -33,13 +35,14 @@ import { GetDiscountByIdServiceEntryDto } from 'src/discount/application/dto/ent
     private readonly discountRepository: OrmDiscountRepository;
     private readonly logger: Logger = new Logger('DiscountController');
     private readonly idGenerator: UuidGenerator;
-  
+    private readonly fileUploader: IFileUploader; 
     constructor(@Inject('DataSource') private readonly dataSource: DataSource) {
       this.discountRepository = new OrmDiscountRepository(
         new OrmDiscountMapper(),
         dataSource,
       );
       this.idGenerator = new UuidGenerator();
+      this.fileUploader = new CloudinaryFileUploader()
     }
   
     /**
@@ -84,7 +87,7 @@ import { GetDiscountByIdServiceEntryDto } from 'src/discount/application/dto/ent
         console.log("Data para crear en infraestructura:",data)
         
       const service = new LoggingDecorator(
-        new CreateDiscountApplicationService(this.discountRepository, this.idGenerator),
+        new CreateDiscountApplicationService(this.discountRepository, this.idGenerator, this.fileUploader),
         new NativeLogger(this.logger),
       );
   

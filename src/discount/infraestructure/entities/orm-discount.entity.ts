@@ -20,6 +20,8 @@ export class OrmDiscount {
   @Column({ type: 'timestamp' })
   deadline: Date; 
 
+  @Column('varchar', { nullable: true })
+    image: string
 
   static create(
     id: string,
@@ -27,7 +29,8 @@ export class OrmDiscount {
     description: string,
     percentage: number,
     startDate: Date,
-    deadline: Date
+    deadline: Date,
+    image?: string
   ): OrmDiscount {
     const discount = new OrmDiscount();
     discount.id = id;
@@ -36,6 +39,7 @@ export class OrmDiscount {
     discount.percentage = percentage;
     discount.startDate = startDate;
     discount.deadline = deadline;
+    discount.image = image;
     return discount;
   }
 }

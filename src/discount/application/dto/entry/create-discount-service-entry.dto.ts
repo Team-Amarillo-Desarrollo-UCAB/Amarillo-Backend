@@ -6,4 +6,5 @@ export interface CreateDiscountServiceEntryDto extends ApplicationServiceEntryDt
     percentage: number;
     startDate: Date;
     deadline: Date;
+    image?: string;
 }
