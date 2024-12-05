@@ -13,9 +13,9 @@ import { CuponController } from './cupon/infraestructure/controller/cupon.contro
 import { BundleController } from './bundle/infraestructure/controller/bundle.controller';
 import { CategoriesExistenceService } from './bundle/application/services/queries/categories-existence-check.service';
 import { ProductsExistenceService } from './bundle/application/services/queries/product-existence-check.service';
-import { DiscountController } from './discount/infraestructure/controller/discount.controller';
 import { DiscountExistenceService } from './bundle/application/services/queries/discount-existence-check.service';
 import { PaymentMethodController } from './payment-method/infraestructure/controller/payment-method.controller';
+import { DiscountController } from './discount/infraestructure/controller/discount.controller';
 
 @Module({
   imports: [

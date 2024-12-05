@@ -7,15 +7,15 @@ import { CuponAmount } from "./value-objects/cupon-amount";
 import { CuponCreationDate } from "./value-objects/cupon-creation-date";
 import { CuponCreated } from './domain-events/cupon-created-event';
 
-export class Cupon extends AggregateRoot<CuponId>{
+export class Cupon extends AggregateRoot<CuponId> {
 
     protected constructor(
         id: CuponId,
-        private code:  CuponCode,
+        private code: CuponCode,
         private expiration_date: CuponExpirationDate,
         private amount: CuponAmount,
         private creation_date: CuponCreationDate
-    ){
+    ) {
         const event = CuponCreated.create(
             id.Id(),
             code.Code(),
@@ -23,22 +23,22 @@ export class Cupon extends AggregateRoot<CuponId>{
             amount.Amount(),
             creation_date.CreationDate()
         )
-        super(id,event)
+        super(id, event)
     }
 
-    Code(){
+    Code() {
         return this.code.Code()
     }
 
-    ExpirationDate(){
+    ExpirationDate() {
         return this.expiration_date.ExpirationDate()
     }
 
-    Amount(){
+    Amount() {
         return this.amount.Amount()
     }
 
-    CreationDate(){
+    CreationDate() {
         return this.creation_date.CreationDate()
     }
 
@@ -56,17 +56,23 @@ export class Cupon extends AggregateRoot<CuponId>{
     }
 
     protected ensureValidState(): void {
-        throw new Error("Method not implemented.");
+        if (
+            !this.Amount ||
+            !this.Code ||
+            !this.ExpirationDate
+
+        )
+            throw new Error('El cupon tiene que ser valido');
     }
 
     static create(
         id: CuponId,
-        code:  CuponCode,
+        code: CuponCode,
         expiration_date: CuponExpirationDate,
         amount: CuponAmount,
         creation_date: CuponCreationDate
-    ): Cupon{
-        return new Cupon(id,code,expiration_date,amount,creation_date)
+    ): Cupon {
+        return new Cupon(id, code, expiration_date, amount, creation_date)
     }
 
 }

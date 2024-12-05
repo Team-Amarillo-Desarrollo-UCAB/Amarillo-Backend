@@ -30,7 +30,7 @@ import { GetProductByNameServiceEntryDTO } from "src/product/aplication/dto/entr
 import { GetProductByNameService } from "src/product/aplication/service/queries/get-product-by-name.service";
 import { GetProductByNameResponseDTO } from "../dto/response/get-product-by-name-response.dto";
 import { CreateProductEntryDTO } from "../dto/entry/create-product-entry.dto";
-import { CreateProductServiceEntryDTO } from "src/product/aplication/DTO/entry/create-product-service-entry.dto";
+import { CreateProductServiceEntryDTO } from "src/product/aplication/dto/entry/create-product-service-entry.dto";
 import { CreateProductService } from "src/product/aplication/service/commands/create-product.service";
 import { IdGenerator } from "src/common/application/id-generator/id-generator.interface";
 import { UuidGenerator } from "src/common/infraestructure/id-generator/uuid-generator";

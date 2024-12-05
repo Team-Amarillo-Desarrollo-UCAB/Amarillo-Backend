@@ -1,5 +1,5 @@
 import { DataSource, Repository } from "typeorm";
-import { OrmUser } from "../entities/user.entity";
+import { OrmUser } from "../../entities/orm-entities/user.entity";
 import { IUserRepository } from "src/user/domain/repositories/user-repository.interface";
 import { Result } from "src/common/domain/result-handler/Result";
 import { User } from "src/user/domain/user";

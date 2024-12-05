@@ -23,10 +23,10 @@ export class CuponId implements IValueObject<CuponId>{
     }
 
     equals(valueObject: CuponId): boolean {
-        throw new Error('Method not implemented.');
+        return this.id === valueObject.Id()
     }
 
-    static create(id: string){
+    static create(id: string): CuponId{
         return new CuponId(id)
     }
 

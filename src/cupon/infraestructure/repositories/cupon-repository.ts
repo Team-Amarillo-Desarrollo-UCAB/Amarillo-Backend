@@ -19,6 +19,37 @@ export class CuponRepository extends Repository<OrmCupon> implements ICuponRepos
         this.cuponMapper = cuponMapper
     }
 
+
+    async findCuponByCode(code: string): Promise<Result<Cupon>> {
+        const cupon = await this.findOne({
+            where: { code: code }
+        });
+
+        if (!cupon)
+            return Result.fail<Cupon>(new CuponNotFoundException(code), 403, `Cupon ${code} not found`)
+
+        const resultado = await this.cuponMapper.fromPersistenceToDomain(cupon)
+
+        return Result.success(resultado, 202)
+    }
+
+
+    async findAllCoupons(page: number, limit: number): Promise<Result<Cupon[]>> {
+        const coupons = await this.find({
+            skip: page,
+            take: limit,
+        })
+
+        if(!coupons)
+            return Promise.resolve(Result.fail<Cupon[]>(new Error(`Cupones no almacenados`), 404, `Cupones no almacenados`))
+        
+        const resultado = await Promise.all(
+            coupons.map(async (coupon) => {
+              return await this.cuponMapper.fromPersistenceToDomain(coupon); // Retorna el Product
+            }));
+        return Result.success<Cupon[]>(resultado,202)
+    }
+
     async saveCuponAggregate(cupon: Cupon): Promise<Result<Cupon>> {
         try {
             const ormCupon = await this.cuponMapper.fromDomainToPersistence(cupon)

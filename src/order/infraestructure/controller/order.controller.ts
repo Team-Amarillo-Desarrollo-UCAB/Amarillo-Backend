@@ -20,12 +20,10 @@ import { LoggingDecorator } from "src/common/application/application-services/de
 import { NativeLogger } from "src/common/infraestructure/logger/logger";
 import { IdGenerator } from "src/common/application/id-generator/id-generator.interface";
 import { UuidGenerator } from "src/common/infraestructure/id-generator/uuid-generator";
-import { IFileUploader } from "src/common/application/file-uploader/file-uploader.interface";
-import { ImageTransformer } from "src/common/infraestructure/image-helper/image-transformer";
-import { CloudinaryFileUploader } from "src/common/infraestructure/cloudinary-file-uploader/cloudinary-file-uploader";
 import { RabbitEventBus } from "src/common/infraestructure/rabbit-event-handler/rabbit-event-handler";
 import { IOrderRepository } from "src/order/domain/repositories/order-repository.interface";
 import { OrderRepository } from "../repositories/order-repository";
+import { IMapper } from "src/common/application/mappers/mapper.interface";
 import { CreateOrderEntryDTO } from "../dto/entry/create-order-entry-dto";
 import { CreateOrderResponseDTO } from "../dto/response/create-order-response";
 import { CreateOrderEntryServiceDTO } from "src/order/application/dto/entry/create-order-entry-service";

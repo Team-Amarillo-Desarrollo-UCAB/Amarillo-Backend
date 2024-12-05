@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsIn, IsOptional, IsString } from 'class-validator';
+import { EnumUserRole } from 'src/user/domain/user-role/user-role';
 
 export class SignUpUserEntryInfraDto {
 
@@ -7,7 +8,7 @@ export class SignUpUserEntryInfraDto {
     @IsString()
     @IsIn(['CLIENT', 'ADMIN'])
     @IsOptional()
-    type: string;
+    type: EnumUserRole;
 
     @ApiProperty({ example: 'carlonsozoa@gmail.com' })
     @IsString()
@@ -24,5 +25,11 @@ export class SignUpUserEntryInfraDto {
     @ApiProperty({ example: '04131234123' })
     @IsString()
     phone: string
+
+    @ApiProperty({
+        example: 'base64image',
+    })
+    @IsString()
+    image?: string;
 
 }

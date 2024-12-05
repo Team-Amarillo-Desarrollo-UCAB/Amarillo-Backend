@@ -1,4 +1,4 @@
-import { ApplicationServiceEntryDto } from "src/common/application/application-services/DTO/application-service-entry.dto";
+import { ApplicationServiceEntryDto } from "src/common/application/application-services/dto/application-service-entry.dto";
 
 export interface CreateDiscountServiceEntryDto extends ApplicationServiceEntryDto{
     name: string;
@@ -6,4 +6,5 @@ export interface CreateDiscountServiceEntryDto extends ApplicationServiceEntryDt
     percentage: number;
     startDate: Date;
     deadline: Date;
+    image?: string;
 }

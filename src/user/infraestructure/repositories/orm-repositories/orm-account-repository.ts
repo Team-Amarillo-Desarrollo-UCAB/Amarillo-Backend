@@ -1,9 +1,9 @@
 import { Repository, DataSource } from 'typeorm'
 
-import { IAccountRepository } from './../../application/interface/account-user-repository.interface';
-import { OrmUser } from './../entities/user.entity';
-import { Result } from "src/common/Domain/result-handler/Result"
-import { UserNotFoundException } from '../exceptions/user-not-found-exception';
+import { IAccountRepository } from '../../../application/interface/account-user-repository.interface';
+import { OrmUser } from '../../entities/orm-entities/user.entity';
+import { Result } from "src/common/domain/result-handler/Result"
+import { UserNotFoundException } from '../../exceptions/user-not-found-exception';
 
 export class OrmAccountRepository extends Repository<OrmUser> implements IAccountRepository<OrmUser> {
 
@@ -27,7 +27,6 @@ export class OrmAccountRepository extends Repository<OrmUser> implements IAccoun
             const list_users: OrmUser[] = [];
             for (const user of OrmUsers){ list_users.push(user) }
             return Result.success<OrmUser[]>(list_users, 200);
-            //return Result.fail<OrmUser[]>( new UserNotFoundException(), 403, 'Non-existing users')
             }
         } catch (error) {
             return Result.fail<OrmUser[]>( new Error( error.message ), error.code, error.message )

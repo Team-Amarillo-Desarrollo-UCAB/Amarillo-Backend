@@ -14,6 +14,8 @@ import { OrderProductPrice } from 'src/order/domain/value-object/order-product/o
 import { ProductCreated } from 'src/product/domain/domain-event/product-created-event'
 import { ProductId } from 'src/product/domain/value-objects/product-id'
 import { testCreated } from "src/product/infraestructure/controller/test-event"
+import { UserCreated } from 'src/user/domain/events/user-created-event'
+import { UserName } from 'src/user/domain/value-object/user-name'
 
 
 export class RabbitEventBus implements IEventHandler {
@@ -148,6 +150,26 @@ export class RabbitEventBus implements IEventHandler {
                             event = testCreated.create(
                                 event_data.msg
                             )
+                        case 'UserCreated':
+                            event = UserCreated.create(
+                                event_data.userId,
+                                event_data.userName,
+                                event_data.userPhone,
+                                event_data.userEmail,
+                                event_data.userImage,
+                                event_data.userRole
+                            );
+                            break;
+                        // TODO: Revisar si es necesario tenerlo como un evento
+                        case 'GetCode':
+                            event = UserCreated.create(
+                                event_data.userId,
+                                event_data.userName,
+                                event_data.userPhone,
+                                event_data.userEmail,
+                                event_data.userImage,
+                                event_data.userRole
+                            );
                             break;
                     }
                     console.log("Evento obtenido: ", event)

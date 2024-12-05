@@ -1,4 +1,4 @@
-import { ApplicationServiceEntryDto } from "src/common/application/application-services/DTO/application-service-entry.dto"
+import { ApplicationServiceEntryDto } from "src/common/application/application-services/dto/application-service-entry.dto"
 import { UnidadMedida } from "src/product/domain/enum/UnidadMedida"
 
 export interface CreateProductServiceEntryDTO extends ApplicationServiceEntryDto {
@@ -17,12 +17,12 @@ export interface CreateProductServiceEntryDTO extends ApplicationServiceEntryDto
 
     stock: number
 
-    image: string
-
     category: [
         {
             id: string
         }
     ]
+
+    image?: string
 
 }

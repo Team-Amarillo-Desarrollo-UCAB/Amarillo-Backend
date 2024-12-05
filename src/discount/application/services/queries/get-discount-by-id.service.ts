@@ -30,6 +30,7 @@ export class GetDiscountByIdService
       percentage: discount.Value.Percentage.Value,
       startDate: discount.Value.StartDate.Value,
       deadline: discount.Value.Deadline.Value,
+      image: discount.Value.Image?.Image
     };
 
     // Devolver el resultado exitoso con el DTO

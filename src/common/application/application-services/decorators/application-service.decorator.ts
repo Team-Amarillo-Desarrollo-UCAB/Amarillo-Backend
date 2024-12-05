@@ -1,6 +1,6 @@
 import { Result } from "../../../domain/result-handler/Result"
 import { IApplicationService } from "../application-service.interface"
-import { ApplicationServiceEntryDto } from "../DTO/application-service-entry.dto"
+import { ApplicationServiceEntryDto } from "../dto/application-service-entry.dto"
 
 export abstract class ApplicationServiceDecorator<D extends ApplicationServiceEntryDto, R> implements IApplicationService<D, R> {
 

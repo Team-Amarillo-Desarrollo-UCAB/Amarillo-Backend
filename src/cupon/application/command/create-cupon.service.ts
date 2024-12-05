@@ -1,6 +1,6 @@
 import { IApplicationService } from "src/common/application/application-services/application-service.interface";
-import { CreateCuponServiceEntryDto } from "../DTO/entry/create-cupon-service-entry.dto";
-import { CreateCuponServiceResponseDto } from "../DTO/response/create-cupon-service-response.dto";
+import { CreateCuponServiceEntryDto } from "../dto/entry/create-cupon-service-entry.dto";
+import { CreateCuponServiceResponseDto } from "../dto/response/create-cupon-service-response.dto";
 import { Result } from "src/common/domain/result-handler/Result";
 import { ICuponRepository } from "src/cupon/domain/repositories/cupon-repository.interface";
 import { IdGenerator } from "src/common/application/id-generator/id-generator.interface";
@@ -14,24 +14,21 @@ import { CuponCreationDate } from "src/cupon/domain/value-objects/cupon-creation
 export class CreateCuponService implements IApplicationService
     <CreateCuponServiceEntryDto, CreateCuponServiceResponseDto> {
 
-    private readonly idGenerator: IdGenerator<string>
-    private readonly cuponRepository: ICuponRepository
 
     constructor(
-        idGenerator: IdGenerator<string>, cuponRepository: ICuponRepository
+        private readonly cuponRepository: ICuponRepository,
+        private readonly idGenerator: IdGenerator<string>,
     ) {
-        this.idGenerator = this.idGenerator
-        this.cuponRepository = cuponRepository
+
     }
 
     async execute(data: CreateCuponServiceEntryDto): Promise<Result<CreateCuponServiceResponseDto>> {
         const verify_code = await this.cuponRepository.verifyCuponCode(data.code)
-        if (verify_code.isSuccess())
+        if (!verify_code.isSuccess())
             return Result.fail(new Error("Codigo del cupon ya esta registrado"), 404, "Codigo del cupon ya esta registrado")
-
-        const cupon_id = await this.idGenerator.generateId()
+    
         const cupon = Cupon.create(
-            CuponId.create(cupon_id),
+            CuponId.create(await this.idGenerator.generateId()),
             CuponCode.create(data.code),
             CuponExpirationDate.create(data.expiration_date),
             CuponAmount.create(data.amount),
@@ -42,7 +39,7 @@ export class CreateCuponService implements IApplicationService
         if(!result.isSuccess()) return Result.fail(result.Error,result.StatusCode,result.Message)
 
         const response: CreateCuponServiceResponseDto = {
-            cuponid: cupon_id
+            cuponid: cupon.Code()
         }
         return Result.success(response,200)
     }
