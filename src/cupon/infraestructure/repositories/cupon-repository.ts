@@ -18,6 +18,22 @@ export class CuponRepository extends Repository<OrmCupon> implements ICuponRepos
         super(OrmCupon, dataSource.createEntityManager())
         this.cuponMapper = cuponMapper
     }
+
+
+    async findCuponByCode(code: string): Promise<Result<Cupon>> {
+        const cupon = await this.findOne({
+            where: { code: code }
+        });
+
+        if (!cupon)
+            return Result.fail<Cupon>(new CuponNotFoundException(code), 403, `Cupon ${code} not found`)
+
+        const resultado = await this.cuponMapper.fromPersistenceToDomain(cupon)
+
+        return Result.success(resultado, 202)
+    }
+
+
     async findAllCoupons(page: number, limit: number): Promise<Result<Cupon[]>> {
         const coupons = await this.find({
             skip: page,

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Logger, Post, Query } from "@nestjs/common"
+import { Body, Controller, Get, Inject, Logger, Param, Post, Query } from "@nestjs/common"
 import { ApiBody, ApiOkResponse, ApiTags } from "@nestjs/swagger"
 import { CuponRepository } from "../repositories/cupon-repository"
 import { IdGenerator } from "src/common/application/id-generator/id-generator.interface"
@@ -20,6 +20,9 @@ import { PaginationDto } from "src/common/infraestructure/dto/entry/pagination.d
 import { GetAllCouponService } from "src/cupon/application/service/queries/get-all-cupon.service"
 import { ICuponRepository } from "src/cupon/domain/repositories/cupon-repository.interface"
 import { GetAllCuponServiceEntryDTO } from "src/cupon/application/dto/entry/get-all-cupon-service-entry.dto"
+import { GetCouponByCodeResponseDTO } from "./dto/response/get-coupon-by-code-response.dto"
+import { GetCouponByCodeServiceEntryDTO } from "src/cupon/application/dto/entry/get-coupon-by-code-service-entry.dto"
+import { GetCouponByCodeService } from "src/cupon/application/service/queries/get-coupon-by-code.service"
 
 @ApiTags("Cupon")
 @Controller('cupon')
@@ -106,32 +109,33 @@ export class CuponController {
 
         return response
     }
-/*
+
     @Get('one/by/code')
     @ApiOkResponse({
-        description: 'Devuelve la informacion de un producto dado el nombre',
-        type: GetProductByNameResponseDTO,
+        description: 'Devuelve la informacion de un Cupón dado el código',
+        type: GetCouponByCodeResponseDTO,
     })
-    async getProductByName(
-        @Query('name') name: string
+    async getCuponByCode(
+        @Query('code') code: string
     ) {
-        console.log(name)
-        const data: GetProductByNameServiceEntryDTO = {
+        const data: GetCouponByCodeServiceEntryDTO = {
             userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
-            name: name
+            cuponCode: code
         }
-
+        console.log("Code" + code)
         const service = 
         new LoggingDecorator(
-            new GetProductByNameService(this.productRepository),
+            new GetCouponByCodeService(this.cuponRepository),
             new NativeLogger(this.logger)
         )
 
         const result = await service.execute(data)
-
-        const response: GetProductByNameResponseDTO = {...result.Value}
-
+        if(!result.isSuccess)
+            throw result.Error
+        const response: GetCouponByCodeResponseDTO = {...result.Value}
+        
+        console.log("Response" + result)
         return response
-    }*/
+    }
 
 }
