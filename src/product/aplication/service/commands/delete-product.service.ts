@@ -1,6 +1,6 @@
 import { IApplicationService } from "src/common/application/application-services/application-service.interface"
-import { DeleteProductServiceEntryDTO } from "src/product/aplication/dto//entry/delete-product-service-entry.dto"
-import { DeleteProductServiceResponseDTO } from "src/product/aplication/dto/response/delete-product-service-response.dto"
+import { DeleteProductServiceEntryDTO } from "src/product/aplication/DTO/entry/delete-product-service-entry.dto" 
+import { DeleteProductServiceResponseDTO } from "src/product/aplication/DTO/response/delete-product-service-response.dto" 
 import { IProductRepository } from "src/product/domain/repositories/product-repository.interface"
 import { Result } from "src/common/domain/result-handler/Result"
 
