@@ -6,8 +6,8 @@ import { OrmMoneda } from "src/product/infraestructure/entities/moneda.entity"
 import { HistoricoPrecioRepository } from "src/product/infraestructure/repositories/historico-precio.repository"
 import { MonedaRepository } from "src/product/infraestructure/repositories/moneda.repository"
 import { OrmProductRepository } from "src/product/infraestructure/repositories/product-repository"
-import { CreateHistoricoPrecioServiceEntryDTO } from "src/product/infraestructure/services/DTO/entry/create-historico-precio-service-entry.dto"
-import { CreateHistoricoPrecioServiceResponseDTO } from "src/product/infraestructure/services/DTO/response/create-historico-precio-service-response.dto"
+import { CreateHistoricoPrecioServiceEntryDTO } from "src/product/infraestructure/services/dto/entry/create-historico-precio-service-entry.dto"
+import { CreateHistoricoPrecioServiceResponseDTO } from "src/product/infraestructure/services/dto/response/create-historico-precio-service-response.dto"
 
 
 export class CreateHistoricoPrecioService implements IApplicationService

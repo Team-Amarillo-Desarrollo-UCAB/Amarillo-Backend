@@ -1,6 +1,6 @@
 import { IApplicationService } from "src/common/application/application-services/application-service.interface";
-import { LogInUserServiceEntryDto } from "src/auth/infraestructure/services/DTO/entry/log-in-entry.infraestructure.dto";
-import { LogInServiceResponseDto } from "src/auth/infraestructure/services/DTO/response/log-in-response.dto";
+import { LogInUserServiceEntryDto } from "src/auth/infraestructure/services/dto/entry/log-in-entry.infraestructure.dto";
+import { LogInServiceResponseDto } from "src/auth/infraestructure/services/dto/response/log-in-response.dto";
 import { IAccountRepository } from "src/user/application/interface/account-user-repository.interface";
 import { IJwtGenerator } from "src/common/application/jwt-generator/jwt-generator.interface";
 import { IEncryptor } from "src/common/application/encryptor/encryptor.interface";
