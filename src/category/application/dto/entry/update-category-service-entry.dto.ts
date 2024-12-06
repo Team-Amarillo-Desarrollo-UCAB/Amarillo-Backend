@@ -1,4 +1,4 @@
-import { ApplicationServiceEntryDto } from '../../../../common/application/application-services/dto/application-service-entry.dto';
+import { ApplicationServiceEntryDto } from '../../../../common/application/application-services/DTO/application-service-entry.dto';
 
 export interface UpdateCategoryServiceEntryDto extends ApplicationServiceEntryDto{
     
