@@ -3,21 +3,19 @@ import { IValueObject } from 'src/common/domain/value-object/value-object.interf
 export class UserImage implements IValueObject<UserImage> {
   private readonly url: string;
 
-  protected constructor(url: string) {
-    if (url.length < 5) 
-        throw new Error('Invalid url');
-    this.url = url;
+  protected constructor(url: string){
+      this.url = url
   }
 
-  get Image() {
-    return this.url;
+  get Image(): string{
+      return this.url
   }
 
   equals(valueObject: UserImage): boolean {
-    return this.url === valueObject.Image;
+      return this.url === valueObject.Image
   }
 
-  static create(url: string) {
-    return new UserImage(url);
+  static create(url: string): UserImage{
+      return new UserImage(url)
   }
 }

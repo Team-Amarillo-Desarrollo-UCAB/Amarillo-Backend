@@ -3,23 +3,25 @@ import { Entity, Column, PrimaryColumn } from 'typeorm';
 @Entity({ name: 'discount' }) // Nombre de la tabla en la base de datos
 export class OrmDiscount {
   @PrimaryColumn({ type: 'uuid' })
-  id: string; 
+  id: string;
 
   @Column('varchar', { unique: true })
-  name: string; 
+  name: string;
 
   @Column('varchar')
-  description: string; 
+  description: string;
 
   @Column('float')
-  percentage: number; 
+  percentage: number;
 
   @Column({ type: 'timestamp' })
-  startDate: Date; 
+  startDate: Date;
 
   @Column({ type: 'timestamp' })
-  deadline: Date; 
+  deadline: Date;
 
+  @Column('varchar', { nullable: true })
+  image: string
 
   static create(
     id: string,
@@ -27,7 +29,8 @@ export class OrmDiscount {
     description: string,
     percentage: number,
     startDate: Date,
-    deadline: Date
+    deadline: Date,
+    image?: string
   ): OrmDiscount {
     const discount = new OrmDiscount();
     discount.id = id;
@@ -36,6 +39,7 @@ export class OrmDiscount {
     discount.percentage = percentage;
     discount.startDate = startDate;
     discount.deadline = deadline;
+    discount.image = image;
     return discount;
   }
 }

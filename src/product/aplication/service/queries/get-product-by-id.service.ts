@@ -1,6 +1,6 @@
 import { IApplicationService } from "src/common/application/application-services/application-service.interface";
-import { GetProductByIdServiceEntryDTO } from "../../DTO/entry/get-product-by-id-service-entry.dto";
-import { GetProductByIdServiceResponseDTO } from "../../DTO/response/get-product-by-id-service-response.dto";
+import { GetProductByIdServiceEntryDTO } from "../../dto/entry/get-product-by-id-service-entry.dto";
+import { GetProductByIdServiceResponseDTO } from "../../dto/response/get-product-by-id-service-response.dto";
 import { Result } from "src/common/domain/result-handler/Result";
 import { IProductRepository } from "src/product/domain/repositories/product-repository.interface";
 
@@ -25,7 +25,7 @@ export class GetProductByIdService implements IApplicationService<GetProductById
             precio: producto.Value.Price,
             moneda: producto.Value.Moneda,
             stock: producto.Value.Stock,
-            unidad_medida: producto.Value.Unit,               
+            unidad_medida: producto.Value.Unit,
             cantidad_medida: producto.Value.CantidadMedida,
             image: producto.Value.Image
         }

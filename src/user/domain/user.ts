@@ -1,7 +1,7 @@
 import { AggregateRoot } from "src/common/domain/aggregate-root/aggregate-root";
 import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface";
 import { EnumUserRole } from "./user-role/user-role";
-import { UserCreated } from "./domain-event/user-created-event";
+import { UserCreated } from "./events/user-created-event";
 import { InvalidUser } from "./domain-exception/invalid-user";
 import { UserName } from "./value-object/user-name";
 import { UserEmail } from "./value-object/user-email";
@@ -9,13 +9,16 @@ import { UserPhone } from "./value-object/user-phone";
 import { UserId } from "./value-object/user-id";
 import { UserRole } from "./value-object/user-role";
 import { UserImage } from "./value-object/user-image";
+import { UserNameModified } from "./events/user-name-modified-event";
+import { UserEmailModified } from "./events/user-email-modified-event";
+import { UserPhoneModified } from "./events/user-phone-modified-event";
 
 export class User extends AggregateRoot<UserId> {
 
     private name: UserName;
     private email: UserEmail;
     private phone: UserPhone;
-    private image: UserImage
+    private image: UserImage;
     private role: UserRole;
 
     protected constructor(
@@ -31,6 +34,7 @@ export class User extends AggregateRoot<UserId> {
             name.Name,
             phone.Phone,
             email.Email,
+            image.Image,
             role.Role
         );
         super(id,userCreated);
@@ -43,13 +47,26 @@ export class User extends AggregateRoot<UserId> {
 
     protected applyEvent(event: DomainEvent): void {
         switch (event.eventName) {
-            //patron estado o estrategia, esto es una cochinada el switch case
+            //patron estado o estrategia
             case 'UserCreated':
                 const userCreated: UserCreated = event as UserCreated;
                 this.name = UserName.create(userCreated.userName)
                 this.phone = UserPhone.create(userCreated.userPhone)
                 this.email = UserEmail.create(userCreated.userEmail)
                 this.role = UserRole.create(userCreated.userRole)
+                this.image = UserImage.create(userCreated.userImage)    
+                break;
+            case 'UserNameModified':
+                const userNameModified: UserNameModified = event as UserNameModified;
+                this.name = UserName.create(userNameModified.userName);
+                break;
+            case 'UserPhoneModified':
+                const userPhoneModified: UserPhoneModified = event as UserPhoneModified;
+                this.phone = UserPhone.create(userPhoneModified.userPhone);
+                break;
+            case 'UserEmailModified':
+                const userEmailModified: UserEmailModified = event as UserEmailModified;
+                this.email = UserEmail.create(userEmailModified.email);
                 break;
         }
     }
@@ -58,7 +75,7 @@ export class User extends AggregateRoot<UserId> {
             !this.name ||
             !this.phone ||
             !this.email ||
-            !this.role ||
+            !this.role  ||
             !this.image
         )
             throw new InvalidUser('El usuario tiene que ser valido');
@@ -82,6 +99,18 @@ export class User extends AggregateRoot<UserId> {
 
     get Image(): string {
         return this.image.Image
+    }
+
+    public updateName(name: UserName): void {
+        this.onEvent(UserNameModified.create(this.Id.Id, name.Name));
+      }
+    
+    public updateEmail(email: UserEmail): void {
+        this.onEvent(UserEmailModified.create(this.Id.Id, email.Email));
+    }
+
+    public updatePhone(phone: UserPhone): void {
+        this.onEvent(UserPhoneModified.create(this.Id.Id, phone.Phone));
     }
 
     static create(

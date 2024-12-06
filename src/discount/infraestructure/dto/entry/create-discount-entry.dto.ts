@@ -2,7 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsString, IsNumber, IsDate, IsPositive } from "class-validator";
 
 export class CreateDiscountEntryDTO {
-  
+
   @ApiProperty({
     example: "Descuento del Black Friday"
   })
@@ -33,4 +33,10 @@ export class CreateDiscountEntryDTO {
   })
   @IsDate()
   deadline: Date;
+
+  @ApiProperty({
+    example: 'base64image',
+  })
+  @IsString()
+  image?: string;
 }

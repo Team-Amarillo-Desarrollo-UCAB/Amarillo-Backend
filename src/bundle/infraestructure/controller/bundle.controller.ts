@@ -1,33 +1,33 @@
-import { 
-    Controller, 
-    Get, 
-    Post, 
-    Param, 
-    Body, 
-    Query, 
-    Logger, 
-    Inject, 
-    BadRequestException, 
-    ParseUUIDPipe 
-  } from '@nestjs/common';
-  import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-  import { DataSource } from 'typeorm';
-  import { CreateBundleEntryDTO } from '../dto/entry/create-bundle-entry.dto';
-  import { CreateBundleServiceEntryDto } from 'src/bundle/application/dto/entry/create-bundle-service-entry.dto';
-  import { GetBundleByIdServiceEntryDTO } from 'src/bundle/application/dto/entry/get-bundle-by-id-service-entry.dto';
-  import { LoggingDecorator } from 'src/common/application/application-services/decorators/logging-decorator/logging.decorator';
-  import { NativeLogger } from 'src/common/infraestructure/logger/logger';
-  import { OrmBundleRepository } from '../repositories/orm-bundle.repository';
-  import { BundleMapper } from '../mappers/bundle-mapper';
-  import { CreateBundleApplicationService } from 'src/bundle/application/services/commands/create-bundle.service';
-  import { GetAllBundlesResponseDTO } from '../dto/response/get-all-bundles-response.dto';
-  import { GetBundleByIdService } from 'src/bundle/application/services/queries/get-bundle-by-id.service';
-  import { PaginationDto } from 'src/common/infraestructure/dto/entry/pagination.dto';//
-  import { BundleParamsEntryDTO } from '../dto/entry/bundle-params-entry.dto';
-  import { ExceptionDecorator } from 'src/common/application/application-services/decorators/exception-decorator/exception.decorator';
-  import { FindAllBundlesApplicationService } from 'src/bundle/application/services/queries/find-all-bundles.service';
-  import { HttpExceptionHandler } from 'src/common/infraestructure/exception-handler/http-exception-handler-code';
-  import { GetAllBundlesServiceEntryDTO } from 'src/bundle/application/dto/entry/get-all-bundles-service-entry.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  Query,
+  Logger,
+  Inject,
+  BadRequestException,
+  ParseUUIDPipe
+} from '@nestjs/common';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { DataSource } from 'typeorm';
+import { CreateBundleEntryDTO } from '../dto/entry/create-bundle-entry.dto';
+import { CreateBundleServiceEntryDto } from 'src/bundle/application/dto/entry/create-bundle-service-entry.dto';
+import { GetBundleByIdServiceEntryDTO } from 'src/bundle/application/dto/entry/get-bundle-by-id-service-entry.dto';
+import { LoggingDecorator } from 'src/common/application/application-services/decorators/logging-decorator/logging.decorator';
+import { NativeLogger } from 'src/common/infraestructure/logger/logger';
+import { OrmBundleRepository } from '../repositories/orm-bundle.repository';
+import { BundleMapper } from '../mappers/bundle-mapper';
+import { CreateBundleApplicationService } from 'src/bundle/application/services/commands/create-bundle.service';
+import { GetAllBundlesResponseDTO } from '../dto/response/get-all-bundles-response.dto';
+import { GetBundleByIdService } from 'src/bundle/application/services/queries/get-bundle-by-id.service';
+import { PaginationDto } from 'src/common/infraestructure/dto/entry/pagination.dto';//
+import { BundleParamsEntryDTO } from '../dto/entry/bundle-params-entry.dto';
+import { ExceptionDecorator } from 'src/common/application/application-services/decorators/exception-decorator/exception.decorator';
+import { FindAllBundlesApplicationService } from 'src/bundle/application/services/queries/find-all-bundles.service';
+import { HttpExceptionHandler } from 'src/common/infraestructure/exception-handler/http-exception-handler-code';
+import { GetAllBundlesServiceEntryDTO } from 'src/bundle/application/dto/entry/get-all-bundles-service-entry.dto';
 import { IdGenerator } from 'src/common/application/id-generator/id-generator.interface';
 import { IFileUploader } from 'src/common/application/file-uploader/file-uploader.interface';
 import { UuidGenerator } from 'src/common/infraestructure/id-generator/uuid-generator';
@@ -43,7 +43,7 @@ import { ProductMapper } from '../../../product/infraestructure/mappers/product-
 import { DiscountExistenceService } from '../../application/services/queries/discount-existence-check.service';
 import { OrmDiscountRepository } from '../../../discount/infraestructure/repositories/orm-discount.repository';
 import { OrmDiscountMapper } from '../../../discount/infraestructure/mappers/discount.mapper';
-  
+
 
 @ApiTags("Bundle")
 @Controller('bundle')
@@ -52,7 +52,7 @@ export class BundleController {
   private readonly logger: Logger = new Logger('BundleController');
   private readonly idGenerator: IdGenerator<string>;
   private readonly fileUploader: IFileUploader;
-
+  private readonly categoryMapper: OrmCategoryMapper
 
 
   constructor(
@@ -68,9 +68,22 @@ export class BundleController {
     );
     this.idGenerator = new UuidGenerator();
     this.fileUploader = new CloudinaryFileUploader();
-    this.categoriesExistenceService=new CategoriesExistenceService(new OrmCategoryRepository(new OrmCategoryMapper(),this.dataSource))
-    this.productExistenceService= new ProductsExistenceService(new OrmProductRepository(new ProductMapper(),this.dataSource))
-    this.discountExistenceService = new DiscountExistenceService(new OrmDiscountRepository(new OrmDiscountMapper(),this.dataSource))
+    this.categoriesExistenceService = new CategoriesExistenceService(new OrmCategoryRepository(new OrmCategoryMapper(), this.dataSource))
+    this.categoryMapper = new OrmCategoryMapper()
+    this.productExistenceService =
+      new ProductsExistenceService(
+        new OrmProductRepository(
+          new ProductMapper(
+            this.categoryMapper,
+            new OrmCategoryRepository(
+              this.categoryMapper,
+              dataSource
+            )
+          ),
+          this.dataSource
+        )
+      )
+    this.discountExistenceService = new DiscountExistenceService(new OrmDiscountRepository(new OrmDiscountMapper(), this.dataSource))
   }
 
   /**
@@ -91,21 +104,21 @@ export class BundleController {
       measurement: entry.measurement as Measurement
     };
 
-    const service = 
+    const service =
       new ExceptionDecorator(
-      new LoggingDecorator(
-      new CreateBundleApplicationService(
-        this.bundleRepository,
-        this.idGenerator,
-        this.fileUploader,
-        this.categoriesExistenceService,//
-        this.productExistenceService,
-        this.discountExistenceService
-      ),
-      new NativeLogger(this.logger)
-    ),
-    new HttpExceptionHandler()
-   );
+        new LoggingDecorator(
+          new CreateBundleApplicationService(
+            this.bundleRepository,
+            this.idGenerator,
+            this.fileUploader,
+            this.categoriesExistenceService,//
+            this.productExistenceService,
+            this.discountExistenceService
+          ),
+          new NativeLogger(this.logger)
+        ),
+        new HttpExceptionHandler()
+      );
 
     const result = await service.execute(data);
 
@@ -117,95 +130,94 @@ export class BundleController {
 
   // Resto del código del controlador sigue igual
 
-  
-    /**
-     * Endpoint para obtener un bundle por ID.
-     * @param id - ID del bundle.
-     * @returns - Datos del bundle o un error si no se encuentra.
-     */
-    @Get('one/:id')
-    async getBundleById(
-      @Param('id', ParseUUIDPipe) id: string
-    ): Promise<GetAllBundlesResponseDTO> {
-      const entry: GetBundleByIdServiceEntryDTO = {
-        userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
-        id_bundle: id,
-      };
-  
-      const service = new LoggingDecorator(
-        new GetBundleByIdService(this.bundleRepository),
-        new NativeLogger(this.logger)
-      );
-  
-      const result = await service.execute(entry);
-  
-      if (!result.isSuccess())
-        throw result.Error;
-  
-      const response: GetAllBundlesResponseDTO = {
-        ...result.Value
-      };
-      return response;
-    }
-  
-    /**
-     * Endpoint para obtener todos los bundles con paginación.
-     * @param paginacion - Parámetros de paginación.
-     * @param queryEntryParams - Parámetros adicionales de entrada.
-     * @returns - Listado de bundles en formato paginado.
-     */
-    @Get('many')
-    @ApiOkResponse({
-      description: 'Devuelve la información de todos los combos en formato paginado',
-      type: [GetAllBundlesResponseDTO], // Indica que se retorna un arreglo de DTOs
-    })
-    async getAllBundles(
-      @Query() paginacion: PaginationDto,
-      @Query() queryEntryParams: BundleParamsEntryDTO
-    ): Promise<GetAllBundlesResponseDTO[]> {
-      const service = new ExceptionDecorator(
-        new LoggingDecorator(
-          new FindAllBundlesApplicationService(this.bundleRepository),
-          new NativeLogger(this.logger)
-        ),
-        new HttpExceptionHandler()
-      );
 
-      console.log("Page en controller paginacion Query =",paginacion.page)
-      console.log("Limit en controller paginacion Query =",paginacion.limit)
+  /**
+   * Endpoint para obtener un bundle por ID.
+   * @param id - ID del bundle.
+   * @returns - Datos del bundle o un error si no se encuentra.
+   */
+  @Get('one/:id')
+  async getBundleById(
+    @Param('id', ParseUUIDPipe) id: string
+  ): Promise<GetAllBundlesResponseDTO> {
+    const entry: GetBundleByIdServiceEntryDTO = {
+      userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+      id_bundle: id,
+    };
 
-  
-      const data: GetAllBundlesServiceEntryDTO = {
-        userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
-        ...paginacion,
-        ...queryEntryParams,
-      };
+    const service = new LoggingDecorator(
+      new GetBundleByIdService(this.bundleRepository),
+      new NativeLogger(this.logger)
+    );
 
-      console.log("Page en controller data vari =",data.page)
-      console.log("Limit en controller data vari =",data.limit)
-  
-      const result = await service.execute(data);
-  
-      if (!result.isSuccess()) {
-        throw result.Error;
-      }
-  
-      const response: GetAllBundlesResponseDTO[] = result.Value.map((bundle) => ({
-        id: bundle.id,
-        name: bundle.name,
-        description: bundle.description,
-        price: bundle.price,
-        currency: bundle.currency,
-        images: bundle.images, // Corregido: Se incluye `images`
-        weight: bundle.weight,
-        measurement: bundle.measurement,
-        stock: bundle.stock,
-        category: bundle.category,
-        productId: bundle.productId,
-        discount: bundle.discount
-      }));
-  
-      return response;
-    }
+    const result = await service.execute(entry);
+
+    if (!result.isSuccess())
+      throw result.Error;
+
+    const response: GetAllBundlesResponseDTO = {
+      ...result.Value
+    };
+    return response;
   }
-  
+
+  /**
+   * Endpoint para obtener todos los bundles con paginación.
+   * @param paginacion - Parámetros de paginación.
+   * @param queryEntryParams - Parámetros adicionales de entrada.
+   * @returns - Listado de bundles en formato paginado.
+   */
+  @Get('many')
+  @ApiOkResponse({
+    description: 'Devuelve la información de todos los combos en formato paginado',
+    type: [GetAllBundlesResponseDTO], // Indica que se retorna un arreglo de DTOs
+  })
+  async getAllBundles(
+    @Query() paginacion: PaginationDto,
+    @Query() queryEntryParams: BundleParamsEntryDTO
+  ): Promise<GetAllBundlesResponseDTO[]> {
+    const service = new ExceptionDecorator(
+      new LoggingDecorator(
+        new FindAllBundlesApplicationService(this.bundleRepository),
+        new NativeLogger(this.logger)
+      ),
+      new HttpExceptionHandler()
+    );
+
+    console.log("Page en controller paginacion Query =", paginacion.page)
+    console.log("Limit en controller paginacion Query =", paginacion.limit)
+
+
+    const data: GetAllBundlesServiceEntryDTO = {
+      userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+      ...paginacion,
+      ...queryEntryParams,
+    };
+
+    console.log("Page en controller data vari =", data.page)
+    console.log("Limit en controller data vari =", data.limit)
+
+    const result = await service.execute(data);
+
+    if (!result.isSuccess()) {
+      throw result.Error;
+    }
+
+    const response: GetAllBundlesResponseDTO[] = result.Value.map((bundle) => ({
+      id: bundle.id,
+      name: bundle.name,
+      description: bundle.description,
+      price: bundle.price,
+      currency: bundle.currency,
+      images: bundle.images, // Corregido: Se incluye `images`
+      weight: bundle.weight,
+      measurement: bundle.measurement,
+      stock: bundle.stock,
+      category: bundle.category,
+      productId: bundle.productId,
+      discount: bundle.discount
+    }));
+
+    return response;
+  }
+}

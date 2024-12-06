@@ -1,13 +1,14 @@
-import { IApplicationService } from "src/common/application/application-services/application-service.interface";
-import { CreateHistoricoPrecioServiceEntryDTO } from "../DTO/entry/create-historico-precio-service-entry.dto";
-import { CreateHistoricoPrecioServiceResponseDTO } from "../DTO/response/create-historico-precio-service-response.dto";
-import { Result } from "src/common/domain/result-handler/Result";
-import { HistoricoPrecioRepository } from "../../repositories/historico-precio.repository";
-import { IdGenerator } from "src/common/application/id-generator/id-generator.interface";
-import { HistoricoPrecio } from "../../entities/historico-precio.entity";
-import { OrmMoneda } from "../../entities/moneda.entity";
-import { OrmProductRepository } from "../../repositories/product-repository";
-import { MonedaRepository } from "../../repositories/moneda.repository";
+import { IApplicationService } from "src/common/application/application-services/application-service.interface"
+import { IdGenerator } from "src/common/application/id-generator/id-generator.interface"
+import { Result } from "src/common/domain/result-handler/Result"
+import { HistoricoPrecio } from "src/product/infraestructure/entities/historico-precio.entity"
+import { OrmMoneda } from "src/product/infraestructure/entities/moneda.entity"
+import { HistoricoPrecioRepository } from "src/product/infraestructure/repositories/historico-precio.repository"
+import { MonedaRepository } from "src/product/infraestructure/repositories/moneda.repository"
+import { OrmProductRepository } from "src/product/infraestructure/repositories/product-repository"
+import { CreateHistoricoPrecioServiceEntryDTO } from "src/product/infraestructure/services/dto/entry/create-historico-precio-service-entry.dto"
+import { CreateHistoricoPrecioServiceResponseDTO } from "src/product/infraestructure/services/dto/response/create-historico-precio-service-response.dto"
+
 
 export class CreateHistoricoPrecioService implements IApplicationService
 <CreateHistoricoPrecioServiceEntryDTO,

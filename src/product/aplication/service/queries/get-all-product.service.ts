@@ -1,8 +1,8 @@
 import { IApplicationService } from "src/common/application/application-services/application-service.interface"
 import { IProductRepository } from "src/product/domain/repositories/product-repository.interface"
-import { GetAllProductServiceEntryDTO } from "../../DTO/entry/get-all-product-service-entry.dto"
+import { GetAllProductServiceEntryDTO } from "../../dto/entry/get-all-product-service-entry.dto"
 import { Result } from "src/common/domain/result-handler/Result"
-import { GetAllProductServiceResponseDTO } from "../../DTO/response/get-all-product-service.response"
+import { GetAllProductServiceResponseDTO } from "../../dto/response/get-all-product-service.response"
 import { UnidadMedida } from "src/product/domain/enum/UnidadMedida"
 
 export class GetAllProductService implements IApplicationService<GetAllProductServiceEntryDTO, GetAllProductServiceResponseDTO[]> {
@@ -29,7 +29,7 @@ export class GetAllProductService implements IApplicationService<GetAllProductSe
                     id_product: producto.Id.Id,
                     nombre: producto.Name,
                     precio: producto.Price,
-                    moneda: producto.Moneda,    
+                    moneda: producto.Moneda,
                     stock: producto.Stock,
                     image: producto.Image,
                     unidad_medida: producto.Unit,
@@ -39,7 +39,7 @@ export class GetAllProductService implements IApplicationService<GetAllProductSe
             }
         )
 
-        return Result.success(response,202)
+        return Result.success(response, 202)
     }
 
     get name(): string {

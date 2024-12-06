@@ -7,7 +7,8 @@ export class DiscountCreated extends DomainEvent {
     public description: string,
     public percentage: number,
     public startDate: Date,
-    public deadline: Date
+    public deadline: Date,
+    public image?: string
   ) {
     super();
   }
@@ -18,8 +19,9 @@ export class DiscountCreated extends DomainEvent {
     description: string,
     percentage: number,
     startDate: Date,
-    deadline: Date
+    deadline: Date,
+    image?: string
   ): DiscountCreated {
-    return new DiscountCreated(id, name, description, percentage, startDate, deadline);
+    return new DiscountCreated(id, name, description, percentage, startDate, deadline, image);
   }
 }

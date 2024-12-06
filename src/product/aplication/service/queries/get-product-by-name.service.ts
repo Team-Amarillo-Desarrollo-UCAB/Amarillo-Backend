@@ -1,8 +1,8 @@
 import { IApplicationService } from "src/common/application/application-services/application-service.interface";
 import { Result } from "src/common/domain/result-handler/Result";
 import { IProductRepository } from "src/product/domain/repositories/product-repository.interface";
-import { GetProductByNameServiceEntryDTO } from "../../DTO/entry/get-product-by-name-service-entry.dto";
-import { GetProductByNameServiceResponseDTO } from "../../DTO/response/get-product-by-name-service-response.dto";
+import { GetProductByNameServiceEntryDTO } from "../../dto/entry/get-product-by-name-service-entry.dto";
+import { GetProductByNameServiceResponseDTO } from "../../dto/response/get-product-by-name-service-response.dto";
 
 export class GetProductByNameService implements IApplicationService<GetProductByNameServiceEntryDTO, GetProductByNameServiceResponseDTO> {
 
@@ -14,7 +14,9 @@ export class GetProductByNameService implements IApplicationService<GetProductBy
 
     async execute(data: GetProductByNameServiceEntryDTO): Promise<Result<GetProductByNameServiceResponseDTO>> {
 
-        const producto = await this.productRepository.findProductByName(data.name)
+        const name = data.name.trim().toLowerCase().replace(/\s+/g, '');
+
+        const producto = await this.productRepository.findProductByName(name)
 
         if (!producto.isSuccess())
             return Result.fail(new Error("Producto no encontrado"), 404, "Producto no encontrado")
@@ -26,7 +28,7 @@ export class GetProductByNameService implements IApplicationService<GetProductBy
             precio: producto.Value.Price,
             moneda: producto.Value.Moneda,
             stock: producto.Value.Stock,
-            unidad_medida: producto.Value.Unit,               
+            unidad_medida: producto.Value.Unit,
             cantidad_medida: producto.Value.CantidadMedida,
             image: producto.Value.Image
         }
