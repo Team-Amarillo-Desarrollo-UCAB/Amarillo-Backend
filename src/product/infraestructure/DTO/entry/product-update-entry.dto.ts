@@ -73,6 +73,7 @@ export class UpdateProductEntryDTO {
     })
     @IsArray() // Aseguramos que sea un arreglo
     @ValidateNested({ each: true })
+    @IsOptional()
     category?: [
         {
             id: string

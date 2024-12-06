@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsString, Length, Min } from "class-validator";
+import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Length, Min } from "class-validator";
 import { Moneda } from "src/product/domain/enum/Monedas";
 import { UnidadMedida } from "src/product/domain/enum/UnidadMedida";
 
@@ -60,7 +60,8 @@ export class CreateProductEntryDTO {
     })
     @IsArray()
     @IsNotEmpty()
-    category: [
+    @IsOptional()
+    category?: [
         {
             id: string
         }

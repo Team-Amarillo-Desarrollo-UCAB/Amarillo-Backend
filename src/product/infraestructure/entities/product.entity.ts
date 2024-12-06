@@ -29,7 +29,7 @@ export class OrmProduct {
     @Column('varchar', { nullable: true })
     image: string
 
-    @OneToMany(() => HistoricoPrecio, (historico) => historico.producto)
+    @OneToMany(() => HistoricoPrecio, (historico) => historico.producto,{eager: true})
     historicos: HistoricoPrecio[];
 
     @OneToMany(() => Detalle_Orden, (detalle) => detalle.producto)

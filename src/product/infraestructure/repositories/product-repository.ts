@@ -46,9 +46,10 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
 
     async findProductByName(name: string): Promise<Result<Product>> {
 
-        const product = await this.createQueryBuilder('producto')
-            .where('LOWER(REPLACE(producto.name, " ", "")) = :name', { name: name })
-            .getOne()
+        const product = await this.findOne({
+            where: { name: name },
+            relations: ['historicos'],
+        });
 
         if (!product)
             return Result.fail<Product>(new Error(`Producto ${name} no encontrado`), 404, `Producto ${name} no encontrado`)
