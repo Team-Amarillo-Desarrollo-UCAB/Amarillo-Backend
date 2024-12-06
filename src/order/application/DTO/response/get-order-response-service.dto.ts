@@ -1,4 +1,4 @@
-import { EnumOrderEstados } from "src/order/domain/order-estados-enum";
+import { EnumOrderEstados } from "src/order/domain/enum/order-estados-enum";
 
 export class GetOrderByIdResponseServiceDTO {
 

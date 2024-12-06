@@ -12,33 +12,35 @@ import { CreateDiscountServiceEntryDto } from '../../dto/entry/create-discount-s
 import { CreateDiscountServiceResponseDto } from '../../dto/response/create-discount-service-response.dto';
 import { IFileUploader } from 'src/common/application/file-uploader/file-uploader.interface';
 import { Deadline } from 'src/discount/domain/value-objects/discount-deadline';
+import { DiscountImage } from 'src/discount/domain/value-objects/discount-image';
 
 export class CreateDiscountApplicationService
-  implements IApplicationService<CreateDiscountServiceEntryDto, CreateDiscountServiceResponseDto>
-{
+  implements IApplicationService<CreateDiscountServiceEntryDto, CreateDiscountServiceResponseDto> {
   private readonly discountRepository: IDiscountRepository;
   private readonly idGenerator: IdGenerator<string>;
+  private readonly fileUploader: IFileUploader;
 
 
-  constructor(discountRepository: IDiscountRepository, 
-    idGenerator: IdGenerator<string>,
-   ) {
+  constructor(discountRepository: IDiscountRepository,
+    idGenerator: IdGenerator<string>, fileUploader: IFileUploader
+  ) {
     this.discountRepository = discountRepository;
     this.idGenerator = idGenerator;
+    this.fileUploader = fileUploader;
   }
 
   async execute(data: CreateDiscountServiceEntryDto): Promise<Result<CreateDiscountServiceResponseDto>> {
+    const image_url = await this.fileUploader.UploadFile(data.image);
+    const discount = Discount.create(
+      DiscountID.create(await this.idGenerator.generateId()), // Generar un ID único
+      DiscountName.create(data.name), // Crear V.O para el nombre
+      DiscountDescription.create(data.description), // Crear V.O para la descripción
+      DiscountPercentage.create(data.percentage), // Porcentaje validado
+      DiscountStartDate.create(data.startDate), // Fecha de inicio validada
+      Deadline.create(data.deadline), // Fecha límite validada
+      DiscountImage.create(image_url) // Imagen validada
+    );
 
-        // Crear la entidad `Discount`
-        const discount = Discount.create(
-            DiscountID.create(await this.idGenerator.generateId()), // Generar un ID único
-            DiscountName.create(data.name), // Crear V.O para el nombre
-            DiscountDescription.create(data.description), // Crear V.O para la descripción
-            DiscountPercentage.create(data.percentage), // Porcentaje validado
-            DiscountStartDate.create(data.startDate), // Fecha de inicio validada
-            Deadline.create(data.deadline) // Fecha límite validada
-          );
-    
     const result = await this.discountRepository.addDiscount(discount)
 
     if (!result.isSuccess()) {
@@ -52,7 +54,8 @@ export class CreateDiscountApplicationService
       description: discount.Description.Value,
       percentage: discount.Percentage.Value,
       startDate: discount.StartDate.Value,
-      deadline: discount.Deadline.Value
+      deadline: discount.Deadline.Value,
+      image: discount.Image.Image,
     };
 
     return Result.success(response, 201); // Devolver resultado exitoso

@@ -6,4 +6,6 @@ export interface IProductRepository {
     findProductById(id: string): Promise<Result<Product>>;
     findProductByName(name: string): Promise<Result<Product>>
     findAllProducts(page: number, limit: number): Promise<Result<Product[]>>
+    verifyNameProduct(name: string): Promise<Result<boolean>>
+    deleteProduct(id: string): Promise<Result<boolean>>
 }

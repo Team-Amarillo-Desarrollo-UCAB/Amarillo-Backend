@@ -12,11 +12,30 @@ import { HistoricoPrecio } from "../entities/historico-precio.entity";
 import { ProductCurrency } from "src/product/domain/value-objects/product-precio/product-currency";
 import { ProductImage } from "src/product/domain/value-objects/product-image";
 import { ProductStock } from "src/product/domain/value-objects/product-stock";
+import { OrmCategoryMapper } from "src/category/infraestructure/mappers/orm-category-mapper";
+import { OrmCategoryRepository } from "src/category/infraestructure/repositories/orm-category-repository";
+import { OrmCategory } from "src/category/infraestructure/entities/orm-category";
+import { CategoryID } from "src/category/domain/value-objects/category-id";
 
-export class ProductMapper implements IMapper<Product,OrmProduct>{
-    
-    
+export class ProductMapper implements IMapper<Product, OrmProduct> {
+
+    constructor(
+        private readonly categoryMapper: OrmCategoryMapper,
+        private readonly categoryRepository: OrmCategoryRepository
+    ) {
+
+    }
+
     async fromDomainToPersistence(domain: Product): Promise<OrmProduct> {
+
+        let categorias: OrmCategory[] = []
+
+        for(const categoria of domain.Categories){
+            const c = await this.categoryRepository.findCategoryById(categoria.Value)
+            const resultado = await this.categoryMapper.fromDomainToPersistence(c.Value)
+            categorias.push(resultado)
+        }
+
         const product = OrmProduct.create(
             domain.Id.Id,
             domain.Name,
@@ -25,22 +44,27 @@ export class ProductMapper implements IMapper<Product,OrmProduct>{
             domain.CantidadMedida,
             domain.Stock,
             domain.Image,
+            categorias,
+            null
         )
 
         return product
     }
 
     async fromPersistenceToDomain(persistence: OrmProduct): Promise<Product> {
-        
+
         let precio: HistoricoPrecio
 
-        for(const p of persistence.historicos){
-            if(p.fecha_fin === null){
+        for (const p of persistence.historicos) {
+            if (p.fecha_fin === null) {
                 precio = p
             }
         }
-        
-        console.log(precio)
+
+        let cateogies_id: CategoryID[] = []
+        for(const categoria of persistence.categories){
+            cateogies_id.push(CategoryID.create(categoria.id))
+        }
 
         const product = Product.create(
             ProductId.create(persistence.id),
@@ -55,12 +79,13 @@ export class ProductMapper implements IMapper<Product,OrmProduct>{
                 ProductCurrency.create(precio.moneda.simbolo)
             ),
             ProductImage.create(persistence.image),
-            ProductStock.create(persistence.cantidad_stock)
+            ProductStock.create(persistence.cantidad_stock),
+            cateogies_id
         )
 
         return product
-        
+
     }
- 
+
 
 }

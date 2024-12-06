@@ -58,6 +58,7 @@ export class OrmProduct {
         cantidad_medida: number,
         cantidad_stock: number,
         image: string,
+        categories: OrmCategory[],
         historicos?: HistoricoPrecio[]
     ): OrmProduct {
         const product = new OrmProduct()
@@ -68,6 +69,7 @@ export class OrmProduct {
         product.cantidad_medida = cantidad_medida
         product.cantidad_stock = cantidad_stock
         product.image = image
+        product.categories = categories
         product.historicos = historicos
         return product
     }

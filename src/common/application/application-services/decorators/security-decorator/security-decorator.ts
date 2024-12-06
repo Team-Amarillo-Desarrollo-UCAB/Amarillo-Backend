@@ -1,9 +1,9 @@
-import { Result } from "src/common/domain/result-handler/Result";
 import { ApplicationServiceEntryDto } from "../../DTO/application-service-entry.dto";
 import { ApplicationServiceDecorator } from "../application-service.decorator";
 import { IApplicationService } from "../../application-service.interface";
 import { IAccountRepository } from "src/user/application/interface/account-user-repository.interface";
-import { OrmUser } from "src/user/infraestructure/entities/user.entity";
+import { OrmUser } from "src/user/infraestructure/entities/orm-entities/user.entity";
+import { Result } from "src/common/domain/result-handler/Result";
 
 
 export class SecurityDecorator<L extends ApplicationServiceEntryDto, R> extends ApplicationServiceDecorator<L, R> {
@@ -15,26 +15,26 @@ export class SecurityDecorator<L extends ApplicationServiceEntryDto, R> extends 
         applicationService: IApplicationService<L, R>,
         accountRepository: IAccountRepository<OrmUser>,
         allowedRoles: string[]
-    ){
-        super( applicationService )
+    ) {
+        super(applicationService)
         this.accountRepository = accountRepository
         this.allowedRoles = allowedRoles
     }
 
-    async execute ( data: L ): Promise<Result<R>> {
+    async execute(data: L): Promise<Result<R>> {
         // console.log(data)
         const userResult = await this.accountRepository.findUserById(data.userId);
-        if ( !userResult.isSuccess() ) return Result.fail(new Error('Usuario no registrado'), 500, 'Usuario no existe')
+        if (!userResult.isSuccess()) return Result.fail(new Error('Usuario no registrado'), 500, 'Usuario no existe')
 
-        const checkResult = await this.checkAuthorization( userResult.Value )
-        if ( !checkResult ) return Result.fail(new Error('Sin permisos suficientes'), 403, 'Usuario no posee permisos suficientes' );
+        const checkResult = await this.checkAuthorization(userResult.Value)
+        if (!checkResult) return Result.fail(new Error('Sin permisos suficientes'), 403, 'Usuario no posee permisos suficientes');
 
-        const result = await super.execute( data )
+        const result = await super.execute(data)
         return result
     }
 
-    private async checkAuthorization( user: OrmUser ) {
-        if ( !this.allowedRoles.includes( user.type ) ) return false
+    private async checkAuthorization(user: OrmUser) {
+        if (!this.allowedRoles.includes(user.type)) return false
         return true
     }
 

@@ -1,16 +1,20 @@
+import { OrmCategoryMapper } from './../../../category/infraestructure/mappers/orm-category-mapper';
+import { ExceptionDecorator } from 'src/common/application/application-services/decorators/exception-decorator/exception.decorator';
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { 
+import {
     BadRequestException,
     Body,
-Controller,
-Get,
-Inject,
-Logger,
-Param,
-ParseUUIDPipe,
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-Post,
-Query
+    Controller,
+    Delete,
+    Get,
+    Inject,
+    Logger,
+    Param,
+    ParseUUIDPipe,
+    Patch,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Post,
+    Query
 } from "@nestjs/common";
 import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { DataSource } from "typeorm";
@@ -22,7 +26,7 @@ import { LoggingDecorator } from "src/common/application/application-services/de
 import { GetProductByIdService } from "src/product/aplication/service/queries/get-product-by-id.service";
 import { NativeLogger } from "src/common/infraestructure/logger/logger";
 import { GetProductByIdServiceEntryDTO } from "src/product/aplication/DTO/entry/get-product-by-id-service-entry.dto";
-import { GetUser } from "src/common/infraestructure/jwt/decorator/get-user.param.decorator";
+import { GetUser } from "src/auth/infraestructure/jwt/decorator/get-user.param.decorator";
 import { GetProductByNameServiceEntryDTO } from "src/product/aplication/DTO/entry/get-product-by-name-service-entry.dto";
 import { GetProductByNameService } from "src/product/aplication/service/queries/get-product-by-name.service";
 import { GetProductByNameResponseDTO } from "../DTO/response/get-product-by-name-response.dto";
@@ -35,7 +39,6 @@ import { IProductRepository } from "src/product/domain/repositories/product-repo
 import { HistoricoPrecioRepository } from "../repositories/historico-precio.repository";
 import { CreateHistoricoPrecioService } from "../services/command/create-historico-precio.service";
 import { MonedaRepository } from "../repositories/moneda.repository";
-import { GetProductByNameEntryDTO } from "../DTO/entry/get-product-by-name-entry.dto";
 import { GetAllProductService } from "src/product/aplication/service/queries/get-all-product.service";
 import { PaginationDto } from "src/common/infraestructure/dto/entry/pagination.dto";
 import { GetAllProductServiceEntryDTO } from "src/product/aplication/DTO/entry/get-all-product-service-entry.dto";
@@ -44,8 +47,17 @@ import { IFileUploader } from "src/common/application/file-uploader/file-uploade
 import { ImageTransformer } from "src/common/infraestructure/image-helper/image-transformer";
 import { CloudinaryFileUploader } from "src/common/infraestructure/cloudinary-file-uploader/cloudinary-file-uploader";
 import { RabbitEventBus } from "src/common/infraestructure/rabbit-event-handler/rabbit-event-handler";
-import { testCreated } from "./test-event";
-import { testService } from "./test-service";
+import { HttpExceptionHandler } from "src/common/infraestructure/exception-handler/http-exception-handler-code";
+import { PerformanceDecorator } from 'src/common/application/application-services/decorators/performance-decorator/performance-decorator';
+import { DeleteProductService } from 'src/product/aplication/service/commands/delete-product.service';
+import { DeleteProductServiceEntryDTO } from 'src/product/aplication/DTO/entry/delete-product-service-entry.dto';
+import { testCreated } from './test-event';
+import { testService } from './test-service';
+import { OrmCategoryRepository } from 'src/category/infraestructure/repositories/orm-category-repository';
+import { UpdateProductEntryDTO } from '../DTO/entry/product-update-entry.dto';
+import { UpdateProductResponseDTO } from '../DTO/response/update-product-response.dto';
+import { UpdateProductServiceEntryDTO } from 'src/product/aplication/DTO/entry/update-product-service-entry.dto';
+import { UpdateProductService } from 'src/product/aplication/service/commands/update-product.service';
 
 @ApiTags("Product")
 @Controller("product")
@@ -54,6 +66,7 @@ export class ProductController {
     private readonly productRepository: OrmProductRepository
     private readonly historicoRepository: HistoricoPrecioRepository
     private readonly monedaRepository: MonedaRepository
+    private readonly categoryRepository: OrmCategoryRepository
     private readonly logger: Logger = new Logger('ProductController')
     private readonly idGenerator: IdGenerator<string>
     private readonly fileUploader: IFileUploader
@@ -63,7 +76,14 @@ export class ProductController {
     constructor(
         @Inject('DataSource') private readonly dataSource: DataSource
     ) {
-        this.productRepository = new OrmProductRepository(new ProductMapper(),dataSource)
+        this.categoryRepository = new OrmCategoryRepository(new OrmCategoryMapper(), dataSource)
+        this.productRepository =
+            new OrmProductRepository(
+                new ProductMapper(
+                    new OrmCategoryMapper(),
+                    this.categoryRepository,
+                ), dataSource
+            )
         this.idGenerator = new UuidGenerator();
         this.historicoRepository = new HistoricoPrecioRepository(dataSource)
         this.monedaRepository = new MonedaRepository(dataSource)
@@ -81,25 +101,34 @@ export class ProductController {
     ): Promise<string> {
 
         const data: CreateProductServiceEntryDTO = {
-            userId: "24117a35-07b0-4890-a70f-a082c948b3d4", 
+            userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
             ...entry
-        } 
+        }
 
-        const service = 
-        new LoggingDecorator(
-            new CreateProductService(this.productRepository,this.idGenerator),
-            new NativeLogger(this.logger)
-        )
+        const service =
+            new ExceptionDecorator(
+                new LoggingDecorator(
+                    new CreateProductService(
+                        this.productRepository,
+                        new OrmCategoryRepository(new OrmCategoryMapper, this.dataSource),
+                        this.fileUploader,
+                        this.idGenerator,
+                        this.eventBus
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new HttpExceptionHandler()
+            )
 
         const result = await service.execute(data)
 
-        if(!result.isSuccess())
+        if (!result.isSuccess())
             throw new BadRequestException("Producto no creado");
-        
-        const service_infra = 
-        new CreateHistoricoPrecioService(
-            this.historicoRepository,this.monedaRepository,this.productRepository,this.idGenerator
-        )
+
+        const service_infra =
+            new CreateHistoricoPrecioService(
+                this.historicoRepository, this.monedaRepository, this.productRepository, this.idGenerator
+            )
 
         const result_infra = await service_infra.execute({
             userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
@@ -108,7 +137,7 @@ export class ProductController {
             moneda: result.Value.moneda,
         })
 
-        if(!result_infra.isSuccess())
+        if (!result_infra.isSuccess())
             throw new BadRequestException("Historico no creado");
 
         return "Producto creado"
@@ -127,18 +156,21 @@ export class ProductController {
             id_product: id
         }
 
-        const service = 
-        new LoggingDecorator(
-            new GetProductByIdService(this.productRepository),
-            new NativeLogger(this.logger)
-        )
+        const service =
+            new ExceptionDecorator(
+                new LoggingDecorator(
+                    new GetProductByIdService(this.productRepository),
+                    new NativeLogger(this.logger)
+                ),
+                new HttpExceptionHandler()
+            )
 
         const result = await service.execute(entry)
 
-        if(!result.isSuccess)
+        if (!result.isSuccess)
             throw result.Error
 
-        const response: GetProductResponseDTO = {...result.Value}
+        const response: GetProductResponseDTO = { ...result.Value }
 
         return response
     }
@@ -147,15 +179,16 @@ export class ProductController {
     @ApiOkResponse({
         description: 'Devuelve la informacion de todos los productos',
         type: GetAllProductsResponseDTO,
+        isArray: true
     })
     async getAllProduct(
         @Query() paginacion: PaginationDto
     ) {
         const service =
-        new LoggingDecorator(
-            new GetAllProductService(this.productRepository),
-            new NativeLogger(this.logger)
-        )
+            new LoggingDecorator(
+                new GetAllProductService(this.productRepository),
+                new NativeLogger(this.logger)
+            )
 
         const data: GetAllProductServiceEntryDTO = {
             userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
@@ -164,7 +197,7 @@ export class ProductController {
 
         const result = await service.execute(data)
 
-        if(!result.isSuccess())
+        if (!result.isSuccess())
             return result.Error
 
         const response: GetAllProductsResponseDTO[] = {
@@ -188,36 +221,97 @@ export class ProductController {
             name: name
         }
 
-        const service = 
-        new LoggingDecorator(
-            new GetProductByNameService(this.productRepository),
-            new NativeLogger(this.logger)
-        )
+        const service =
+            new LoggingDecorator(
+                new GetProductByNameService(this.productRepository),
+                new NativeLogger(this.logger)
+            )
 
         const result = await service.execute(data)
 
-        const response: GetProductByNameResponseDTO = {...result.Value}
+        const response: GetProductByNameResponseDTO = { ...result.Value }
 
         return response
     }
 
-    // Endpoints para probar caracteristicas adicionales
+    @Delete('delete/:id')
+    @ApiOkResponse({
+        description: 'Eliminacion de un producto',
+    })
+    async deleteProduct(
+        @Param('id', ParseUUIDPipe) id: string
+    ) {
 
-    @Get("image")
-    async getImage(
-        @Body('base64Image') base64Image: string
-    ){
-        const URL = await this.fileUploader.UploadFile(base64Image)
+        const data: DeleteProductServiceEntryDTO = {
+            userId: "",
+            id_product: id
+        }
 
-        return URL
+        // TODO: Agregar el decorador de seguridad
+        const service =
+            new ExceptionDecorator(
+                new LoggingDecorator(
+                    new PerformanceDecorator(
+                        new DeleteProductService(
+                            this.productRepository
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new HttpExceptionHandler()
+            )
+
+        await service.execute(data)
+
+    }
+
+    @Patch()
+    @ApiOkResponse({
+        description: 'Actualiza la imformacion de un producto',
+        type: UpdateProductResponseDTO,
+    })
+    async updateProudct(
+        @Body() request: UpdateProductEntryDTO
+    ) {
+
+        const data: UpdateProductServiceEntryDTO = {
+            userId: '',
+            ...request
+        }
+
+        const service =
+            new ExceptionDecorator(
+                new LoggingDecorator(
+                    new PerformanceDecorator(
+                        new UpdateProductService(
+                            this.productRepository
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new HttpExceptionHandler()
+            )
+
+        const resuslt = await service.execute(data)
+
+        const response: UpdateProductResponseDTO = {...resuslt.Value}
+
+        return response
+
     }
 
     @Get("rabbit")
     async testRabbit(
-    ){
+    ) {
 
-        this.eventBus.subscribe( 'testCreated', async ( event: testCreated ) =>{
-            console.log("evento reaccion: ",event)
+        await this.eventBus.subscribe('testCreated', async (event: testCreated) => {
+            console.log("evento reaccion: ", event)
+        })
+
+        await this.eventBus.subscribe('testCreated', async (event: testCreated) => {
+            console.log("evento reaccion 2: ", event)
         })
 
         console.log("hola")

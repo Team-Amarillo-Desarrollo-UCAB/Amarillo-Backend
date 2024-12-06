@@ -11,23 +11,21 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
 
     private readonly ormProductMapper: IMapper<Product, OrmProduct>
 
-    constructor(ormProductMapper: IMapper<Product, OrmProduct>,dataSource: DataSource, ) {
+    constructor(ormProductMapper: IMapper<Product, OrmProduct>, dataSource: DataSource,) {
         super(OrmProduct, dataSource.createEntityManager());
         this.ormProductMapper = ormProductMapper
     }
 
     async saveProductAggregate(product: Product): Promise<Result<Product>> {
 
-        try
-        {
+        try {
             const producto = await this.ormProductMapper.fromDomainToPersistence(product)
-            console.log("producto: ",producto)
+            console.log("producto: ", producto)
             const resultado = await this.save(producto)
-            return Result.success<Product>( product, 200 )
-        } catch ( error )
-        {
-            return Result.fail<Product>( new Error( error.message ), error.code, error.message )
-
+            return Result.success<Product>(product, 200)
+        } catch (error) {
+            console.log(error)
+            return Result.fail<Product>(new Error(error.message), error.code, error.message)
         }
 
     }
@@ -47,11 +45,10 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
     }
 
     async findProductByName(name: string): Promise<Result<Product>> {
-        const product = await this.findOne({
-            where: { name: name },
-            relations: ['historicos'],
-        });
 
+        const product = await this.createQueryBuilder('producto')
+            .where('LOWER(REPLACE(producto.name, " ", "")) = :name', { name: name })
+            .getOne()
 
         if (!product)
             return Result.fail<Product>(new Error(`Producto ${name} no encontrado`), 404, `Producto ${name} no encontrado`)
@@ -68,16 +65,36 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
             relations: ['historicos'],
         })
 
-        if(!products)
+        if (!products)
             return Result.fail<Product[]>(new Error(`Productos no almacenados`), 404, `Productos no almacenados`)
-        
+
         const resultado = await Promise.all(
             products.map(async (product) => {
-              return await this.ormProductMapper.fromPersistenceToDomain(product); // Retorna el Product
+                return await this.ormProductMapper.fromPersistenceToDomain(product); // Retorna el Product
             })
         );
 
-        return Result.success<Product[]>(resultado,202)
+        return Result.success<Product[]>(resultado, 202)
+    }
+
+    async verifyNameProduct(name: string): Promise<Result<boolean>> {
+
+        const producto = await this.findOneBy({ name })
+        if (!producto)
+            return Result.success<boolean>(true, 200);
+        return Result.fail<boolean>(new Error('Product registered'), 403, 'Product registered');
+
+    }
+
+    async deleteProduct(id: string): Promise<Result<boolean>> {
+        const result = await this.delete({ id: id });
+
+        if (result.affected === 0) {
+            return Result.fail(new Error('Product not found'), 404, "Product not found")
+        }
+
+        return Result.success<boolean>(true, 200)
+
     }
 
 }

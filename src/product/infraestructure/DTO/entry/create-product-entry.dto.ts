@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum, IsNumber, IsString, Length, Min } from "class-validator";
+import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsString, Length, Min } from "class-validator";
+import { Moneda } from "src/product/domain/enum/Monedas";
 import { UnidadMedida } from "src/product/domain/enum/UnidadMedida";
 
 export class CreateProductEntryDTO {
@@ -38,9 +39,8 @@ export class CreateProductEntryDTO {
     @ApiProperty({
         example: "$"
     })
-    @IsString()
-    @Length(1, 1)
-    moneda: string
+    @IsEnum(Moneda)
+    moneda: Moneda
 
     @ApiProperty({
         example: 500
@@ -53,6 +53,17 @@ export class CreateProductEntryDTO {
         example: 'base64image',
     })
     @IsString()
-    image?: string;
+    image: string;
+
+    @ApiProperty({
+        example: 'id de las categorias',
+    })
+    @IsArray()
+    @IsNotEmpty()
+    category: [
+        {
+            id: string
+        }
+    ]
 
 }

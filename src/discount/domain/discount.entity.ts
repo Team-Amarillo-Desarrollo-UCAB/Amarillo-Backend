@@ -8,6 +8,7 @@ import { DiscountStartDate } from './value-objects/discount-start-date';
 import { DiscountCreated } from './events/discount-created-event';
 import { Deadline } from './value-objects/discount-deadline';
 import { InvalidDiscountException } from './exceptions/invalid-discount.exception';
+import { DiscountImage } from './value-objects/discount-image';
 
 export class Discount extends AggregateRoot<DiscountID> {
   private discountName: DiscountName;
@@ -15,6 +16,7 @@ export class Discount extends AggregateRoot<DiscountID> {
   private discountPercentage: DiscountPercentage;
   private discountStartDate: DiscountStartDate;
   private deadline: Deadline;
+  private image: DiscountImage;
 
   private constructor(
     id: DiscountID,
@@ -22,7 +24,8 @@ export class Discount extends AggregateRoot<DiscountID> {
     discountDescription: DiscountDescription,
     discountPercentage: DiscountPercentage,
     discountStartDate: DiscountStartDate,
-    deadline: Deadline
+    deadline: Deadline,
+    image: DiscountImage
   ) {
     const discountCreated: DiscountCreated = DiscountCreated.create(
       id.Value,
@@ -30,7 +33,8 @@ export class Discount extends AggregateRoot<DiscountID> {
       discountDescription.Value,
       discountPercentage.Value,
       discountStartDate.Value,
-      deadline.Value
+      deadline.Value,
+      image.Image
     );
     super(id, discountCreated);
 
@@ -39,6 +43,7 @@ export class Discount extends AggregateRoot<DiscountID> {
     this.discountPercentage = discountPercentage;
     this.discountStartDate = discountStartDate;
     this.deadline = deadline;
+    this.image = image;
 
     this.ensureValidState();
   }
@@ -50,9 +55,10 @@ export class Discount extends AggregateRoot<DiscountID> {
     discountDescription: DiscountDescription,
     discountPercentage: DiscountPercentage,
     discountStartDate: DiscountStartDate,
-    deadline: Deadline
+    deadline: Deadline,
+    image: DiscountImage
   ): Discount {
-    return new Discount(id, discountName, discountDescription, discountPercentage, discountStartDate, deadline);
+    return new Discount(id, discountName, discountDescription, discountPercentage, discountStartDate, deadline, image);
   }
 
   // Aplicar eventos de dominio
@@ -64,6 +70,7 @@ export class Discount extends AggregateRoot<DiscountID> {
       this.discountPercentage = DiscountPercentage.create(discountCreated.percentage);
       this.discountStartDate = DiscountStartDate.create(discountCreated.startDate);
       this.deadline = Deadline.create(discountCreated.deadline);
+      this.image = DiscountImage.create(discountCreated.image);
     }
   }
 
@@ -97,5 +104,9 @@ export class Discount extends AggregateRoot<DiscountID> {
 
   get Deadline(): Deadline {
     return this.deadline;
+  }
+
+  get Image(): DiscountImage {
+    return this.image;
   }
 }

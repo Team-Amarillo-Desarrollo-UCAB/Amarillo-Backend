@@ -1,7 +1,7 @@
-import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
 import { Detalle_Orden } from "./detalle_orden.entity";
 import { Estado_Orden } from "./Estado-orden/estado_orden.entity";
-
+import { Payment } from "./payment.entity";
 
 @Entity({ name: "Orden" })
 export class OrmOrder {
@@ -21,13 +21,18 @@ export class OrmOrder {
     @OneToMany(() => Estado_Orden, (estado_orden) => estado_orden.orden, {eager: true})
     estados: Estado_Orden[];
 
+    @OneToOne(() => Payment,{ lazy: true })
+    @JoinColumn()
+    pago: Payment
+
 
     static create(
         id: string,
         fecha_creacion: Date,
         monto_total: number,
         detalles?: Detalle_Orden[],
-        estados?: Estado_Orden[]
+        estados?: Estado_Orden[],
+        pago?: Payment
     ): OrmOrder {
         const orden = new OrmOrder()
         orden.id = id
@@ -35,6 +40,7 @@ export class OrmOrder {
         orden.monto_total = monto_total
         orden.detalles = detalles
         orden.estados = estados
+        orden.pago = pago
         return orden
     }
 }

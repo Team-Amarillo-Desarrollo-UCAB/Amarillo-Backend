@@ -7,34 +7,37 @@ import { DiscountPercentage } from 'src/discount/domain/value-objects/discount-p
 import { DiscountStartDate } from 'src/discount/domain/value-objects/discount-start-date';
 import { Deadline } from 'src/discount/domain/value-objects/discount-deadline';
 import { OrmDiscount } from '../entities/orm-discount.entity';
+import { DiscountImage } from 'src/discount/domain/value-objects/discount-image';
 
 export class OrmDiscountMapper implements IMapper<Discount, OrmDiscount> {
-  
 
-  async fromDomainToPersistence(domain: Discount): Promise<OrmDiscount> {
-    const ormDiscount = OrmDiscount.create(
-      domain.Id.Value,                     
-      domain.Name.Value,                   
-      domain.Description.Value,            
-      domain.Percentage.Value,             
-      domain.StartDate.Value,             
-      domain.Deadline.Value                
-    );
-    
-    return ormDiscount;
-  }
 
- 
-  async fromPersistenceToDomain(persistence: OrmDiscount): Promise<Discount> {
-    const discount = Discount.create(
-      DiscountID.create(persistence.id),                 
-      DiscountName.create(persistence.name),             
-      DiscountDescription.create(persistence.description), 
-      DiscountPercentage.create(persistence.percentage), 
-      DiscountStartDate.create(persistence.startDate),   
-      Deadline.create(persistence.deadline)             
-    );
-    
-    return discount;
-  }
+      async fromDomainToPersistence(domain: Discount): Promise<OrmDiscount> {
+            const ormDiscount = OrmDiscount.create(
+                  domain.Id.Value,
+                  domain.Name.Value,
+                  domain.Description.Value,
+                  domain.Percentage.Value,
+                  domain.StartDate.Value,
+                  domain.Deadline.Value,
+                  domain.Image.Image
+            );
+
+            return ormDiscount;
+      }
+
+
+      async fromPersistenceToDomain(persistence: OrmDiscount): Promise<Discount> {
+            const discount = Discount.create(
+                  DiscountID.create(persistence.id),
+                  DiscountName.create(persistence.name),
+                  DiscountDescription.create(persistence.description),
+                  DiscountPercentage.create(persistence.percentage),
+                  DiscountStartDate.create(persistence.startDate),
+                  Deadline.create(persistence.deadline),
+                  DiscountImage.create(persistence.image)
+            );
+
+            return discount;
+      }
 }
