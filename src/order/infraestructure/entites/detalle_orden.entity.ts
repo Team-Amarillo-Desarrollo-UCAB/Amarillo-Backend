@@ -21,7 +21,7 @@ export class Detalle_Orden {
     @JoinColumn({ name: 'id_orden' })
     orden: OrmOrder; // Relación con la entidad Orden
 
-    @ManyToOne(() => OrmProduct, { nullable: true }) // Relación opcional con Producto
+    @ManyToOne(() => OrmProduct, { nullable: true , eager: true}) // Relación opcional con Producto
     @JoinColumn({ name: 'id_producto' })
     producto: OrmProduct;
 

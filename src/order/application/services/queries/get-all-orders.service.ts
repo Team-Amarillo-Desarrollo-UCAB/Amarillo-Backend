@@ -23,6 +23,8 @@ export class GetAllOrdersService implements
 
         for(const orden of ordenes.Value){
 
+            console.log("Orden del dominio: ",orden)
+
             response.push({
                 id_orden: orden.Id.Id,
                 estado: orden.Estado.Estado,

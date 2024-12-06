@@ -76,19 +76,23 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
         const ordenes = await this.find({
             skip: page,
             take: limit,
-            relations: ['historicos'],
+            relations: ['detalles']
         })
 
         if (!ordenes)
             return Result.fail<Order[]>(new Error(`Ordenes no almacenadas`), 404, `Ordenes no almacenadas`)
 
-        const resultado = await Promise.all(
-            ordenes.map(async (orden) => {
-                return await this.ormOrderMapper.fromPersistenceToDomain(orden); // Retorna el Product
-            })
-        );
+        const result: Order[] = []
 
-        return Result.success<Order[]>(resultado, 202)
+        for(const orden of ordenes){
+
+            result.push(
+                await this.ormOrderMapper.fromPersistenceToDomain(orden)
+            )
+
+        }
+
+        return Result.success<Order[]>(result, 202)
     }
 
 }

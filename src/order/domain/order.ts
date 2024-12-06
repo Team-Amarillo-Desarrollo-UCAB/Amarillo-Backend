@@ -35,6 +35,8 @@ export class Order extends AggregateRoot<OrderId> {
         )
 
         super(id, event)
+
+        this.montoTotal = montoTotal
     }
 
     get Estado() {
@@ -55,6 +57,10 @@ export class Order extends AggregateRoot<OrderId> {
 
     get Moneda(){
         return this.productos[0].Moneda()
+    }
+
+    get Payment(){
+        return this.payment
     }
 
     calcularMontoProductos(): number{

@@ -9,7 +9,7 @@ export class OrderPaymentName implements IValueObject<OrderPaymentName>{
         this.name = name;
     }
 
-    Name(): string{
+    Name(): EnumPaymentMethod{
         return this.name;
     }
 
