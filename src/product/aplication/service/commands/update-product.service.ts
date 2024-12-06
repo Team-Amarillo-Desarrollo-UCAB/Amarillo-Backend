@@ -1,6 +1,6 @@
 import { IApplicationService } from "src/common/application/application-services/application-service.interface";
-import { UpdateProductServiceResponseDTO } from "../../dto/entry/response/update-product-service-response.dto";
-import { UpdateProductServiceEntryDTO } from '../../dto/entry/update-product-service-entry.dto';
+import { UpdateProductServiceResponseDTO } from "../../DTO/response/update-product-service-response.dto";
+import { UpdateProductServiceEntryDTO } from '../../DTO/entry/update-product-service-entry.dto';
 import { Result } from "src/common/domain/result-handler/Result";
 import { IProductRepository } from "src/product/domain/repositories/product-repository.interface";
 import { ProductStock } from "src/product/domain/value-objects/product-stock";

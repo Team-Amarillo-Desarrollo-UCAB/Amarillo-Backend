@@ -1,8 +1,8 @@
 import { IApplicationService } from "src/common/application/application-services/application-service.interface";
 import { Result } from "src/common/domain/result-handler/Result";
 import { IProductRepository } from "src/product/domain/repositories/product-repository.interface";
-import { GetProductByNameServiceEntryDTO } from "../../dto/entry/get-product-by-name-service-entry.dto";
-import { GetProductByNameServiceResponseDTO } from "../../dto/entry/response/get-product-by-name-service-response.dto";
+import { GetProductByNameServiceEntryDTO } from "../../DTO/entry/get-product-by-name-service-entry.dto";
+import { GetProductByNameServiceResponseDTO } from "../../DTO/response/get-product-by-name-service-response.dto";
 
 export class GetProductByNameService implements IApplicationService<GetProductByNameServiceEntryDTO, GetProductByNameServiceResponseDTO> {
 

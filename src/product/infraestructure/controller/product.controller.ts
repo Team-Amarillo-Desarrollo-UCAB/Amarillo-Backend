@@ -41,7 +41,7 @@ import { CreateHistoricoPrecioService } from "../services/command/create-histori
 import { MonedaRepository } from "../repositories/moneda.repository";
 import { GetAllProductService } from "src/product/aplication/service/queries/get-all-product.service";
 import { PaginationDto } from "src/common/infraestructure/dto/entry/pagination.dto";
-import { GetAllProductServiceEntryDTO } from "src/product/aplication/dto/entry/get-all-product-service-entry.dto";
+import { GetAllProductServiceEntryDTO } from "src/product/aplication/DTO/entry/get-all-product-service-entry.dto";
 import { GetAllProductsResponseDTO } from "../DTO/response/get-all-product-response.dto";
 import { IFileUploader } from "src/common/application/file-uploader/file-uploader.interface";
 import { ImageTransformer } from "src/common/infraestructure/image-helper/image-transformer";
