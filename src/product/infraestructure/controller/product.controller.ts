@@ -266,7 +266,7 @@ export class ProductController {
 
     }
 
-    @Patch()
+    @Patch('update')
     @ApiOkResponse({
         description: 'Actualiza la imformacion de un producto',
         type: UpdateProductResponseDTO,
@@ -279,6 +279,8 @@ export class ProductController {
             userId: '',
             ...request
         }
+
+        console.log("request: ",request)
 
         const service =
             new ExceptionDecorator(

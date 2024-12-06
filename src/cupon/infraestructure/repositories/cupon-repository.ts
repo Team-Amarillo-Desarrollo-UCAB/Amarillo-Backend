@@ -40,14 +40,14 @@ export class CuponRepository extends Repository<OrmCupon> implements ICuponRepos
             take: limit,
         })
 
-        if(!coupons)
+        if (!coupons)
             return Promise.resolve(Result.fail<Cupon[]>(new Error(`Cupones no almacenados`), 404, `Cupones no almacenados`))
-        
+
         const resultado = await Promise.all(
             coupons.map(async (coupon) => {
-              return await this.cuponMapper.fromPersistenceToDomain(coupon); // Retorna el Product
+                return await this.cuponMapper.fromPersistenceToDomain(coupon); // Retorna el Product
             }));
-        return Result.success<Cupon[]>(resultado,202)
+        return Result.success<Cupon[]>(resultado, 202)
     }
 
     async saveCuponAggregate(cupon: Cupon): Promise<Result<Cupon>> {
@@ -62,7 +62,7 @@ export class CuponRepository extends Repository<OrmCupon> implements ICuponRepos
     }
 
     async verifyCuponCode(code: string): Promise<Result<boolean>> {
-        const cupon = await this.findOneBy({code})
+        const cupon = await this.findOneBy({ code })
         if (!cupon)
             return Result.success<boolean>(true, 200);
         return Result.fail<boolean>(new CuponRegisteredException(code), 403, `Cupon with code ${code} does not exists`);
