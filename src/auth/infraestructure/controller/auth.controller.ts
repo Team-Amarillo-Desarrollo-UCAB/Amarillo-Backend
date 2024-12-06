@@ -13,8 +13,8 @@ import { LoggingDecorator } from "src/common/application/application-services/de
 import { NativeLogger } from "src/common/infraestructure/logger/logger";
 import { UserCreated } from "src/user/domain/events/user-created-event";
 import { OrmUser } from "src/user/infraestructure/entities/orm-entities/user.entity";
-import { SignUpUserEntryInfraDto } from "../dto/entry/sign-up-user-entry.dto";
-import { SignUpUserSwaggerResponseDto } from "../dto/response/sign-up-user-response.dto";
+import { SignUpUserEntryInfraDto } from "../DTO/entry/sign-up-user-entry.dto";
+import { SignUpUserSwaggerResponseDto } from "../DTO/response/sign-up-user-response.dto";
 import { RabbitEventBus } from "src/common/infraestructure/rabbit-event-handler/rabbit-event-handler";
 import { Querysynchronizer } from "src/common/infraestructure/query-synchronizer/query-synchronizer";
 import { IAccountRepository } from "src/user/application/interface/account-user-repository.interface";
@@ -27,19 +27,19 @@ import { UserMapper } from "src/user/infraestructure/mappers/orm-mapper/user-map
 import { OrmAccountRepository } from "src/user/infraestructure/repositories/orm-repositories/orm-account-repository";
 import { IFileUploader } from "src/common/application/file-uploader/file-uploader.interface";
 import { CloudinaryFileUploader } from "src/common/infraestructure/cloudinary-file-uploader/cloudinary-file-uploader";
-import { ForgetPasswordEntryInfraDto } from "../dto/entry/forget-password-entry.dto";
-import { ForgetPasswordSwaggerResponseDto } from "../dto/response/forget-password-response.dto";
+import { ForgetPasswordEntryInfraDto } from "../DTO/entry/forget-password-entry.dto";
+import { ForgetPasswordSwaggerResponseDto } from "../DTO/response/forget-password-response.dto";
 import { GetCodeUpdatePasswordUserInfraService } from "../infra-service/get-code-update-password-service.infra.service";
 import { SecretCodeGenerator } from "../secret-code-generator/secret-code-generator";
-import { CodeValidateEntryInfraDto } from "../dto/entry/code-validate-entry.dto";
-import { ValidateCodeForgetPasswordSwaggerResponseDto } from "../dto/response/val-code-swagger-response.dto";
-import { ChangePasswordEntryInfraDto } from "../dto/entry/change-password-entry.dto";
-import { ChangePasswordSwaggerResponseDto } from "../dto/response/change-password-response.dto";
+import { CodeValidateEntryInfraDto } from "../DTO/entry/code-validate-entry.dto";
+import { ValidateCodeForgetPasswordSwaggerResponseDto } from "../DTO/response/val-code-swagger-response.dto";
+import { ChangePasswordEntryInfraDto } from "../DTO/entry/change-password-entry.dto";
+import { ChangePasswordSwaggerResponseDto } from "../DTO/response/change-password-response.dto";
 import { ChangePasswordUserInfraService } from "../infra-service/change-password-user-service.infra.service";
 //import { GetCodeUpdatePasswordUserInfraService } from "../infra-service/get-code-update-password-service.infra.service";
-import { LogInUserResponseDto } from "src/auth/infraestructure/dto/response/log-in-user-reponses.dto";
-import { LogInUserEntryInfraDto } from "src/auth/infraestructure/dto/entry/log-in-user-entry.dto";
-import { LogInUserServiceEntryDto } from "src/auth/infraestructure/services/dto/entry/log-in-entry.infraestructure.dto";
+import { LogInUserResponseDto } from "src/auth/infraestructure/DTO/response/log-in-user-reponses.dto";
+import { LogInUserEntryInfraDto } from "src/auth/infraestructure/DTO/entry/log-in-user-entry.dto";
+import { LogInUserServiceEntryDto } from "src/auth/infraestructure/services/DTO/entry/log-in-entry.infraestructure.dto";
 import { PerformanceDecorator } from "src/common/application/application-services/decorators/performance-decorator/performance-decorator";
 import { LogInUserInfraService } from "src/auth/infraestructure/services/log-in-user-service.infraestructure.service";
 // import { OrmAccountRepository } from "src/user/infraestructure/repositories/account-repository";
@@ -48,10 +48,9 @@ import { LogInUserInfraService } from "src/auth/infraestructure/services/log-in-
 import { ExceptionDecorator } from "src/common/application/application-services/decorators/exception-decorator/exception.decorator";
 import { IExceptionHandler } from "src/common/application/exception-handler/exception-handler.interface";
 import { HttpExceptionHandler } from "src/common/infraestructure/exception-handler/http-exception-handler-code";
-import { Result } from "src/common/domain/result-handler/Result";
 import { GetUser } from "../jwt/decorator/get-user.param.decorator";
 import { JwtAuthGuard } from "../jwt/decorator/jwt-auth.guard";
-import { CurrentUserSwaggerResponseDto } from "../dto/response/current-user-swagger-response.dto";
+import { CurrentUserSwaggerResponseDto } from "../DTO/response/current-user-swagger-response.dto";
 
 @ApiTags('auth')
 @Controller('auth')

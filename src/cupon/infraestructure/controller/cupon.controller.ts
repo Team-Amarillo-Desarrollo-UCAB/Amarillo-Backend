@@ -19,13 +19,13 @@ import { GetAllCouponsResponseDTO } from "./DTO/response/get-all-cupon-response.
 import { PaginationDto } from "src/common/infraestructure/dto/entry/pagination.dto"
 import { GetAllCouponService } from "src/cupon/application/service/queries/get-all-cupon.service"
 import { ICuponRepository } from "src/cupon/domain/repositories/cupon-repository.interface"
-import { GetAllCuponServiceEntryDTO } from "src/cupon/application/dto/entry/get-all-cupon-service-entry.dto"
+import { GetAllCuponServiceEntryDTO } from "src/cupon/application/DTO/entry/get-all-cupon-service-entry.dto"
 import { GetCouponByCodeResponseDTO } from "./DTO/response/get-coupon-by-code-response.dto"
-import { GetCouponByCodeServiceEntryDTO } from "src/cupon/application/dto/entry/get-coupon-by-code-service-entry.dto"
+import { GetCouponByCodeServiceEntryDTO } from "src/cupon/application/DTO/entry/get-coupon-by-code-service-entry.dto"
 import { GetCouponByCodeService } from "src/cupon/application/service/queries/get-coupon-by-code.service"
 import { DeleteCouponResponseDto } from "./DTO/response/delete-cupon-response.dto"
 import { DeleteCouponEntryDto } from "./DTO/entry/delete-coupon-entry.dto"
-import { DeleteCuponServiceEntryDto } from "src/cupon/application/dto/entry/delete-cupon-service-entry.dto"
+import { DeleteCuponServiceEntryDto } from "src/cupon/application/DTO/entry/delete-cupon-service-entry.dto"
 import { DeleteCouponApplicationService } from "src/cupon/application/command/delete-cupon.service"
 
 @ApiTags("Cupon")
