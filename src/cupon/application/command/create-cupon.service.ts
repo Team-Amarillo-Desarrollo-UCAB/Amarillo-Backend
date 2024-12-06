@@ -26,7 +26,7 @@ export class CreateCuponService implements IApplicationService
         const verify_code = await this.cuponRepository.verifyCuponCode(data.code)
         if (!verify_code.isSuccess())
             return Result.fail(new Error("Codigo del cupon ya esta registrado"), 404, "Codigo del cupon ya esta registrado")
-    
+
         const cupon = Cupon.create(
             CuponId.create(await this.idGenerator.generateId()),
             CuponCode.create(data.code),
@@ -36,12 +36,12 @@ export class CreateCuponService implements IApplicationService
         )
 
         const result = await this.cuponRepository.saveCuponAggregate(cupon)
-        if(!result.isSuccess()) return Result.fail(result.Error,result.StatusCode,result.Message)
+        if (!result.isSuccess()) return Result.fail(result.Error, result.StatusCode, result.Message)
 
         const response: CreateCuponServiceResponseDto = {
             cuponid: cupon.Code()
         }
-        return Result.success(response,200)
+        return Result.success(response, 200)
     }
 
     get name(): string {
