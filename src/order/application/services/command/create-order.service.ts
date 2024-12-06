@@ -94,6 +94,8 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
 
         orden = result_domain.Value
 
+        console.log("orden creada: ",orden)
+
         const result = await this.orderRepository.saveOrderAggregate(orden)
 
         if (!result.isSuccess())

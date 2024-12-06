@@ -13,14 +13,19 @@ export class OrderCalculationTotal {
     // TODO: Mas adelante se agregara la aplicacion de los cupones o los descuentos
     async execute(orden: Order): Promise<Result<Order>> {
 
-        let monto = orden.calcularMontoProductos()
+        let monto_productos = 0
+        for (const p of orden.Productos) {
+            monto_productos += p.Precio().Amount * p.Cantidad().Value
+        }
 
-        orden.assignOrderCost(monto)
+        orden.assignOrderCost(monto_productos)
 
         const result = await this.metodoPagoService.execute(orden)
 
-        if(!result.isSuccess())
-            return Result.fail<Order>(new InvalidPaymentMethod(result.Message),404,result.Message)
+        if (!result.isSuccess())
+            return Result.fail<Order>(new InvalidPaymentMethod(result.Message), 404, result.Message)
+
+        orden = result.Value
 
         return Result.success<Order>(orden, 200)
     }

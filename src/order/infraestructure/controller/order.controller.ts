@@ -249,11 +249,14 @@ export class OrderController {
     }
 
     @Post('pay/paypal')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @ApiOkResponse({
         description: 'Crea la orden con el metodo de pago de PayPal',
         type: CreateOrderResponseDTO
     })
     async orderPayPaypal(
+        @GetUser() user,
         @Body() request: CreateOrderPayPalEntryDTO,
     ) {
 
@@ -262,6 +265,7 @@ export class OrderController {
             console.log("enviado")
             const sender = new NodemailerEmailSender();
             const order_id = event.id;
+            console.log(user)
             sender.sendEmail("bastidasluigi05@gmail.com", "Jamal", order_id);
         });
 
@@ -457,6 +461,8 @@ export class OrderController {
             )
 
         const result = await service.execute(data)
+
+        console.log("Ya se obtuvieron")
 
         const response: GetAllOrdersReponseDTO[] = {
             ...result.Value

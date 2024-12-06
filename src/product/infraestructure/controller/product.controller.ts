@@ -280,7 +280,7 @@ export class ProductController {
             ...request
         }
 
-        console.log("request: ",request)
+        console.log("request: ", request)
 
         const service =
             new ExceptionDecorator(
@@ -298,7 +298,7 @@ export class ProductController {
 
         const resuslt = await service.execute(data)
 
-        const response: UpdateProductResponseDTO = {...resuslt.Value}
+        const response: UpdateProductResponseDTO = { ...resuslt.Value }
 
         return response
 
@@ -321,5 +321,14 @@ export class ProductController {
         const service = new testService(this.eventBus)
         const result = await service.execute("Mensaje enviado")
 
+    }
+
+    @Get("image")
+    async getImage(
+        @Body('base64Image') base64Image: string
+    ) {
+        const URL = await this.fileUploader.UploadFile(base64Image)
+
+        return URL
     }
 }
