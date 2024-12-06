@@ -1,8 +1,8 @@
 import { IApplicationService } from "src/common/application/application-services/application-service.interface"
 import { ICuponRepository } from "src/cupon/domain/repositories/cupon-repository.interface" 
-import { GetAllCuponServiceEntryDTO } from "../../DTO/entry/get-all-cupon-service-entry.dto" 
+import { GetAllCuponServiceEntryDTO } from "../../DTO_1/entry/get-all-cupon-service-entry.dto" 
 import { Result } from "src/common/domain/result-handler/Result"
-import { GetAllCuponServiceResponseDTO } from "../../DTO/response/get-all-cupon-service-response.dto"
+import { GetAllCuponServiceResponseDTO } from "../../DTO_1/response/get-all-cupon-service-response.dto"
 
 
 export class GetAllCouponService implements IApplicationService<GetAllCuponServiceEntryDTO, GetAllCuponServiceResponseDTO[]> {

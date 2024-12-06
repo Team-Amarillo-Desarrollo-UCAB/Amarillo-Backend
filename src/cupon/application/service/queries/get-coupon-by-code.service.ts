@@ -2,8 +2,8 @@ import { IApplicationService } from "src/common/application/application-services
 import { Result } from "src/common/domain/result-handler/Result";
 import { ICuponRepository } from "src/cupon/domain/repositories/cupon-repository.interface";
 import { IProductRepository } from "src/product/domain/repositories/product-repository.interface";
-import { GetCouponByCodeServiceEntryDTO } from "../../DTO/entry/get-coupon-by-code-service-entry.dto";
-import { GetCouponByCodeServiceResponseDTO } from "../../DTO/response/get-cupon-by-code-service-response.dto";
+import { GetCouponByCodeServiceEntryDTO } from "../../DTO_1/entry/get-coupon-by-code-service-entry.dto";
+import { GetCouponByCodeServiceResponseDTO } from "../../DTO_1/response/get-cupon-by-code-service-response.dto";
 
 
 export class GetCouponByCodeService implements IApplicationService<GetCouponByCodeServiceEntryDTO, GetCouponByCodeServiceResponseDTO> {
