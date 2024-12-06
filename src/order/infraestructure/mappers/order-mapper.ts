@@ -87,8 +87,8 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
                         OrderProductName.create(detalle.producto.name),
                         OrderProductCantidad.create(detalle.cantidad),
                         OrderProductPrice.create(
-                            OrderProductAmount.create(precio),
-                            OrderProductCurrency.create(moneda)
+                            OrderProductAmount.create(precio ? precio : 5),
+                            OrderProductCurrency.create(moneda ? moneda : '$')
                         )
                     )
                 )
@@ -102,6 +102,8 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
         console.log(orderEstado)
 
 
+        console.log("Orden para transformar: ",persistence)
+
         const order = Order.create(
             OrderId.create(persistence.id),
             orderEstado,
@@ -109,6 +111,10 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
             productos,
             OrderTotal.create(persistence.monto_total),
         )
+
+        order.assignOrderCost(persistence.monto_total)
+
+        console.log("Orden transformada: ",order)
 
         return order
 
