@@ -2,8 +2,8 @@ import { ICategoryRepository } from "src/category/domain/repositories/category-r
 import { IApplicationService } from "src/common/application/application-services/application-service.interface";
 import { IEventHandler } from "src/common/application/event-handler/event-handler.interface";
 import { Result } from "src/common/domain/result-handler/Result";
-import { DeleteCuponServiceEntryDto } from "../DTO_1/entry/delete-cupon-service-entry.dto";
-import { DeleteCuponServiceResponseDto } from "../DTO_1/response/delete-cupon-service-response.dto";
+import { DeleteCuponServiceEntryDto } from "../DTO/entry/delete-cupon-service-entry.dto";
+import { DeleteCuponServiceResponseDto } from "../DTO/response/delete-cupon-service-response.dto";
 import { ICuponRepository } from "src/cupon/domain/repositories/cupon-repository.interface";
 
 export class DeleteCouponApplicationService 
