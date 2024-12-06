@@ -72,4 +72,23 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
         throw new Error("Method not implemented.");
     }
 
+    async findAllOrders(page: number, limit: number): Promise<Result<Order[]>> {
+        const ordenes = await this.find({
+            skip: page,
+            take: limit,
+            relations: ['historicos'],
+        })
+
+        if (!ordenes)
+            return Result.fail<Order[]>(new Error(`Ordenes no almacenadas`), 404, `Ordenes no almacenadas`)
+
+        const resultado = await Promise.all(
+            ordenes.map(async (orden) => {
+                return await this.ormOrderMapper.fromPersistenceToDomain(orden); // Retorna el Product
+            })
+        );
+
+        return Result.success<Order[]>(resultado, 202)
+    }
+
 }

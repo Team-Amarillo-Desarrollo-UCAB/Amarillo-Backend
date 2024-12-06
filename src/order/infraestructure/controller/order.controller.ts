@@ -58,6 +58,10 @@ import { OrmCategoryMapper } from "src/category/infraestructure/mappers/orm-cate
 import { OrmCategoryRepository } from "src/category/infraestructure/repositories/orm-category-repository";
 import { PaymentMethodRepository } from "src/payment-method/infraestructure/repositories/payment-method-repository";
 import { PaymentMethodMapper } from "src/payment-method/infraestructure/mappers/payment-method-mapper";
+import { PaginationDto } from "src/common/infraestructure/dto/entry/pagination.dto";
+import { GetAllOrdersServiceEntryDTO } from "src/order/application/dto/entry/get-all-orders-entry-service.dto";
+import { GetAllOrdersService } from '../../application/services/queries/get-all-orders.service';
+import { GetAllOrdersReponseDTO } from "../dto/response/get-all-ordes-response";
 
 @ApiTags("Order")
 @Controller("order")
@@ -91,7 +95,7 @@ export class OrderController {
         this.detalleRepository = new DetalleRepository(dataSource)
         this.estadoOrdenRepository = new EstadoOrdenRepository(dataSource)
         this.estadoRepository = new EstadoRepository(dataSource)
-        this.paymentMethodRepository = new PaymentMethodRepository(dataSource,new PaymentMethodMapper())
+        this.paymentMethodRepository = new PaymentMethodRepository(dataSource, new PaymentMethodMapper())
     }
 
     // TODO: Probar la validacion con el bearer token
@@ -245,6 +249,10 @@ export class OrderController {
     }
 
     @Post('pay/paypal')
+    @ApiOkResponse({
+        description: 'Crea la orden con el metodo de pago de PayPal',
+        type: CreateOrderResponseDTO
+    })
     async orderPayPaypal(
         @Body() request: CreateOrderPayPalEntryDTO,
     ) {
@@ -292,32 +300,6 @@ export class OrderController {
             await service.execute(data)
         });
 
-        // Persistencia de la base de datos para los detalles de una orden
-        await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
-            const service =
-                new ExceptionDecorator(
-                    new LoggingDecorator(
-                        new CreateEstadoOrdenService(
-                            this.estadoOrdenRepository,
-                            this.estadoRepository,
-                            this.orderRepository,
-                            new OrderMapper(this.idGenerator)
-                        ),
-                        new NativeLogger(this.logger)
-                    ),
-                    new HttpExceptionHandler()
-                )
-
-            const data = {
-                userId: "",
-                id_orden: event.id,
-                fecha_inicio: event.fecha_creacion,
-                estado: event.estado
-            }
-
-            await service.execute(data)
-        });
-
         const data: CreateOrderEntryServiceDTO = {
             userId: "",
             products: request.products
@@ -354,6 +336,10 @@ export class OrderController {
     }
 
     @Post('pay/stripe')
+    @ApiOkResponse({
+        description: 'Crea la orden con stripe',
+        type: CreateOrderResponseDTO
+    })
     async orderPayStripe(
         @Body() request: CreateOrderStripeEntryDTO,
     ) {
@@ -410,8 +396,6 @@ export class OrderController {
             products: request.products
         };
 
-        console.log(data)
-
         const service =
             new ExceptionDecorator(
                 new LoggingDecorator(
@@ -440,6 +424,46 @@ export class OrderController {
         const result = await service.execute(data)
 
         return result.Value
+    }
+
+    @Get('many')
+    @ApiOkResponse({
+        description: 'Devuelve la informacion de todas las ordenes',
+        type: GetAllOrdersReponseDTO,
+        isArray: true
+    })
+    async getAllOrders(
+        @Query() pagination: PaginationDto
+    ) {
+
+        const data: GetAllOrdersServiceEntryDTO = {
+            userId: '',
+            page: pagination.page,
+            limit: pagination.limit
+        }
+
+        const service =
+            new ExceptionDecorator(
+                new LoggingDecorator(
+                    new PerformanceDecorator(
+                        new GetAllOrdersService(
+                            this.orderRepository
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new HttpExceptionHandler()
+            )
+
+        const result = await service.execute(data)
+
+        const response: GetAllOrdersReponseDTO[] = {
+            ...result.Value
+        }
+
+        return response
+
     }
 
 

@@ -19,7 +19,7 @@ export class CreatePaymentMethodService implements IApplicationService
 
     async execute(data: CreatePaymentMethodServiceEntryDTO): Promise<Result<CreatePaymentMethodServiceResponseDTO>> {
 
-        if(this.paymentMethodRepository.verifyPaymentMethodByName(data.name))
+        if(!this.paymentMethodRepository.verifyPaymentMethodByName(data.name))
             return Result.fail<CreatePaymentMethodServiceResponseDTO>(new Error("Metodo de pago ya registrado"),404,"Metodo de pago ya registrado")
 
         const payment_method = PaymentMethod.create(

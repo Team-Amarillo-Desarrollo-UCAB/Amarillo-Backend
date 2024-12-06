@@ -3,8 +3,8 @@ import { IApplicationService } from "src/common/application/application-services
 import { Result } from "src/common/domain/result-handler/Result"
 import { Detalle_Orden } from "../../entites/detalle_orden.entity"
 import { DetalleRepository } from "../../repositories/detalle_orden.respoitory"
-import { CreateDetalleServiceEntry } from "../dto/entry/create-detalle-service-entry"
-import { CreateDetalleServiceResponseDTO } from "../dto/response/create-detalle-service-response.dto"
+import { CreateDetalleServiceEntry } from "../DTO/entry/create-detalle-service-entry"
+import { CreateDetalleServiceResponseDTO } from "../DTO/response/create-detalle-service-response.dto"
 
 
 export class CreateDetalleService implements IApplicationService

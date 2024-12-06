@@ -5,8 +5,8 @@ import { IUserRepository } from "src/user/domain/repositories/user-repository.in
 import { UserEmail } from "src/user/domain/value-object/user-email"
 import { UserName } from "src/user/domain/value-object/user-name"
 import { UserPhone } from "src/user/domain/value-object/user-phone"
-import { UpdateUserProfileServiceEntryDto } from "../../dto/params/update-user-profile-service-entry.dto"
-import { UpdateUserProfileServiceResponseDto } from "../../dto/responses/update-user-profile-service-response.dto"
+import { UpdateUserProfileServiceEntryDto } from "src/user/application/dto/params/update-user-profile-service-entry.dto"
+import { UpdateUserProfileServiceResponseDto } from "src/user/application/dto/responses/update-user-profile-service-response.dto"
 
 
 

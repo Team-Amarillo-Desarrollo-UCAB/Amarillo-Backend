@@ -11,6 +11,7 @@ import {
     Logger,
     Param,
     ParseUUIDPipe,
+    Patch,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Post,
     Query
@@ -53,6 +54,10 @@ import { DeleteProductServiceEntryDTO } from 'src/product/aplication/dto/entry/d
 import { testCreated } from './test-event';
 import { testService } from './test-service';
 import { OrmCategoryRepository } from 'src/category/infraestructure/repositories/orm-category-repository';
+import { UpdateProductEntryDTO } from '../dto/entry/product-update-entry.dto';
+import { UpdateProductResponseDTO } from '../dto/response/update-product-response.dto';
+import { UpdateProductServiceEntryDTO } from 'src/product/aplication/dto/entry/update-product-service-entry.dto';
+import { UpdateProductService } from 'src/product/aplication/service/commands/update-product.service';
 
 @ApiTags("Product")
 @Controller("product")
@@ -174,6 +179,7 @@ export class ProductController {
     @ApiOkResponse({
         description: 'Devuelve la informacion de todos los productos',
         type: GetAllProductsResponseDTO,
+        isArray: true
     })
     async getAllProduct(
         @Query() paginacion: PaginationDto
@@ -229,6 +235,9 @@ export class ProductController {
     }
 
     @Delete('delete/:id')
+    @ApiOkResponse({
+        description: 'Eliminacion de un producto',
+    })
     async deleteProduct(
         @Param('id', ParseUUIDPipe) id: string
     ) {
@@ -254,6 +263,42 @@ export class ProductController {
             )
 
         await service.execute(data)
+
+    }
+
+    @Patch()
+    @ApiOkResponse({
+        description: 'Actualiza la imformacion de un producto',
+        type: UpdateProductResponseDTO,
+    })
+    async updateProudct(
+        @Body() request: UpdateProductEntryDTO
+    ) {
+
+        const data: UpdateProductServiceEntryDTO = {
+            userId: '',
+            ...request
+        }
+
+        const service =
+            new ExceptionDecorator(
+                new LoggingDecorator(
+                    new PerformanceDecorator(
+                        new UpdateProductService(
+                            this.productRepository
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new HttpExceptionHandler()
+            )
+
+        const resuslt = await service.execute(data)
+
+        const response: UpdateProductResponseDTO = {...resuslt.Value}
+
+        return response
 
     }
 

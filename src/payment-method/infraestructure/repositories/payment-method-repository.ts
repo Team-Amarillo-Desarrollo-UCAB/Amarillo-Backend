@@ -84,7 +84,7 @@ export class PaymentMethodRepository extends Repository<OrmPaymentMethod> implem
             })
 
             if (metodo)
-                return Result.success<boolean>(true, 200)
+                return Result.fail<boolean>(new Error('Payment method registered'), 403, 'Payment method');
 
             return Result.success<boolean>(false, 200)
 

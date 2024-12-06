@@ -29,6 +29,14 @@ export class PaymentMethod extends AggregateRoot<PaymentMethodId> {
         return this.status
     }
 
+    disableMethod(){
+        this.status = PaymentMethodState.create(false)
+    }
+
+    enableMethod(){
+        this.status = PaymentMethodState.create(true)
+    }
+
     protected applyEvent(event: DomainEvent): void {
         switch (event.eventName) {
             //patron estado o estrategia, esto es una cochinada el switch case

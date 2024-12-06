@@ -24,18 +24,18 @@ import { UuidGenerator } from 'src/common/infraestructure/id-generator/uuid-gene
 import { LoggingDecorator } from 'src/common/application/application-services/decorators/logging-decorator/logging.decorator';
 import { NativeLogger } from 'src/common/infraestructure/logger/logger';
 import { GetCategoryByIdService } from 'src/category/application/queries/get-category-by-id.service';
-import { GetCategoryResponseDTO } from '../dto/response/get-category-response.dto';
-import { CreateCategoryEntryDTO } from '../dto/entry/create-category-entry.dto';
+import { GetCategoryResponseDTO } from '../DTO/response/get-category-response.dto';
+import { CreateCategoryEntryDTO } from '../DTO/entry/create-category-entry.dto';
 import { CreateCategoryServiceEntryDto } from 'src/category/application/dto/entry/create-category-service-entry.dto';
 import { CreateCategoryApplicationService } from 'src/category/application/commands/create-category.service';
 import { IFileUploader } from 'src/common/application/file-uploader/file-uploader.interface';
-import { GetAllCategoriesResponseDTO } from '../dto/response/get-all-categories-response.dto';
+import { GetAllCategoriesResponseDTO } from '../DTO/response/get-all-categories-response.dto';
 import { PaginationDto } from 'src/common/infraestructure/dto/entry/pagination.dto';
 import { FindAllCategoriesApplicationService } from 'src/category/application/queries/find-all-categories.service';
 import { GetAllCategoriesServiceEntryDTO } from 'src/category/application/dto/entry/get-all-categories-service-entry.dto';
 import { GetCategoryByNameServiceEntryDTO } from 'src/category/application/dto/entry/get-category-by-name-service-entry.dto';
 //import { GetCategoryByNameEntryDTO } from '../DTO/entry/get-category-by-name-entry.dto';
-import { GetCategoryByNameResponseDTO } from '../dto/response/get-category-by-name-response.dto';
+import { GetCategoryByNameResponseDTO } from '../DTO/response/get-category-by-name-response.dto';
 import { GetCategoryByNameService } from 'src/category/application/queries/get-category-by-name.service';
 import { CloudinaryFileUploader } from 'src/common/infraestructure/cloudinary-file-uploader/cloudinary-file-uploader';
 import { UpdateCategoryEntryDTO } from '../DTO/entry/update-category-entry-infraestructure';
@@ -48,7 +48,7 @@ import { DeleteCategoryApplicationService } from 'src/category/application/comma
 import { CategoryParamsEntryDTO } from '../DTO/entry/category-params-entry.dto';
 import { ExceptionDecorator } from 'src/common/application/application-services/decorators/exception-decorator/exception.decorator';
 import { HttpExceptionHandler } from 'src/common/infraestructure/exception-handler/http-exception-handler-code';
-import { GetCategoryByNameEntryDTO } from '../dto/entry/get-category-by-name-entry.dto';
+import { GetCategoryByNameEntryDTO } from '../DTO/entry/get-category-by-name-entry.dto';
 
 
 @ApiTags("Category")

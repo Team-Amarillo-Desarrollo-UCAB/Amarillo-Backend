@@ -16,6 +16,7 @@ import { ProductCurrency } from "./value-objects/product-precio/product-currency
 import { CategoryID } from "src/category/domain/value-objects/category-id";
 import { ProductPriceModified } from "./domain-event/product-price-modified";
 import { ProductStockModified } from "./domain-event/product-stock-modified";
+import { ProductDescriptionModified } from "./domain-event/product-description-modified";
 
 export class Product extends AggregateRoot<ProductId> {
 
@@ -80,6 +81,11 @@ export class Product extends AggregateRoot<ProductId> {
         return this.categories
     }
 
+    modifiedName(nombre: ProductName){
+        if(!this.name.equals(nombre))
+            this.name = nombre
+    }
+
     decreaseStock(stock: ProductStock) {
         if (stock.Stock < this.stock.Stock)
             this.stock = stock
@@ -114,6 +120,18 @@ export class Product extends AggregateRoot<ProductId> {
             this.events.push(event)
         }
 
+
+    }
+
+    modifiedDescription(descripcion: ProductDescription){
+
+        if(!this.description.equals(descripcion)){
+            this.description = descripcion
+            const event = ProductDescriptionModified.create(
+                this.Id.Id,
+                this.description.Description,
+            )
+        }
 
     }
 
