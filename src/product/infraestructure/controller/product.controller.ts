@@ -19,19 +19,19 @@ import {
 import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { DataSource } from "typeorm";
 
-import { GetProductResponseDTO } from "src/product/infraestructure/dto/response/get-product-response.dto";
+import { GetProductResponseDTO } from "src/product/infraestructure/DTO/response/get-product-response.dto";
 import { OrmProductRepository } from "../repositories/product-repository";
 import { ProductMapper } from "../mappers/product-mapper";
 import { LoggingDecorator } from "src/common/application/application-services/decorators/logging-decorator/logging.decorator";
 import { GetProductByIdService } from "src/product/aplication/service/queries/get-product-by-id.service";
 import { NativeLogger } from "src/common/infraestructure/logger/logger";
-import { GetProductByIdServiceEntryDTO } from "src/product/aplication/dto/entry/get-product-by-id-service-entry.dto";
+import { GetProductByIdServiceEntryDTO } from "src/product/aplication/DTO/entry/get-product-by-id-service-entry.dto";
 import { GetUser } from "src/auth/infraestructure/jwt/decorator/get-user.param.decorator";
-import { GetProductByNameServiceEntryDTO } from "src/product/aplication/dto/entry/get-product-by-name-service-entry.dto";
+import { GetProductByNameServiceEntryDTO } from "src/product/aplication/DTO/entry/get-product-by-name-service-entry.dto";
 import { GetProductByNameService } from "src/product/aplication/service/queries/get-product-by-name.service";
-import { GetProductByNameResponseDTO } from "../dto/response/get-product-by-name-response.dto";
-import { CreateProductEntryDTO } from "../dto/entry/create-product-entry.dto";
-import { CreateProductServiceEntryDTO } from "src/product/aplication/dto/entry/create-product-service-entry.dto";
+import { GetProductByNameResponseDTO } from "../DTO/response/get-product-by-name-response.dto";
+import { CreateProductEntryDTO } from "../DTO/entry/create-product-entry.dto";
+import { CreateProductServiceEntryDTO } from "src/product/aplication/DTO/entry/create-product-service-entry.dto";
 import { CreateProductService } from "src/product/aplication/service/commands/create-product.service";
 import { IdGenerator } from "src/common/application/id-generator/id-generator.interface";
 import { UuidGenerator } from "src/common/infraestructure/id-generator/uuid-generator";
@@ -42,7 +42,7 @@ import { MonedaRepository } from "../repositories/moneda.repository";
 import { GetAllProductService } from "src/product/aplication/service/queries/get-all-product.service";
 import { PaginationDto } from "src/common/infraestructure/dto/entry/pagination.dto";
 import { GetAllProductServiceEntryDTO } from "src/product/aplication/dto/entry/get-all-product-service-entry.dto";
-import { GetAllProductsResponseDTO } from "../dto/response/get-all-product-response.dto";
+import { GetAllProductsResponseDTO } from "../DTO/response/get-all-product-response.dto";
 import { IFileUploader } from "src/common/application/file-uploader/file-uploader.interface";
 import { ImageTransformer } from "src/common/infraestructure/image-helper/image-transformer";
 import { CloudinaryFileUploader } from "src/common/infraestructure/cloudinary-file-uploader/cloudinary-file-uploader";
@@ -50,13 +50,13 @@ import { RabbitEventBus } from "src/common/infraestructure/rabbit-event-handler/
 import { HttpExceptionHandler } from "src/common/infraestructure/exception-handler/http-exception-handler-code";
 import { PerformanceDecorator } from 'src/common/application/application-services/decorators/performance-decorator/performance-decorator';
 import { DeleteProductService } from 'src/product/aplication/service/commands/delete-product.service';
-import { DeleteProductServiceEntryDTO } from 'src/product/aplication/dto/entry/delete-product-service-entry.dto';
+import { DeleteProductServiceEntryDTO } from 'src/product/aplication/DTO/entry/delete-product-service-entry.dto';
 import { testCreated } from './test-event';
 import { testService } from './test-service';
 import { OrmCategoryRepository } from 'src/category/infraestructure/repositories/orm-category-repository';
-import { UpdateProductEntryDTO } from '../dto/entry/product-update-entry.dto';
-import { UpdateProductResponseDTO } from '../dto/response/update-product-response.dto';
-import { UpdateProductServiceEntryDTO } from 'src/product/aplication/dto/entry/update-product-service-entry.dto';
+import { UpdateProductEntryDTO } from '../DTO/entry/product-update-entry.dto';
+import { UpdateProductResponseDTO } from '../DTO/response/update-product-response.dto';
+import { UpdateProductServiceEntryDTO } from 'src/product/aplication/DTO/entry/update-product-service-entry.dto';
 import { UpdateProductService } from 'src/product/aplication/service/commands/update-product.service';
 
 @ApiTags("Product")

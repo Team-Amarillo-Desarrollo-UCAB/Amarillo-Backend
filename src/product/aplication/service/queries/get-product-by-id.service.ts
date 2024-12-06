@@ -1,6 +1,6 @@
 import { IApplicationService } from "src/common/application/application-services/application-service.interface";
 import { GetProductByIdServiceEntryDTO } from "../../dto/entry/get-product-by-id-service-entry.dto";
-import { GetProductByIdServiceResponseDTO } from "../../dto/response/get-product-by-id-service-response.dto";
+import { GetProductByIdServiceResponseDTO } from "../../dto/entry/response/get-product-by-id-service-response.dto";
 import { Result } from "src/common/domain/result-handler/Result";
 import { IProductRepository } from "src/product/domain/repositories/product-repository.interface";
 

@@ -1,6 +1,6 @@
 import { IApplicationService } from "src/common/application/application-services/application-service.interface";
 import { CreateProductServiceEntryDTO } from "../../dto/entry/create-product-service-entry.dto";
-import { CreateProductServiceResponseDTO } from "../../dto/response/create-product-service-response.dto";
+import { CreateProductServiceResponseDTO } from "../../dto/entry/response/create-product-service-response.dto";
 import { Result } from "src/common/domain/result-handler/Result";
 import { IProductRepository } from "src/product/domain/repositories/product-repository.interface";
 import { IdGenerator } from "src/common/application/id-generator/id-generator.interface";

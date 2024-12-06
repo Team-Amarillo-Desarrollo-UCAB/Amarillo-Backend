@@ -2,7 +2,7 @@ import { IApplicationService } from "src/common/application/application-services
 import { IProductRepository } from "src/product/domain/repositories/product-repository.interface"
 import { GetAllProductServiceEntryDTO } from "../../dto/entry/get-all-product-service-entry.dto"
 import { Result } from "src/common/domain/result-handler/Result"
-import { GetAllProductServiceResponseDTO } from "../../dto/response/get-all-product-service.response"
+import { GetAllProductServiceResponseDTO } from "../../dto/entry/response/get-all-product-service.response"
 import { UnidadMedida } from "src/product/domain/enum/UnidadMedida"
 
 export class GetAllProductService implements IApplicationService<GetAllProductServiceEntryDTO, GetAllProductServiceResponseDTO[]> {
