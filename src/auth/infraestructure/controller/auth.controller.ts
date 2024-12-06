@@ -20,7 +20,7 @@ import { Querysynchronizer } from "src/common/infraestructure/query-synchronizer
 import { IAccountRepository } from "src/user/application/interface/account-user-repository.interface";
 import { IUserRepository } from "src/user/domain/repositories/user-repository.interface";
 import { NodemailerEmailSender } from "src/common/infraestructure/utils/nodemailer-email-sender.infraestructure";
-import { SignUpEntryDto } from "src/auth/application/dto/entry/sign-up-entry.application.dto";
+import { SignUpEntryDto } from "src/auth/application/DTO/entry/sign-up-entry.application.dto";
 import { SignUpUserApplicationService } from "src/auth/application/services/sign-up-user-service.application.service";
 import { OrmUserRepository } from "src/user/infraestructure/repositories/orm-repositories/orm-user-repository";
 import { UserMapper } from "src/user/infraestructure/mappers/orm-mapper/user-mapper";
