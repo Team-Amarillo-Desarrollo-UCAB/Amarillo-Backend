@@ -1,6 +1,6 @@
 import { IApplicationService } from "src/common/application/application-services/application-service.interface";
-import { GetAllOrdersServiceEntryDTO } from "../../dto/entry/get-all-orders-entry-service.dto";
-import { GetAllOrdersServiceResponseDTO } from "../../dto/response/get-all-orders-service-service.dto";
+import { GetAllOrdersServiceEntryDTO } from "../../DTO/entry/get-all-orders-entry-service.dto";
+import { GetAllOrdersServiceResponseDTO } from "../../DTO/response/get-all-orders-service-service.dto";
 import { Result } from "src/common/domain/result-handler/Result";
 import { IOrderRepository } from "src/order/domain/repositories/order-repository.interface";
 import { Order } from "src/order/domain/order";
