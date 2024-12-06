@@ -4,10 +4,10 @@ import { IdGenerator } from "src/common/application/id-generator/id-generator.in
 import { Result } from "src/common/domain/result-handler/Result"
 import { IAccountRepository } from "src/user/application/interface/account-user-repository.interface"
 import { OrmUser } from "src/user/infraestructure/entities/orm-entities/user.entity"
-import { UpdateUserProfileInfraServiceEntryDto } from "src/user/infraestructure/services/dto/update-user-profile-infra-service-entry-dto"
-import { UpdateUserProfileInfraServiceResponseDto } from "src/user/infraestructure/services/dto/update-user-profile-infra-service-response-dto"
+import { UpdateUserProfileInfraServiceEntryDto } from "src/user/infraestructure/services/DTO/update-user-profile-infra-service-entry-dto"
+import { UpdateUserProfileInfraServiceResponseDto } from "src/user/infraestructure/services/DTO/update-user-profile-infra-service-response-dto"
 import { IFileUploader } from "src/common/application/file-uploader/file-uploader.interface"
-
+ 
 
 export class UpdateUserProfileInfraService implements IApplicationService<UpdateUserProfileInfraServiceEntryDto,UpdateUserProfileInfraServiceResponseDto>{
     
