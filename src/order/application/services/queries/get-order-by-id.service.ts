@@ -2,8 +2,8 @@ import { IApplicationService } from "src/common/application/application-services
 
 import { Result } from "src/common/domain/result-handler/Result";
 import { IOrderRepository } from "src/order/domain/repositories/order-repository.interface";
-import { GetOrderByIdEntryServiceDTO } from "../../dto/entry/get-order-entry-service.dto";
-import { GetOrderByIdResponseServiceDTO } from "../../dto/response/get-order-response-service.dto";
+import { GetOrderByIdEntryServiceDTO } from "../../DTO/entry/get-order-entry-service.dto";
+import { GetOrderByIdResponseServiceDTO } from "../../DTO/response/get-order-response-service.dto";
 
 export class GetOrderByIdService implements IApplicationService
     <GetOrderByIdEntryServiceDTO,
