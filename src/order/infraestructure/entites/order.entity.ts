@@ -21,8 +21,8 @@ export class OrmOrder {
     @OneToMany(() => Estado_Orden, (estado_orden) => estado_orden.orden, {eager: true})
     estados: Estado_Orden[];
 
-    @OneToOne(() => Payment,{ lazy: true })
-    @JoinColumn()
+    @OneToOne(() => Payment,{ eager: true })
+    @JoinColumn({name: 'pagoId'})
     pago: Payment
 
 

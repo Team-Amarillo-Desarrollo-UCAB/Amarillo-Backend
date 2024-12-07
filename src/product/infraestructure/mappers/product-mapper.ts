@@ -53,8 +53,6 @@ export class ProductMapper implements IMapper<Product, OrmProduct> {
 
     async fromPersistenceToDomain(persistence: OrmProduct): Promise<Product> {
 
-        console.log("producto id: ",persistence.id)
-
         let precio: HistoricoPrecio
 
         for (const p of persistence.historicos) {

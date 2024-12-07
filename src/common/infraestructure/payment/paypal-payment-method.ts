@@ -3,10 +3,10 @@ import { IPaymentMethod } from "src/common/domain/domain-service/determinar-meto
 import { Result } from "src/common/domain/result-handler/Result";
 import { OrderPayment } from "src/order/domain/entites/order-payment";
 import { Order } from "src/order/domain/order";
-import { OrderPaymentId } from "src/order/domain/value-object/oder-payment.ts/order-payment-id";
-import { OrderPaymentName } from "src/order/domain/value-object/oder-payment.ts/order-payment-name";
+import { OrderPaymentId } from "src/order/domain/value-object/oder-payment/order-payment-id";
+import { OrderPaymentName } from "src/order/domain/value-object/oder-payment/order-payment-name";
 import { EnumPaymentMethod } from "src/payment-method/domain/enum/PaymentMethod";
-import { OrderPaymentCurrency } from '../../../order/domain/value-object/oder-payment.ts/order-payment-currency';
+import { OrderPaymentCurrency } from '../../../order/domain/value-object/oder-payment/order-payment-currency';
 
 export class PaypalPaymentMethod implements IPaymentMethod {
 
@@ -34,6 +34,7 @@ export class PaypalPaymentMethod implements IPaymentMethod {
         )
 
         orden.asignarMetodoPago(pago)
+
 
         return Result.success<Order>(orden, 200)
     }

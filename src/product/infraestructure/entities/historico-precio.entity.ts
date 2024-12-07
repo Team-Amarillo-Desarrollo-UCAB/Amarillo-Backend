@@ -20,7 +20,7 @@ export class HistoricoPrecio {
     @JoinColumn({ name: 'moneda_id' })
     moneda: OrmMoneda;
 
-    @ManyToOne(() => OrmProduct, producto => producto.id)
+    @ManyToOne(() => OrmProduct, producto => producto.id,{ onDelete: 'CASCADE' })
     @JoinColumn({ name: 'producto_id' })
     producto: OrmProduct;
 

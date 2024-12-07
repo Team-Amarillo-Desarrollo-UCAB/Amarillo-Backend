@@ -4,8 +4,13 @@ export interface CreateDetalleServiceEntry extends ApplicationServiceEntryDto{
 
     id_orden: string
 
-    detalle_info: {
+    detalle_productos: {
         id_producto: string
+        cantidad: number
+    }[]
+
+    detalle_combos: {
+        id_combo: string,
         cantidad: number
     }[]
 

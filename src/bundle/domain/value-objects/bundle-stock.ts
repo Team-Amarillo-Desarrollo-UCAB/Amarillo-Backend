@@ -17,6 +17,10 @@ export class BundleStock implements IValueObject<BundleStock> {
         return this.stock;
     }
 
+    disminuir(stock: number){
+        return new BundleStock(this.stock -= stock)
+    }
+
     equals(valueObject: BundleStock): boolean {
         return this.stock === valueObject.stock;
     }

@@ -3,6 +3,7 @@ import { Product } from "../product";
 
 export interface IProductRepository {
     saveProductAggregate(product: Product): Promise<Result<Product>>;
+    updateProductAggregate(product: Product): Promise<Result<Product>>
     findProductById(id: string): Promise<Result<Product>>;
     findProductByName(name: string): Promise<Result<Product>>
     findAllProducts(page: number, limit: number): Promise<Result<Product[]>>

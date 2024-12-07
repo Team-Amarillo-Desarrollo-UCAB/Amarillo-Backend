@@ -1,11 +1,18 @@
 import * as amqp from 'amqplib'
+import { BundleID } from 'src/bundle/domain/value-objects/bundle-id'
 
 import { IEventHandler } from "src/common/application/event-handler/event-handler.interface"
 import { IEventSubscriber } from "src/common/application/event-handler/subscriber.interface"
 import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface"
 import { OrderTotalCalculated } from 'src/order/domain/domain-event/order-amount-calculated'
 import { OrderCreated } from "src/order/domain/domain-event/order-created-event"
+import { OrderBundle } from 'src/order/domain/entites/order-bundle'
 import { OrderProduct } from 'src/order/domain/entites/order-product'
+import { OrderBundleAmount } from 'src/order/domain/value-object/order-bundle/order-bundle-amount'
+import { OrderBundleCantidad } from 'src/order/domain/value-object/order-bundle/order-bundle-cantidad'
+import { OrderBundleCurrency } from 'src/order/domain/value-object/order-bundle/order-bundle-currency'
+import { OrderBundleName } from 'src/order/domain/value-object/order-bundle/order-bundle-name'
+import { OrderBundlePrice } from 'src/order/domain/value-object/order-bundle/order-bundle-price'
 import { OrderProductAmount } from 'src/order/domain/value-object/order-product/order-product-amount'
 import { OrderProductCantidad } from 'src/order/domain/value-object/order-product/order-product-cantidad'
 import { OrderProductCurrency } from 'src/order/domain/value-object/order-product/order-product-currency'
@@ -103,7 +110,7 @@ export class RabbitEventBus implements IEventHandler {
             channel.consume(q.queue, async (msg) => {
                 if (msg) {
                     const event_data = JSON.parse(msg.content.toString());
-                    console.log("mensaje recibido")
+                    console.log("mensaje recibido en JSON: ",event_data)
                     let event: DomainEvent;
                     switch (eventName) {
                         case 'OrderCreated':
@@ -120,6 +127,19 @@ export class RabbitEventBus implements IEventHandler {
                                             OrderProductPrice.create(
                                                 OrderProductAmount.create(p.precio.amount),
                                                 OrderProductCurrency.create(p.precio.currency)
+                                            )
+                                        )
+                                    })
+                                ),
+                                await Promise.all(
+                                    event_data.bundles.map(async (c) => {
+                                        return OrderBundle.create(
+                                            BundleID.create(c.id.id),
+                                            OrderBundleName.create(c.name.name),
+                                            OrderBundleCantidad.create(c.cantidad.cantidad),
+                                            OrderBundlePrice.create(
+                                                OrderBundleAmount.create(c.precio.amount),
+                                                OrderBundleCurrency.create(c.precio.currency)
                                             )
                                         )
                                     })
@@ -172,7 +192,6 @@ export class RabbitEventBus implements IEventHandler {
                             );
                             break;
                     }
-                    console.log("Evento obtenido: ", event)
 
                     // Ejecutar el callback con el evento procesado
                     await callback(event);
