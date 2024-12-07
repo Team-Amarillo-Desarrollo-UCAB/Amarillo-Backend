@@ -379,7 +379,11 @@ export class OrderController {
 
         const result = await service.execute(data)
 
-        return result.Value
+        const response: CreateOrderResponseDTO = {
+            id_order: result.Value.id_orden
+        }
+
+        return response
     }
 
     @Post('pay/stripe')
@@ -491,7 +495,11 @@ export class OrderController {
 
         const result = await service.execute(data)
 
-        return result.Value
+        const response: CreateOrderResponseDTO = {
+            id_order: result.Value.id_orden
+        }
+
+        return response
     }
 
     @Get('many')
