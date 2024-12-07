@@ -16,6 +16,14 @@ export class ProductStock implements IValueObject<ProductStock>{
         return this.stock
     }
 
+    disminuir(stock: number){
+        return new ProductStock(this.stock -= stock)
+    }
+
+    aumentar(stock: number){
+        return new ProductStock(this.stock += stock)
+    }
+
     equals(valueObject: ProductStock): boolean {
         return this.stock === valueObject.Stock
     }

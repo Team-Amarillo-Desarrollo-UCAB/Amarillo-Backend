@@ -62,6 +62,11 @@ import { PaginationDto } from "src/common/infraestructure/dto/entry/pagination.d
 import { GetAllOrdersServiceEntryDTO } from "src/order/application/DTO/entry/get-all-orders-entry-service.dto";
 import { GetAllOrdersService } from '../../application/services/queries/get-all-orders.service';
 import { GetAllOrdersReponseDTO } from "../DTO/response/get-all-ordes-response";
+import { PaymentMapper } from "../mappers/payment-mapper";
+import { OrmBundleRepository } from "src/bundle/infraestructure/repositories/orm-bundle.repository";
+import { BundleMapper } from "src/bundle/infraestructure/mappers/bundle-mapper";
+import { HistoricoPrecioRepository } from "src/product/infraestructure/repositories/historico-precio.repository";
+import { BundleStock } from "src/bundle/domain/value-objects/bundle-stock";
 
 @ApiTags("Order")
 @Controller("order")
@@ -77,14 +82,26 @@ export class OrderController {
     private readonly estadoRepository: EstadoRepository
     private readonly categoryRepository: OrmCategoryRepository
     private readonly paymentMethodRepository: PaymentMethodRepository
+    private readonly bundleRepository: OrmBundleRepository;
+    private readonly historicoRepository: HistoricoPrecioRepository
 
 
     constructor(
         @Inject('DataSource') private readonly dataSource: DataSource
     ) {
         this.idGenerator = new UuidGenerator();
-        this.orderRepository = new OrderRepository(new OrderMapper(this.idGenerator), dataSource)
+        this.orderRepository =
+            new OrderRepository(
+                new OrderMapper(this.idGenerator),
+                new PaymentMapper(),
+                dataSource
+            )
+        this.bundleRepository = new OrmBundleRepository(
+            new BundleMapper(),
+            this.dataSource//
+        );
         this.categoryRepository = new OrmCategoryRepository(new OrmCategoryMapper(), dataSource)
+        this.historicoRepository = new HistoricoPrecioRepository(dataSource)
         this.productRepository =
             new OrmProductRepository(
                 new ProductMapper(
@@ -140,6 +157,7 @@ export class OrderController {
                 new CreateOrderService(
                     this.orderRepository,
                     this.productRepository,
+                    this.bundleRepository,
                     this.idGenerator,
                     this.eventBus,
                     new OrderCalculationTotal(
@@ -164,6 +182,13 @@ export class OrderController {
             new LoggingDecorator(
                 new CreateDetalleService(
                     this.detalleRepository,
+                    this.orderRepository,
+                    this.productRepository,
+                    this.bundleRepository,
+                    new ProductMapper(
+                        new OrmCategoryMapper(),
+                        this.categoryRepository,
+                    ),
                     this.idGenerator
                 ),
                 new NativeLogger(this.logger)
@@ -249,14 +274,11 @@ export class OrderController {
     }
 
     @Post('pay/paypal')
-    @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
     @ApiOkResponse({
         description: 'Crea la orden con el metodo de pago de PayPal',
         type: CreateOrderResponseDTO
     })
     async orderPayPaypal(
-        @GetUser() user,
         @Body() request: CreateOrderPayPalEntryDTO,
     ) {
 
@@ -265,17 +287,25 @@ export class OrderController {
             console.log("enviado")
             const sender = new NodemailerEmailSender();
             const order_id = event.id;
-            console.log(user)
             sender.sendEmail("bastidasluigi05@gmail.com", "Jamal", order_id);
         });
 
         // Decrementa el stock de los productos elegidos en la orden
         await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
-            event.productos.map(async (product) => {
-                const result = await this.productRepository.findProductById(product.Id.Id)
-                result.Value.decreaseStock(ProductStock.create(product.Cantidad().Value))
-                await this.productRepository.saveProductAggregate(result.Value)
-            })
+            const productos = event.productos
+
+            for (const p of productos) {
+                const result = await this.productRepository.findProductById(p.Id.Id)
+                result.Value.decreaseStock(ProductStock.create(p.Cantidad().Value))
+                await this.productRepository.updateProductAggregate(result.Value)
+            }
+
+            /*for (const c of combos) {
+                const result = await this.bundleRepository.findBundleById(c.Id.Value)
+                result.Value.decreaseStock(BundleStock.create(c.Cantidad().Value))
+                await this.bundleRepository.addBundle(result.Value)
+            }*/
+
         })
 
         // Persistencia de la base de datos para los detalles de una orden
@@ -285,6 +315,13 @@ export class OrderController {
                     new LoggingDecorator(
                         new CreateDetalleService(
                             this.detalleRepository,
+                            this.orderRepository,
+                            this.productRepository,
+                            this.bundleRepository,
+                            new ProductMapper(
+                                new OrmCategoryMapper(),
+                                this.categoryRepository,
+                            ),
                             this.idGenerator
                         ),
                         new NativeLogger(this.logger)
@@ -295,8 +332,12 @@ export class OrderController {
             const data = {
                 userId: "",
                 id_orden: event.id,
-                detalle_info: event.productos.map((detalle) => ({
+                detalle_productos: event.productos.map((detalle) => ({
                     id_producto: detalle.Id.Id,
+                    cantidad: detalle.Cantidad().Value
+                })),
+                detalle_combos: event.productos.map((detalle) => ({
+                    id_combo: detalle.Id.Id,
                     cantidad: detalle.Cantidad().Value
                 })),
             }
@@ -306,7 +347,8 @@ export class OrderController {
 
         const data: CreateOrderEntryServiceDTO = {
             userId: "",
-            products: request.products
+            products: request.products,
+            bundles: request.bundles
         };
 
         console.log(data)
@@ -318,6 +360,7 @@ export class OrderController {
                         new CreateOrderService(
                             this.orderRepository,
                             this.productRepository,
+                            this.bundleRepository,
                             this.idGenerator,
                             this.eventBus,
                             new OrderCalculationTotal(
@@ -362,8 +405,14 @@ export class OrderController {
             for (const p of productos) {
                 const result = await this.productRepository.findProductById(p.Id.Id)
                 result.Value.decreaseStock(ProductStock.create(p.Cantidad().Value))
-                await this.productRepository.saveProductAggregate(result.Value)
+                await this.productRepository.updateProductAggregate(result.Value)
             }
+
+            /*for (const c of combos) {
+                const result = await this.bundleRepository.findBundleById(c.Id.Value)
+                result.Value.decreaseStock(BundleStock.create(c.Cantidad().Value))
+                await this.bundleRepository.addBundle(result.Value)
+            }*/
 
         })
 
@@ -375,6 +424,13 @@ export class OrderController {
                         new PerformanceDecorator(
                             new CreateDetalleService(
                                 this.detalleRepository,
+                                this.orderRepository,
+                                this.productRepository,
+                                this.bundleRepository,
+                                new ProductMapper(
+                                    new OrmCategoryMapper(),
+                                    this.categoryRepository,
+                                ),
                                 this.idGenerator
                             ),
                             new NativeLogger(this.logger)
@@ -383,21 +439,28 @@ export class OrderController {
                     ),
                     new HttpExceptionHandler()
                 )
+
             const data = {
                 userId: "",
                 id_orden: event.id,
-                detalle_info: event.productos!.map((detalle) => ({
+                detalle_productos: event.productos.map((detalle) => ({
                     id_producto: detalle.Id.Id,
                     cantidad: detalle.Cantidad().Value
                 })),
+                detalle_combos: event.bundles.map((detalle) => ({
+                    id_combo: detalle.Id.Value,
+                    cantidad: detalle.Cantidad().Value
+                })),
             }
+
 
             await service.execute(data)
         });
 
         const data: CreateOrderEntryServiceDTO = {
             userId: "",
-            products: request.products
+            products: request.products,
+            bundles: request.bundles
         };
 
         const service =
@@ -407,6 +470,7 @@ export class OrderController {
                         new CreateOrderService(
                             this.orderRepository,
                             this.productRepository,
+                            this.bundleRepository,
                             this.idGenerator,
                             this.eventBus,
                             new OrderCalculationTotal(
@@ -461,8 +525,6 @@ export class OrderController {
             )
 
         const result = await service.execute(data)
-
-        console.log("Ya se obtuvieron")
 
         const response: GetAllOrdersReponseDTO[] = {
             ...result.Value

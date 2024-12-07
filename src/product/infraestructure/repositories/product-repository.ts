@@ -1,19 +1,24 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { DataSource, Repository } from "typeorm";
+import { DataSource, Repository, getRepository } from 'typeorm';
 
 import { IMapper } from "src/common/application/mappers/mapper.interface";
 import { Result } from "src/common/domain/result-handler/Result";
 import { Product } from "src/product/domain/product";
 import { IProductRepository } from "src/product/domain/repositories/product-repository.interface";
 import { OrmProduct } from "../entities/product.entity";
+import { HistoricoPrecio } from "../entities/historico-precio.entity";
 
 export class OrmProductRepository extends Repository<OrmProduct> implements IProductRepository {
 
     private readonly ormProductMapper: IMapper<Product, OrmProduct>
 
+    private readonly historicoPrecioRepository: Repository<HistoricoPrecio>
+
     constructor(ormProductMapper: IMapper<Product, OrmProduct>, dataSource: DataSource,) {
         super(OrmProduct, dataSource.createEntityManager());
         this.ormProductMapper = ormProductMapper
+
+        this.historicoPrecioRepository = dataSource.getRepository(HistoricoPrecio)
     }
 
     async saveProductAggregate(product: Product): Promise<Result<Product>> {
@@ -22,6 +27,25 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
             const producto = await this.ormProductMapper.fromDomainToPersistence(product)
             console.log("producto: ", producto)
             const resultado = await this.save(producto)
+            return Result.success<Product>(product, 200)
+        } catch (error) {
+            console.log(error)
+            return Result.fail<Product>(new Error(error.message), error.code, error.message)
+        }
+
+    }
+
+    async updateProductAggregate(product: Product): Promise<Result<Product>> {
+        try {
+            const producto = await this.ormProductMapper.fromDomainToPersistence(product)
+            const historico = await this.historicoPrecioRepository.find({
+                where: {
+                    producto: { id: producto.id },
+                }
+            });
+            producto.historicos = historico
+            console.log("producto para actualizar: ", producto)
+            await this.save(producto)
             return Result.success<Product>(product, 200)
         } catch (error) {
             console.log(error)

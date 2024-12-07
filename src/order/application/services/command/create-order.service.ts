@@ -25,12 +25,23 @@ import { OrderProductAmount } from "src/order/domain/value-object/order-product/
 import { OrderProductCurrency } from "src/order/domain/value-object/order-product/order-product-currency";
 import { IPaymentMethod } from "src/common/domain/domain-service/determinar-metodo-pago.interface";
 import { OrderCalculationTotal } from "src/common/domain/domain-service/calcular-monto-orden";
+import { OrderBundle } from "src/order/domain/entites/order-bundle";
+import { BundleID } from "src/bundle/domain/value-objects/bundle-id";
+import { OrderBundleName } from "src/order/domain/value-object/order-bundle/order-bundle-name";
+import { OrderBundleCantidad } from "src/order/domain/value-object/order-bundle/order-bundle-cantidad";
+import { OrderBundlePrice } from "src/order/domain/value-object/order-bundle/order-bundle-price";
+import { OrderBundleAmount } from "src/order/domain/value-object/order-bundle/order-bundle-amount";
+import { OrderBundleCurrency } from "src/order/domain/value-object/order-bundle/order-bundle-currency";
+import { Detalle_Orden } from "src/order/infraestructure/entites/detalle_orden.entity";
+import { IBundleRepository } from "src/bundle/domain/repositories/bundle-repository.interface";
 
 export class CreateOrderService implements IApplicationService<CreateOrderEntryServiceDTO, CreateOrderResponseServiceDTO> {
 
     constructor(
         private readonly orderRepository: IOrderRepository,
         private readonly productRepository: IProductRepository,
+        private readonly bundleRepostiory: IBundleRepository,
+
         private readonly idGenerator: IdGenerator<string>,
         private readonly eventHandler: IEventHandler,
         private readonly calcularTotalService: OrderCalculationTotal
@@ -45,74 +56,119 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
     async execute(data: CreateOrderEntryServiceDTO): Promise<Result<CreateOrderResponseServiceDTO>> {
 
         let productos: OrderProduct[] = []
+        let combos: OrderBundle[] = []
         // TODO: Deberia ser un servicio de aplicacion
-        for(const producto of data.products){
-            const product = await this.productRepository.findProductById(producto.id)
 
-            if (!product.isSuccess())
-                return Result.fail<CreateOrderResponseServiceDTO>(new Error("Producto no encontrado"), 404, "Producto no encontrado")
+        // Se crean los productos para la entidad de dominio
+        if (data.products) {
+            for (const producto of data.products) {
+                const product = await this.productRepository.findProductById(producto.id)
 
-            productos.push(
-                OrderProduct.create(
-                    product.Value.Id,
-                    OrderProductName.create(product.Value.Name),
-                    OrderProductCantidad.create(producto.quantity),
-                    OrderProductPrice.create(
-                        OrderProductAmount.create(product.Value.Price),
-                        OrderProductCurrency.create(product.Value.Moneda)
+                if (!product.isSuccess())
+                    return Result.fail<CreateOrderResponseServiceDTO>(new Error("Producto no encontrado"), 404, "Producto no encontrado")
+
+                productos.push(
+                    OrderProduct.create(
+                        product.Value.Id,
+                        OrderProductName.create(product.Value.Name),
+                        OrderProductCantidad.create(producto.quantity),
+                        OrderProductPrice.create(
+                            OrderProductAmount.create(product.Value.Price),
+                            OrderProductCurrency.create(product.Value.Moneda)
+                        )
                     )
                 )
-            )
 
+            }
         }
 
+        // Se crean los bundle para la entidad de dominio
+        if (data.bundles) {
+            for (const c of data.bundles) {
+                const combo = await this.bundleRepostiory.findBundleById(c.id)
+
+                if (!combo.isSuccess())
+                    return Result.fail<CreateOrderResponseServiceDTO>(new Error("Combo no encontrado"), 404, "Combo no encontrado")
+                console.log("Combo encontrado: ",combo)
+                combos.push(
+                    OrderBundle.create(
+                        BundleID.create(combo.Value.Id.Value),
+                        OrderBundleName.create(combo.Value.name.Value),
+                        OrderBundleCantidad.create(combo.Value.stock.Value),
+                        OrderBundlePrice.create(
+                            OrderBundleAmount.create(combo.Value.price.Price),
+                            OrderBundleCurrency.create(combo.Value.price.Currency)
+                        )
+                    )
+                )
+
+            }
+        }
+
+        console.log("Productos de la orden: ", productos)
+        console.log("Combos de la orden: ", combos)
+
+        // Se crean los atributos extras de la entidad de dominio
         const id_orden = await this.idGenerator.generateId()
         const estado = EnumOrderEstados.CREATED
         const fecha_creacion = new Date()
-        const detalles = await Promise.all(
-            data.products.map(async (detalle) => {
-                const id = await this.idGenerator.generateId(); // Esperar a que se resuelva el id
-                return OrderDetail.create(
-                    OrderDetalleId.create(id), // Asegúrate de crear el objeto de tipo OrderDetalleId
-                    ProductId.create(detalle.id),
-                    OrderDetalleCantidad.create(detalle.quantity)
-                );
-            })
-        );
 
         let orden = Order.create(
             OrderId.create(id_orden),
             OrderEstado.create(estado),
             OrderCreationDate.create(fecha_creacion),
-            productos
+            productos,
+            combos
         )
 
+        console.log("Orden sin el pago: ",orden)
+
+        // Se utiliza el servicio de dominio para calcular el monto y asignarle el metodo de pago
         const result_domain = await this.calcularTotalService.execute(orden)
 
-        if(!result_domain.isSuccess())
-            return Result.fail<CreateOrderResponseServiceDTO>(result_domain.Error,result_domain.StatusCode,result_domain.Message)
+        if (!result_domain.isSuccess())
+            return Result.fail<CreateOrderResponseServiceDTO>(result_domain.Error, result_domain.StatusCode, result_domain.Message)
 
         orden = result_domain.Value
 
-        console.log("orden creada: ",orden)
+        console.log("orden creada: ", orden)
 
         const result = await this.orderRepository.saveOrderAggregate(orden)
 
         if (!result.isSuccess())
             return Result.fail(new Error("Orden no creada"), 404, "Orden no creada")
 
+        console.log("Orden alamacenada")
+
+        let detalle_productos = await Promise.all(
+            productos.map(async (p) => {
+                return {
+                    id_detalle: await this.idGenerator.generateId(),
+                    id_producto: p.Id.Id,
+                    cantidad: p.Cantidad().Value,
+                };
+            })
+        );
+
+        let detalle_combos = await Promise.all(
+            combos.map(async (c) => {
+                return {
+                    id_detalle: await this.idGenerator.generateId(),
+                    id_combo: c.Id.Value,
+                    cantidad: c.Cantidad().Value,
+                };
+            })
+        );
 
         const response: CreateOrderResponseServiceDTO = {
             id_orden: result.Value.Id.Id,
-            detalle_info: detalles.map((detalle) => ({
-                id_detalle: detalle.Id.Id,  // Suponiendo que `detalle` tiene una propiedad `id` para el detalle
-                id_producto: detalle.ProductoId.Id,  // Suponiendo que `detalle` tiene una propiedad `productId`
-                cantidad: detalle.Cantidad.Cantidad // Suponiendo que `detalle` tiene una propiedad `cantidad`
-            })),
+            detalle_productos: detalle_productos,
+            detalle_combos: detalle_combos,
             fecha_creacion: result.Value.Fecha_creacion.Date_creation,
             estado: result.Value.Estado.Estado
         }
 
+        console.log("Eventos de la orden: ",orden.pullEvents())
         await this.eventHandler.publish(orden.pullEvents())
 
         return Result.success(response, 200)

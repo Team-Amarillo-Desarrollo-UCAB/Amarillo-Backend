@@ -35,6 +35,13 @@ export class GetAllOrdersService implements
                         cantidad_producto: p.Cantidad().Value
                     }
                 }),
+                combos: orden.Bundles.map((c) => {
+                    return {
+                        id_combo: c.Id.Value,
+                        nombre_combo: c.Name().Value,
+                        cantidad_combo: c.Cantidad().Value
+                    }
+                }),
                 monto_total: orden.Monto.Total,
                 fecha_creacion: orden.Fecha_creacion.Date_creation
             })

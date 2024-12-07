@@ -2,9 +2,14 @@ import { ApplicationServiceEntryDto } from "src/common/application/application-s
 
 export interface CreateOrderEntryServiceDTO extends ApplicationServiceEntryDto {
 
-    products: {
+    products?: {
         id: string;
         quantity: number;
+    }[]
+
+    bundles?: {
+        id: string
+        quantity: number
     }[]
 
 }

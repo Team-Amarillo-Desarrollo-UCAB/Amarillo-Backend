@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 import { PaymentMethod } from "src/payment-method/domain/payment-method";
 
 class ProductDto {
@@ -24,11 +24,13 @@ export class CreateOrderStripeEntryDTO {
 
     @ApiProperty({
         description: 'Token generado para stripe',
-        example: "pm_card_threeDSecureOptional"
+        example: "pm_card_threeDSecureOptional",
+        default: "pm_card_visa"
     })
     @IsString()
     @IsNotEmpty()
-    token: string
+    @IsOptional()
+    token?: string = "pm_card_visa"
 
     @ApiProperty({
         description: 'Método de pago',
@@ -40,10 +42,19 @@ export class CreateOrderStripeEntryDTO {
 
     @ApiProperty({
         description: 'Lista de productos asociados al pago',
-        required: true,
         type: [ProductDto],
     })
     @IsArray()
     @IsNotEmpty()
-    products: { id: string; quantity: number }[];
+    @IsOptional()
+    products?: { id: string; quantity: number }[];
+
+    @ApiProperty({
+        description: 'Lista de combos asociados al pago',
+        type: [ProductDto],
+    })
+    @IsArray()
+    @IsNotEmpty()
+    @IsOptional()
+    bundles?: { id: string; quantity: number }[]
 }

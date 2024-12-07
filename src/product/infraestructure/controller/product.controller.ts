@@ -77,6 +77,7 @@ export class ProductController {
         @Inject('DataSource') private readonly dataSource: DataSource
     ) {
         this.categoryRepository = new OrmCategoryRepository(new OrmCategoryMapper(), dataSource)
+        this.historicoRepository = new HistoricoPrecioRepository(dataSource)
         this.productRepository =
             new OrmProductRepository(
                 new ProductMapper(
@@ -85,7 +86,6 @@ export class ProductController {
                 ), dataSource
             )
         this.idGenerator = new UuidGenerator();
-        this.historicoRepository = new HistoricoPrecioRepository(dataSource)
         this.monedaRepository = new MonedaRepository(dataSource)
         this.imageTransformer = new ImageTransformer();
         this.fileUploader = new CloudinaryFileUploader()

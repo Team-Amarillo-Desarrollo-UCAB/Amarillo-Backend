@@ -88,17 +88,18 @@ export class Product extends AggregateRoot<ProductId> {
 
     decreaseStock(stock: ProductStock) {
         if (stock.Stock < this.stock.Stock)
-            this.stock = stock
+            this.stock = this.stock.disminuir(stock.Stock)
     }
 
     increaseStock(stock: ProductStock) {
         if (stock.Stock > this.stock.Stock)
-            this.stock = stock
+            this.stock = this.stock.aumentar(stock.Stock)
     }
 
     modifieStock(stock: ProductStock) {
         if (!this.stock.equals(stock)) {
             this.stock = stock
+            console.log("Nuevo stock: ",this.stock)
             const event = ProductStockModified.create(
                 this.Id.Id,
                 this.stock.Stock
