@@ -205,6 +205,10 @@ export class Bundle extends AggregateRoot<BundleID> {
       }
     }
 
+    decreaseStock(stock: BundleStock) {
+      if (stock.Value < this.bundleStock.Value)
+          this.bundleStock = this.bundleStock.disminuir(stock.Value)
+  }
   
     // Getters
     get name(): BundleName {

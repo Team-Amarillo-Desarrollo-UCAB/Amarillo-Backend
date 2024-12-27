@@ -15,21 +15,24 @@ export class Payment {
     @Column({ type: 'enum', enum: EnumPaymentMethod })
     metodo: EnumPaymentMethod
 
-    @OneToOne(() => OrmOrder,{ lazy: true, eager: false })
-    @JoinColumn()
+    @Column({type: 'varchar'})
+    moneda: string
+
+    @OneToOne(() => OrmOrder,{ lazy: true })
+    @JoinColumn({name: 'ordenId'})
     orden: OrmOrder
 
     static create(
         id: string,
         monto: number,
         metodo: EnumPaymentMethod,
-        orden: OrmOrder
+        moneda: string,
     ) {
         const pago = new Payment()
         pago.id = id
         pago.monto = monto
         pago.metodo = metodo
-        pago.orden = orden
+        pago.moneda = moneda
         return pago
     }
 

@@ -4,7 +4,7 @@ import { DataSource } from "typeorm";
 
 import { OrmUserRepository } from "../repositories/orm-repositories/orm-user-repository";
 import { UserMapper } from "../mappers/orm-mapper/user-mapper";
-import {Body, Logger, Put, UseGuards} from '@nestjs/common'
+import { Body, Logger, Put, UseGuards } from '@nestjs/common'
 import { GetUser } from "src/auth/infraestructure/jwt/decorator/get-user.param.decorator";
 import { JwtAuthGuard } from "src/auth/infraestructure/jwt/decorator/jwt-auth.guard";
 import { IEncryptor } from "src/common/application/encryptor/encryptor.interface";
@@ -40,7 +40,7 @@ export class UserController {
   private readonly encryptor: IEncryptor
   private readonly ormAccountRepository: IAccountRepository<OrmUser>
   private readonly eventBus = RabbitEventBus.getInstance();
-    
+
   constructor(
     @Inject('DataSource') private readonly dataSource: DataSource,
   ) {
@@ -49,7 +49,7 @@ export class UserController {
     this.fileUploader = new CloudinaryFileUploader()
     this.userRepository = new OrmUserRepository(new UserMapper(), dataSource)
     this.encryptor = new EncryptorBcrypt()
-    this.ormAccountRepository = new OrmAccountRepository( dataSource )
+    this.ormAccountRepository = new OrmAccountRepository(dataSource)
   }
 
 
@@ -65,34 +65,34 @@ export class UserController {
     const eventBus = RabbitEventBus.getInstance()
     // let image: File = null
     // if (updateEntryDTO.image) image = await this.imageTransformer.base64ToFile(updateEntryDTO.image)
-    
+
     const userUpdateDto: UpdateUserProfileServiceEntryDto = { userId: user.id, ...updateEntryDTO }
-    const updateUserProfileService = 
-    //   new ExceptionDecorator(
-         new LoggingDecorator(
-    //       new PerformanceDecorator(
-            new UpdateUserProfileAplicationService(
-              this.userRepository, eventBus
-            ),
-             new NativeLogger(this.logger),
+    const updateUserProfileService =
+      //   new ExceptionDecorator(
+      new LoggingDecorator(
+        //       new PerformanceDecorator(
+        new UpdateUserProfileAplicationService(
+          this.userRepository, eventBus
+        ),
+        new NativeLogger(this.logger),
         //   ),
         //   new NativeLogger(this.logger),
         // ), new HttpExceptionHandler()
-    );
+      );
 
     const resultUpdate = (await updateUserProfileService.execute(userUpdateDto))
-    
+
     const updateUserProfileInfraService =
-    //   new AuditingDecorator(
-    //     new ExceptionDecorator(
-    //       new LoggingDecorator(
-    //         new PerformanceDecorator(
-              new UpdateUserProfileInfraService(
-                this.ormAccountRepository,
-                this.idGenerator,
-                this.encryptor,
-                this.fileUploader
-              );
+      //   new AuditingDecorator(
+      //     new ExceptionDecorator(
+      //       new LoggingDecorator(
+      //         new PerformanceDecorator(
+      new UpdateUserProfileInfraService(
+        this.ormAccountRepository,
+        this.idGenerator,
+        this.encryptor,
+        this.fileUploader
+      );
     //           new NativeLogger(this.logger),
     //         ),
     //         new NativeLogger(this.logger),
@@ -102,7 +102,7 @@ export class UserController {
     //     this.auditingRepository,
     //     this.idGenerator
     //   );
-    
+
     if (updateEntryDTO.password || updateEntryDTO.image) {
       const userInfraUpdateDto: UpdateUserProfileInfraServiceEntryDto = {
         userId: user.id,

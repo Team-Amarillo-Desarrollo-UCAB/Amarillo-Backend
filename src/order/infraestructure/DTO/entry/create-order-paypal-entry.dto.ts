@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 class ProductDto {
     @ApiProperty({ description: 'ID del producto', type: String })
@@ -44,4 +44,13 @@ export class CreateOrderPayPalEntryDTO {
     @IsArray()
     @IsNotEmpty()
     products: { id: string; quantity: number }[];
+
+    @ApiProperty({
+        description: 'Lista de combos asociados al pago',
+        type: [ProductDto],
+    })
+    @IsArray()
+    @IsNotEmpty()
+    @IsOptional()
+    bundles?: { id: string; quantity: number }[]
 }

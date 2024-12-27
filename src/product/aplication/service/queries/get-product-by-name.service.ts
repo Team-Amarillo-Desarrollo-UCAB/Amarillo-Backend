@@ -14,9 +14,9 @@ export class GetProductByNameService implements IApplicationService<GetProductBy
 
     async execute(data: GetProductByNameServiceEntryDTO): Promise<Result<GetProductByNameServiceResponseDTO>> {
 
-        const name = data.name.trim().toLowerCase().replace(/\s+/g, '');
+        const producto = await this.productRepository.findProductByName(data.name)
 
-        const producto = await this.productRepository.findProductByName(name)
+        console.log("producto encontrado: ",producto.Value)
 
         if (!producto.isSuccess())
             return Result.fail(new Error("Producto no encontrado"), 404, "Producto no encontrado")

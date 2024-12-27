@@ -38,12 +38,14 @@ export class CreateProductService implements IApplicationService<CreateProductSe
 
         let categorias: CategoryID[] = []
 
-        for (const categoria of data.category) {
-            const category = await this.categoryRepository.findCategoryById(categoria.id)
-            if (!category.isSuccess()) {
-                return Result.fail<CreateProductServiceResponseDTO>(category.Error, category.StatusCode, category.Message)
+        if (data.category) {
+            for (const categoria of data.category) {
+                const category = await this.categoryRepository.findCategoryById(categoria.id)
+                if (!category.isSuccess()) {
+                    return Result.fail<CreateProductServiceResponseDTO>(category.Error, category.StatusCode, category.Message)
+                }
+                categorias.push(category.Value.Id)
             }
-            categorias.push(category.Value.Id)
         }
 
         const producto = Product.create(

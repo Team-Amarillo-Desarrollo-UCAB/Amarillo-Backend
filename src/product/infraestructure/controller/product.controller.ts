@@ -77,6 +77,7 @@ export class ProductController {
         @Inject('DataSource') private readonly dataSource: DataSource
     ) {
         this.categoryRepository = new OrmCategoryRepository(new OrmCategoryMapper(), dataSource)
+        this.historicoRepository = new HistoricoPrecioRepository(dataSource)
         this.productRepository =
             new OrmProductRepository(
                 new ProductMapper(
@@ -85,7 +86,6 @@ export class ProductController {
                 ), dataSource
             )
         this.idGenerator = new UuidGenerator();
-        this.historicoRepository = new HistoricoPrecioRepository(dataSource)
         this.monedaRepository = new MonedaRepository(dataSource)
         this.imageTransformer = new ImageTransformer();
         this.fileUploader = new CloudinaryFileUploader()
@@ -266,7 +266,7 @@ export class ProductController {
 
     }
 
-    @Patch()
+    @Patch('update')
     @ApiOkResponse({
         description: 'Actualiza la imformacion de un producto',
         type: UpdateProductResponseDTO,
@@ -279,6 +279,8 @@ export class ProductController {
             userId: '',
             ...request
         }
+
+        console.log("request: ", request)
 
         const service =
             new ExceptionDecorator(
@@ -296,7 +298,7 @@ export class ProductController {
 
         const resuslt = await service.execute(data)
 
-        const response: UpdateProductResponseDTO = {...resuslt.Value}
+        const response: UpdateProductResponseDTO = { ...resuslt.Value }
 
         return response
 
@@ -319,5 +321,14 @@ export class ProductController {
         const service = new testService(this.eventBus)
         const result = await service.execute("Mensaje enviado")
 
+    }
+
+    @Get("image")
+    async getImage(
+        @Body('base64Image') base64Image: string
+    ) {
+        const URL = await this.fileUploader.UploadFile(base64Image)
+
+        return URL
     }
 }

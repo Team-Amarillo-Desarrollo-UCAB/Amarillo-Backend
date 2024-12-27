@@ -1,7 +1,7 @@
 import { Entity } from "src/common/domain/entity/entity";
-import { OrderPaymentId } from "../value-object/oder-payment.ts/order-payment-id";
-import { OrderPaymentName } from "../value-object/oder-payment.ts/order-payment-name";
-import { OrderPaymentCurrency } from "../value-object/oder-payment.ts/order-payment-currency";
+import { OrderPaymentId } from "../value-object/oder-payment/order-payment-id";
+import { OrderPaymentName } from "../value-object/oder-payment/order-payment-name";
+import { OrderPaymentCurrency } from "../value-object/oder-payment/order-payment-currency";
 import { OrderTotal } from "../value-object/order-total";
 
 export class OrderPayment extends Entity<OrderPaymentId> {

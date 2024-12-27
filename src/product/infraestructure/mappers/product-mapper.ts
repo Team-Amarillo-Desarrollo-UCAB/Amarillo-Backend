@@ -75,8 +75,8 @@ export class ProductMapper implements IMapper<Product, OrmProduct> {
                 ProductCantidadMedida.create(persistence.cantidad_medida)
             ),
             ProductPrice.create(
-                ProductAmount.create(precio.precio),
-                ProductCurrency.create(precio.moneda.simbolo)
+                precio ? ProductAmount.create(precio.precio) : ProductAmount.create(5),
+                precio ? ProductCurrency.create(precio.moneda.simbolo) : ProductCurrency.create('usd')
             ),
             ProductImage.create(persistence.image),
             ProductStock.create(persistence.cantidad_stock),

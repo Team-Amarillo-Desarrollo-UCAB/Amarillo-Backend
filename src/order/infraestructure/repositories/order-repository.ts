@@ -8,27 +8,46 @@ import { DataSource, getRepository, Repository } from "typeorm";
 import { Detalle_Orden } from "../entites/detalle_orden.entity";
 import { Estado_Orden } from "../entites/Estado-orden/estado_orden.entity";
 import { Estado } from "../entites/Estado-orden/estado.entity";
+import { OrderPayment } from "src/order/domain/entites/order-payment";
+import { Payment } from "../entites/payment.entity";
 
 export class OrderRepository extends Repository<OrmOrder> implements IOrderRepository {
 
     private readonly ormOrderMapper: IMapper<Order, OrmOrder>
+    private readonly paymentMapper: IMapper<OrderPayment, Payment>
 
     private readonly ormDetalle_ordenRepository: Repository<Detalle_Orden>
     private readonly ormEstadoOrdenRepository: Repository<Estado_Orden>
     private readonly ormEstadoRepository: Repository<Estado>
+    private readonly paymentRepository: Repository<Payment>
 
-    constructor(ormOrderMapper: IMapper<Order, OrmOrder>, dataSource: DataSource) {
+    constructor(
+        ormOrderMapper: IMapper<Order, OrmOrder>,
+        paymentMapper: IMapper<OrderPayment, Payment>,
+        dataSource: DataSource
+    ) {
         super(OrmOrder, dataSource.createEntityManager());
         this.ormOrderMapper = ormOrderMapper
+        this.paymentMapper = paymentMapper
 
         this.ormDetalle_ordenRepository = dataSource.getRepository(Detalle_Orden)
         this.ormEstadoOrdenRepository = dataSource.getRepository(Estado_Orden)
         this.ormEstadoRepository = dataSource.getRepository(Estado)
+        this.paymentRepository = dataSource.getRepository(Payment)
     }
 
     async saveOrderAggregate(order: Order): Promise<Result<Order>> {
         try {
             const orden = await this.ormOrderMapper.fromDomainToPersistence(order)
+
+            const payment = await this.paymentMapper.fromDomainToPersistence(order.Payment)
+
+            const savedPayment = await this.paymentRepository.save(payment);
+            console.log("Payment guardado: ", savedPayment);
+
+            orden.pago = payment
+            console.log("Orden para guardar en la BD: ", orden)
+
             await this.save(orden)
 
             const estado = await this.ormEstadoRepository.findOne({
@@ -42,7 +61,7 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
                 null
             )
 
-            console.log("Estado orden para salvar:",estado_orden)
+            console.log("Estado orden para salvar:", estado_orden)
 
             await this.ormEstadoOrdenRepository.save(estado_orden)
 
@@ -76,19 +95,23 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
         const ordenes = await this.find({
             skip: page,
             take: limit,
-            relations: ['historicos'],
+            relations: ['detalles']
         })
 
         if (!ordenes)
             return Result.fail<Order[]>(new Error(`Ordenes no almacenadas`), 404, `Ordenes no almacenadas`)
 
-        const resultado = await Promise.all(
-            ordenes.map(async (orden) => {
-                return await this.ormOrderMapper.fromPersistenceToDomain(orden); // Retorna el Product
-            })
-        );
+        const result: Order[] = []
 
-        return Result.success<Order[]>(resultado, 202)
+        for (const orden of ordenes) {
+
+            result.push(
+                await this.ormOrderMapper.fromPersistenceToDomain(orden)
+            )
+
+        }
+
+        return Result.success<Order[]>(result, 202)
     }
 
 }

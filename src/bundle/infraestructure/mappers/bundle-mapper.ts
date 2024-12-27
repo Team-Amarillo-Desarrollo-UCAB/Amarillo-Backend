@@ -19,6 +19,8 @@ export class BundleMapper implements IMapper<Bundle, OrmBundle> {
 
         let ormCaducityDate = null;
 
+        console.log("Combo para mappear: ",domain)
+
         if(domain.caducityDate && domain.caducityDate.Value){
             ormCaducityDate = domain.caducityDate.Value
         }

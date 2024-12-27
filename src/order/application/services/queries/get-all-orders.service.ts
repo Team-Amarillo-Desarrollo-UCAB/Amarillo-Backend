@@ -23,6 +23,8 @@ export class GetAllOrdersService implements
 
         for(const orden of ordenes.Value){
 
+            console.log("Orden del dominio: ",orden)
+
             response.push({
                 id_orden: orden.Id.Id,
                 estado: orden.Estado.Estado,
@@ -31,6 +33,13 @@ export class GetAllOrdersService implements
                         id_producto: p.Id.Id,
                         nombre_producto: p.Name().Value,
                         cantidad_producto: p.Cantidad().Value
+                    }
+                }),
+                combos: orden.Bundles.map((c) => {
+                    return {
+                        id_combo: c.Id.Value,
+                        nombre_combo: c.Name().Value,
+                        cantidad_combo: c.Cantidad().Value
                     }
                 }),
                 monto_total: orden.Monto.Total,

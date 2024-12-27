@@ -8,8 +8,8 @@ export class OrderCreationDate implements IValueObject<OrderCreationDate> {
         const today = new Date();
 
         if (
-            date_creation.getFullYear() !== today.getFullYear() ||
-            date_creation.getMonth() !== today.getMonth() ||
+            date_creation.getFullYear() !== today.getFullYear() &&
+            date_creation.getMonth() !== today.getMonth() &&
             date_creation.getDate() !== today.getDate()
         ) {
             throw new Error("La fecha de creación no es del mismo día y año que la fecha actual.");

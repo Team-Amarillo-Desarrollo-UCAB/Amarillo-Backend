@@ -20,6 +20,13 @@ import { OrderProductPrice } from "src/order/domain/value-object/order-product/o
 import { OrderProductAmount } from "src/order/domain/value-object/order-product/order-product-amount";
 import { OrderProductCurrency } from "src/order/domain/value-object/order-product/order-product-currency";
 import { HistoricoPrecio } from "src/product/infraestructure/entities/historico-precio.entity";
+import { OrderBundle } from "src/order/domain/entites/order-bundle";
+import { BundleID } from "src/bundle/domain/value-objects/bundle-id";
+import { OrderBundleName } from "src/order/domain/value-object/order-bundle/order-bundle-name";
+import { OrderBundleCantidad } from "src/order/domain/value-object/order-bundle/order-bundle-cantidad";
+import { OrderBundlePrice } from "src/order/domain/value-object/order-bundle/order-bundle-price";
+import { OrderBundleAmount } from "src/order/domain/value-object/order-bundle/order-bundle-amount";
+import { OrderBundleCurrency } from "src/order/domain/value-object/order-bundle/order-bundle-currency";
 
 export class OrderMapper implements IMapper<Order, OrmOrder> {
 
@@ -35,16 +42,39 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
 
         let ormDetalles: Detalle_Orden[] = []
 
-        for (const producto of domain.Productos) {
-            ormDetalles.push(
-                Detalle_Orden.create(
-                    await this.idGenerator.generateId(),
-                    producto.Cantidad().Value,
-                    domain.Id.Id,
-                    producto.Id.Id,
+        if (domain.Productos.length > 0) {
+            for (const producto of domain.Productos) {
+                console.log("Producto para mappear: ", producto)
+                ormDetalles.push(
+                    Detalle_Orden.create(
+                        await this.idGenerator.generateId(),
+                        producto.Cantidad().Value,
+                        domain.Id.Id,
+                        producto.Id.Id,
+                        null
+                    )
                 )
-            )
+                console.log("Producto mapeado")
+            }
         }
+
+        console.log("Combos de la orden: ", domain.Bundles)
+
+        if (domain.Bundles.length > 0) {
+            for (const combo of domain.Bundles) {
+                ormDetalles.push(
+                    Detalle_Orden.create(
+                        await this.idGenerator.generateId(),
+                        combo.Cantidad().Value,
+                        domain.Id.Id,
+                        null,
+                        combo.Id.Value
+                    )
+                )
+            }
+        }
+
+        console.log("Detalles de la orden para persistir: ", ormDetalles)
 
         const order = OrmOrder.create(
             domain.Id.Id,
@@ -54,6 +84,7 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
         )
 
         return order
+
     }
 
     async fromPersistenceToDomain(persistence: OrmOrder): Promise<Order> {
@@ -67,6 +98,7 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
         }
 
         let productos: OrderProduct[] = []
+        let combos: OrderBundle[] = []
         let moneda: string = null
         let precio: number = null
         for (const detalle of persistence.detalles) {
@@ -81,17 +113,36 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
                     }
                 }
 
+                if (!precio) precio = 5
+                if (!moneda) moneda = 'usd'
+
                 productos.push(
                     OrderProduct.create(
                         ProductId.create(detalle.id_producto),
                         OrderProductName.create(detalle.producto.name),
                         OrderProductCantidad.create(detalle.cantidad),
                         OrderProductPrice.create(
-                            OrderProductAmount.create(precio),
-                            OrderProductCurrency.create(moneda)
+                            OrderProductAmount.create(precio ? precio : 5),
+                            OrderProductCurrency.create(moneda ? moneda : '$')
                         )
                     )
                 )
+            }
+
+            if (detalle.combos) {
+
+                combos.push(
+                    OrderBundle.create(
+                        BundleID.create(detalle.combos.id),
+                        OrderBundleName.create(detalle.combos.name),
+                        OrderBundleCantidad.create(detalle.cantidad),
+                        OrderBundlePrice.create(
+                            OrderBundleAmount.create(detalle.combos.price),
+                            OrderBundleCurrency.create(detalle.combos.currency)
+                        )
+                    )
+                )
+
             }
         }
 
@@ -102,13 +153,18 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
         console.log(orderEstado)
 
 
+        console.log("Orden para transformar: ", persistence)
+
         const order = Order.create(
             OrderId.create(persistence.id),
             orderEstado,
             OrderCreationDate.create(persistence.fecha_creacion),
             productos,
+            combos,
             OrderTotal.create(persistence.monto_total),
         )
+        order.pullEvents()
+        console.log("Orden transformada: ", order)
 
         return order
 

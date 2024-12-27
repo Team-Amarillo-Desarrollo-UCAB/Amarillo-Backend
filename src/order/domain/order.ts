@@ -11,6 +11,7 @@ import { OrderProduct } from "./entites/order-product";
 import { OrderPayment } from "./entites/order-payment";
 import { OrderTotalCalculated } from "./domain-event/order-amount-calculated";
 import { InvalidOrder } from "./domain-exception/invalid-order";
+import { OrderBundle } from "./entites/order-bundle";
 
 export class Order extends AggregateRoot<OrderId> {
 
@@ -23,18 +24,30 @@ export class Order extends AggregateRoot<OrderId> {
         private estado: OrderEstado,
         private fecha_creacion: OrderCreationDate,
         private productos: OrderProduct[],
+        private bundles: OrderBundle[],
         montoTotal?: OrderTotal,
         //private detalles: OrderDetail[]
     ) {
+        
+        console.log(productos)
+        console.log(bundles)
+
+        if ((productos.length === 0) && (bundles.length === 0))
+            throw new InvalidOrder("La orden debe contener al menos un producto o un combo")
+
 
         const event: OrderCreated = OrderCreated.create(
             id.Id,
             estado.Estado,
             fecha_creacion.Date_creation,
-            productos
+            productos,
+            bundles
         )
 
         super(id, event)
+
+        montoTotal ? this.montoTotal = montoTotal : this.montoTotal = null
+
     }
 
     get Estado() {
@@ -49,15 +62,23 @@ export class Order extends AggregateRoot<OrderId> {
         return this.montoTotal
     }
 
-    get Productos():  OrderProduct[]{
+    get Productos(): OrderProduct[] {
         return this.productos
     }
 
-    get Moneda(){
+    get Bundles(): OrderBundle[] {
+        return this.bundles
+    }
+
+    get Moneda() {
         return this.productos[0].Moneda()
     }
 
-    calcularMontoProductos(): number{
+    get Payment() {
+        return this.payment
+    }
+
+    calcularMontoProductos(): number {
         let monto_productos = 0
         for (const p of this.productos) {
             monto_productos += p.Precio().Amount * p.Cantidad().Value
@@ -67,19 +88,20 @@ export class Order extends AggregateRoot<OrderId> {
 
     // TODO: Implementación del metodo para cambiar el estado de la orden con sus validaciones
     cambiarEstado(estado: EnumOrderEstados): void {
-        if(!this.estado.equals(OrderEstado.create(estado))){
+        if (!this.estado.equals(OrderEstado.create(estado))) {
 
             this.estado = OrderEstado.create(estado)
 
         }
     }
 
-    assignOrderCost(monto: number): void{
-        this.onEvent(OrderTotalCalculated.create(this.Id.Id,monto))
+    assignOrderCost(monto: number): void {
+        this.onEvent(OrderTotalCalculated.create(this.Id.Id, monto))
     }
 
-    asignarMetodoPago(payment: OrderPayment): void{
-        this.payment ? this.payment = payment : null
+    asignarMetodoPago(payment: OrderPayment): void {
+        console.log("Metodo de pago para asignar: ",payment)
+        this.payment = payment
     }
 
     protected applyEvent(event: DomainEvent): void {
@@ -90,6 +112,7 @@ export class Order extends AggregateRoot<OrderId> {
                 this.estado = OrderEstado.create(orderCreated.estado)
                 this.fecha_creacion = OrderCreationDate.create(orderCreated.fecha_creacion)
                 this.productos = orderCreated.productos
+                this.bundles = orderCreated.bundles
                 break;
             case 'OrderTotalCalculated':
                 const orderTotalCalculated = event as OrderTotalCalculated
@@ -101,10 +124,15 @@ export class Order extends AggregateRoot<OrderId> {
     protected ensureValidState(): void {
         if (
             !this.estado ||
-            !this.fecha_creacion ||
-            !this.productos
+            !this.fecha_creacion
         )
-        throw new InvalidOrder('La orden tiene que ser valida');
+            throw new InvalidOrder('La orden tiene que ser valida');
+
+        if (
+            (this.productos.length === 0) &&
+            (this.bundles.length === 0)
+        )
+            throw new InvalidOrder("La orden debe contener al menos un producto o un combo")
     }
 
     static create(
@@ -112,13 +140,16 @@ export class Order extends AggregateRoot<OrderId> {
         estado: OrderEstado,
         fecha_creacion: OrderCreationDate,
         productos: OrderProduct[],
+        bundles: OrderBundle[],
         montoTotal?: OrderTotal
-    ): Order{
+    ): Order {
+
         return new Order(
             id,
             estado,
             fecha_creacion,
             productos,
+            bundles,
             montoTotal ? montoTotal : null
         )
     }
