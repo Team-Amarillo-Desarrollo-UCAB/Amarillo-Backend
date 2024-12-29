@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Length, Min } from "class-validator";
+import { IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, Length, Min } from "class-validator";
 import { Moneda } from "src/product/domain/enum/Monedas";
 import { UnidadMedida } from "src/product/domain/enum/UnidadMedida";
 
@@ -52,19 +52,33 @@ export class CreateProductEntryDTO {
     @ApiProperty({
         example: 'base64image',
     })
-    @IsString()
-    image: string;
+    @IsArray()
+    @IsString({ each: true })
+    images: string[];
 
     @ApiProperty({
         example: 'id de las categorias',
     })
-    @IsArray()
-    @IsNotEmpty()
+
     @IsOptional()
-    category?: [
-        {
-            id: string
-        }
-    ]
+    @IsArray()
+    @IsString({ each: true })
+    category: string[];
+
+    @ApiProperty({
+        example: '"caducityDate": "2024-12-31T23:59:59.000Z"'
+    })
+    @IsOptional() 
+    @IsDate()      
+    caducityDate?: Date;
+
+    @ApiProperty({
+        example: 'UUID'
+    })
+    @IsString()
+    @IsOptional()
+    discount?: string;
+
+
 
 }

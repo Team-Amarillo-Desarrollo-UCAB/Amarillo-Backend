@@ -58,6 +58,11 @@ import { UpdateProductEntryDTO } from '../DTO/entry/product-update-entry.dto';
 import { UpdateProductResponseDTO } from '../DTO/response/update-product-response.dto';
 import { UpdateProductServiceEntryDTO } from 'src/product/aplication/DTO/entry/update-product-service-entry.dto';
 import { UpdateProductService } from 'src/product/aplication/service/commands/update-product.service';
+import { CategoriesExistenceService } from 'src/common/application/application-services/common-services/categories-existence-check.service';
+import { DiscountExistenceService } from 'src/common/application/application-services/common-services/discount-existence-check.service';
+import { OrmDiscountRepository } from 'src/discount/infraestructure/repositories/orm-discount.repository';
+import { OrmDiscountMapper } from 'src/discount/infraestructure/mappers/discount.mapper';
+import { ProductParamsEntryDTO } from '../DTO/entry/product-params-entry.dto';
 
 @ApiTags("Product")
 @Controller("product")
@@ -72,11 +77,15 @@ export class ProductController {
     private readonly fileUploader: IFileUploader
     private readonly imageTransformer: ImageTransformer
     private readonly eventBus = RabbitEventBus.getInstance();
+    private readonly categoryMapper: OrmCategoryMapper
 
     constructor(
-        @Inject('DataSource') private readonly dataSource: DataSource
+        @Inject('DataSource') private readonly dataSource: DataSource,
+        private readonly categoriesExistenceService: CategoriesExistenceService,
+        private readonly discountExistenceService: DiscountExistenceService
     ) {
         this.categoryRepository = new OrmCategoryRepository(new OrmCategoryMapper(), dataSource)
+        this.historicoRepository = new HistoricoPrecioRepository(dataSource)
         this.productRepository =
             new OrmProductRepository(
                 new ProductMapper(
@@ -85,10 +94,12 @@ export class ProductController {
                 ), dataSource
             )
         this.idGenerator = new UuidGenerator();
-        this.historicoRepository = new HistoricoPrecioRepository(dataSource)
         this.monedaRepository = new MonedaRepository(dataSource)
         this.imageTransformer = new ImageTransformer();
-        this.fileUploader = new CloudinaryFileUploader()
+        this.fileUploader = new CloudinaryFileUploader(),
+        this.categoryMapper = new OrmCategoryMapper(),
+        this.categoriesExistenceService = new CategoriesExistenceService(new OrmCategoryRepository(new OrmCategoryMapper(), this.dataSource))  
+        this.discountExistenceService = new DiscountExistenceService(new OrmDiscountRepository(new OrmDiscountMapper(), this.dataSource))
     }
 
     @Post('create')
@@ -113,7 +124,9 @@ export class ProductController {
                         new OrmCategoryRepository(new OrmCategoryMapper, this.dataSource),
                         this.fileUploader,
                         this.idGenerator,
-                        this.eventBus
+                        this.eventBus,
+                        this.categoriesExistenceService,
+                        this.discountExistenceService
                     ),
                     new NativeLogger(this.logger)
                 ),
@@ -182,7 +195,8 @@ export class ProductController {
         isArray: true
     })
     async getAllProduct(
-        @Query() paginacion: PaginationDto
+        @Query() paginacion: PaginationDto,
+        @Query() queryEntryParams: ProductParamsEntryDTO
     ) {
         const service =
             new LoggingDecorator(
@@ -192,7 +206,8 @@ export class ProductController {
 
         const data: GetAllProductServiceEntryDTO = {
             userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
-            ...paginacion
+            ...paginacion,
+            ...queryEntryParams
         }
 
         const result = await service.execute(data)

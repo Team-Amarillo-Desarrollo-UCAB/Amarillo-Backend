@@ -16,6 +16,10 @@ export interface GetAllProductServiceResponseDTO{
 
     descripcion: string
 
-    image: string
+    images?: string[]
+
+    caducityDate?:Date
+    category?: string[]
+    discount?:string
 
 }

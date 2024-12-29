@@ -36,9 +36,9 @@ export class UpdateProductService implements IApplicationService
             productResult.modifiedDescription(ProductDescription.create(data.description))
 
         if (data.stock)
-            productResult.increaseStock(ProductStock.create(data.stock))
+            productResult.modifieStock(ProductStock.create(data.stock))
 
-        const result = await this.productRepository.saveProductAggregate(productResult)
+        const result = await this.productRepository.updateProductAggregate(productResult)
 
         if(!result.isSuccess())
             return Result.fail<UpdateProductServiceResponseDTO>(new Error("Producto no modificado"),result.StatusCode,'Producto no modificado')

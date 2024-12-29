@@ -24,69 +24,56 @@ export class OrmBundleRepository extends Repository<OrmBundle> implements IBundl
         popular?: string,
         discount?: string
     ): Promise<Result<Bundle[]>> {
-        // // Validación para asegurar que page y perpage son números válidos
-        // page = Number(page) || 1; // Si no es número, se asigna 1
-        // limit = Number(limit) || 10; // Si no es número, se asigna 10
-    
         if (page < 1) {
-            page = 1; // Forzar valores mínimos
+            page = 1;
         }
-
-        console.log("Page:",page)
-        console.log("Limit:",limit)
     
-        const offset = (page - 1) * limit; // Calcular offset para paginación
+        const offset = (page - 1) * limit;
         console.log('Offset calculado:', offset);
     
-        const queryBuilder = this.createQueryBuilder('bundle');
-    
-        console.log("Antes del if de categoryy")
-        console.log("La category antes de entrar a if category:",category)
-        // Filtrar por categoría
-        if (category && category.length > 0) {
-            console.log('Filtrando por categorías:', category);
-            queryBuilder.andWhere(
-                `bundle.categories::jsonb @> :categories`, 
-                { categories: category },
-            );
-        }
-    
-        // Filtrar por nombre
-        if (name) {
-            console.log('Filtrando por nombre del bundle:', name);
-            queryBuilder.andWhere('LOWER(bundle.name) LIKE LOWER(:name)', { name: `%${name}%` });
-        }
-    
-        // Filtrar por precio
-        if (price) {
-            console.log('Filtrando por precio:', price);
-            queryBuilder.andWhere('bundle.price = :price', { price });
-        }
-    
-        // Filtrar por popularidad
-        if (popular) {
-            console.log('Filtrando por popularidad:', popular);
-            queryBuilder.andWhere('bundle.popular = :popular', { popular });
-        }
-    
-        // Filtrar por descuento
-        if (discount) {
-            console.log('Filtrando por descuento:', discount);
-            queryBuilder.andWhere('bundle.discount = :discount', { discount });
-        }
-    
-        // Paginación
-        queryBuilder.skip(offset).take(limit); // Usar offset y perpage
-    
         try {
-            const bundles = await queryBuilder.getMany(); // Ejecutar consulta
+            const totalCount = await this.createQueryBuilder('bundle').getCount();
+    
+            if (offset >= totalCount) {
+                return Result.success<Bundle[]>([], 200);
+            }
+    
+            const queryBuilder = this.createQueryBuilder('bundle');
+    
+            if (category && category.length > 0) {
+                console.log('Filtrando por categorías:', category);
+                queryBuilder.andWhere(
+                    `bundle.categories::jsonb @> :categories`,
+                    { categories: category },
+                );
+            }
+    
+            if (name) {
+                console.log('Filtrando por nombre del bundle:', name);
+                queryBuilder.andWhere('LOWER(bundle.name) LIKE LOWER(:name)', { name: `%${name}%` });
+            }
+    
+            if (price) {
+                console.log('Filtrando por precio:', price);
+                queryBuilder.andWhere('bundle.price = :price', { price });
+            }
+    
+            if (popular) {
+                console.log('Filtrando por popularidad:', popular);
+                queryBuilder.andWhere('bundle.popular = :popular', { popular });
+            }
+    
+            if (discount) {
+                console.log('Filtrando por descuento:', discount);
+                queryBuilder.andWhere('bundle.discount = :discount', { discount });
+            }
+    
+            queryBuilder.skip(offset).take(limit);
+    
+            const bundles = await queryBuilder.getMany();
     
             if (!bundles || bundles.length === 0) {
-                return Result.fail<Bundle[]>(
-                    new Error('No se encontraron bundles con los criterios proporcionados'),
-                    404,
-                    'No se encontraron bundles'
-                );
+                return Result.success<Bundle[]>([], 200)
             }
     
             const domainBundles = await Promise.all(
@@ -95,7 +82,7 @@ export class OrmBundleRepository extends Repository<OrmBundle> implements IBundl
     
             return Result.success<Bundle[]>(domainBundles, 200);
         } catch (error) {
-            console.error('Error en findAllBundles:', error); // Log de error para depuración
+            console.error('Error en findAllBundles:', error);
             return Result.fail<Bundle[]>(
                 new Error('Error al buscar bundles'),
                 500,
@@ -103,6 +90,8 @@ export class OrmBundleRepository extends Repository<OrmBundle> implements IBundl
             );
         }
     }
+    
+    
     
     
     

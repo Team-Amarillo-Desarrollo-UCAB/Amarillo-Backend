@@ -1,5 +1,5 @@
 import { BundleCurrency } from "src/bundle/domain/enum/bundle-currency-enum";
-import { Measurement } from "src/bundle/domain/enum/measurement-enum";
+import { Measurement } from "src/common/domain/enum/commons-enums/measurement-enum";
 import { OrmCategory } from "src/category/infraestructure/entities/orm-category";
 import { OrmProduct } from "src/product/infraestructure/entities/product.entity";
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryColumn } from "typeorm";

@@ -4,9 +4,15 @@ export interface CreateOrderResponseServiceDTO{
 
     id_orden: string
 
-    detalle_info: {
+    detalle_productos: {
         id_detalle: string
         id_producto: string
+        cantidad: number
+    }[]
+
+    detalle_combos: {
+        id_detalle: string,
+        id_combo: string,
         cantidad: number
     }[]
 

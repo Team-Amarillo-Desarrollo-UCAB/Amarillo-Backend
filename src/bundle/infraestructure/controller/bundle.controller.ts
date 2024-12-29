@@ -33,14 +33,14 @@ import { IFileUploader } from 'src/common/application/file-uploader/file-uploade
 import { UuidGenerator } from 'src/common/infraestructure/id-generator/uuid-generator';
 import { CloudinaryFileUploader } from 'src/common/infraestructure/cloudinary-file-uploader/cloudinary-file-uploader';
 import { BundleCurrency } from 'src/bundle/domain/enum/bundle-currency-enum';
-import { Measurement } from 'src/bundle/domain/enum/measurement-enum';
-import { CategoriesExistenceService } from 'src/bundle/application/services/queries/categories-existence-check.service';
+import { Measurement } from 'src/common/domain/enum/commons-enums/measurement-enum';
+import { CategoriesExistenceService } from 'src/common/application/application-services/common-services/categories-existence-check.service';
 import { ProductsExistenceService } from 'src/bundle/application/services/queries/product-existence-check.service';
 import { OrmCategoryRepository } from 'src/category/infraestructure/repositories/orm-category-repository';
 import { OrmCategoryMapper } from 'src/category/infraestructure/mappers/orm-category-mapper';
 import { OrmProductRepository } from 'src/product/infraestructure/repositories/product-repository';
 import { ProductMapper } from '../../../product/infraestructure/mappers/product-mapper';
-import { DiscountExistenceService } from '../../application/services/queries/discount-existence-check.service';
+import { DiscountExistenceService } from '../../../common/application/application-services/common-services/discount-existence-check.service';
 import { OrmDiscountRepository } from '../../../discount/infraestructure/repositories/orm-discount.repository';
 import { OrmDiscountMapper } from '../../../discount/infraestructure/mappers/discount.mapper';
 
@@ -209,10 +209,11 @@ export class BundleController {
       description: bundle.description,
       price: bundle.price,
       currency: bundle.currency,
-      images: bundle.images, // Corregido: Se incluye `images`
+      images: bundle.images, 
       weight: bundle.weight,
       measurement: bundle.measurement,
       stock: bundle.stock,
+      caducityDate: bundle.caducityDate,
       category: bundle.category,
       productId: bundle.productId,
       discount: bundle.discount

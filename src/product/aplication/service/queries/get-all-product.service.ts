@@ -4,6 +4,7 @@ import { GetAllProductServiceEntryDTO } from "../../DTO/entry/get-all-product-se
 import { Result } from "src/common/domain/result-handler/Result"
 import { GetAllProductServiceResponseDTO } from "../../DTO/response/get-all-product-service.response"
 import { UnidadMedida } from "src/product/domain/enum/UnidadMedida"
+import { Discount } from '../../../../discount/domain/discount.entity';
 
 export class GetAllProductService implements IApplicationService<GetAllProductServiceEntryDTO, GetAllProductServiceResponseDTO[]> {
 
@@ -16,28 +17,37 @@ export class GetAllProductService implements IApplicationService<GetAllProductSe
     async execute(data: GetAllProductServiceEntryDTO): Promise<Result<GetAllProductServiceResponseDTO[]>> {
         data.page = data.page * data.limit - data.limit;
 
-        const products = await this.productRepository.findAllProducts(data.page, data.limit)
+        const products = await this.productRepository.findAllProducts(data.page, data.limit, data.category, data.name, data.price, data.discount)
 
-        if (!products.isSuccess)
-            throw new Error("Method not implemented.")
+        if (!products.isSuccess){
+            console.log("ENTRAMOS AL IF DE PRODUCTRESULT")
+
+            return Result.fail(new Error("ERROR al hallar"),500,"ERROR al hallar");
+        }
 
         const response: GetAllProductServiceResponseDTO[] = []
 
-        products.Value.map(
-            async (producto) => {
-                response.push({
-                    id_product: producto.Id.Id,
-                    nombre: producto.Name,
-                    precio: producto.Price,
-                    moneda: producto.Moneda,
-                    stock: producto.Stock,
-                    image: producto.Image,
-                    unidad_medida: producto.Unit,
-                    cantidad_medida: producto.CantidadMedida,
-                    descripcion: producto.Description
+
+            await Promise.all(
+                products.Value.map(async (producto) => {
+                    response.push({
+                        id_product: producto.Id?.Id || null,
+                        nombre: producto.Name || "",
+                        precio: producto.Price || 0,
+                        moneda: producto.Moneda || "",
+                        stock: producto.Stock || 0,
+                        unidad_medida: producto.Unit || "",
+                        cantidad_medida: producto.CantidadMedida || 0,
+                        descripcion: producto.Description || "",
+                        images: producto.Images ? producto.Images.map(i => i.Image) : [],
+                        caducityDate: producto.ProductCaducityDate ? producto.ProductCaducityDate.Value : new Date('2029-01-01'),
+                        category: producto.Categories ? producto.Categories.map(i => i.Value) : [],
+                        discount: producto.Discount ? producto.Discount.Value : "",
+                    });
                 })
-            }
-        )
+            );
+
+        
 
         return Result.success(response, 202)
     }

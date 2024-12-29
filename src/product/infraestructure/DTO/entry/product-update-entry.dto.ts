@@ -1,5 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateNested } from "class-validator"
+import { IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, IsUUID, Min, ValidateNested } from "class-validator"
+import { Moneda } from "src/product/domain/enum/Monedas"
+import { UnidadMedida } from "src/product/domain/enum/UnidadMedida"
 
 export class UpdateProductEntryDTO {
 
@@ -14,70 +16,74 @@ export class UpdateProductEntryDTO {
         example: 'Cheese Tris'
     })
     @IsString()
-    @IsOptional()
-    @IsString()
-    name?: string
+    nombre: string
 
     @ApiProperty({
         example: 'El mejor queso del mundo'
     })
     @IsString()
-    @IsOptional()
-    @IsString()
-    description?: string
+    descripcion: string
 
     @ApiProperty({
-        example: 'base64image []',
+        example: "gm"
     })
-    @IsOptional()
-    @IsString()
-    @IsArray()
-    images?: string[]
+    @IsEnum(UnidadMedida)
+    unidad_medida: UnidadMedida
+
+    @ApiProperty({
+        example: 200
+    })
+    @IsNumber()
+    cantidad_medida: number
 
     @ApiProperty({
         example: 2
     })
-    @IsOptional()
     @IsNumber()
-    price?: number
+    @Min(1)
+    precio: number
 
-    @IsOptional()
-    @IsString()
-    currency?: string
-
-    @IsOptional()
-    @IsNumber()
-    weight?: number
-
-    @IsOptional()
-    @IsString()
-    measurement?: string
+    @ApiProperty({
+        example: "$"
+    })
+    @IsEnum(Moneda)
+    moneda: Moneda
 
     @ApiProperty({
         example: 500
     })
-    @IsOptional()
     @IsNumber()
     @Min(1)
-    stock?: number
+    stock: number
 
     @ApiProperty({
-        description: 'Id de las categorias',
-        type: [Object], // Especificamos que es un arreglo de objetos
-        items: {
-            type: 'object',
-            properties: {
-                id: { type: 'string', example: '550e8400-e29b-41d4-a716-446655440000' },
-            },
-        },
+        example: 'base64image',
     })
-    @IsArray() // Aseguramos que sea un arreglo
-    @ValidateNested({ each: true })
+    @IsArray()
+    @IsString({ each: true })
+    images: string[];
+
+    @ApiProperty({
+        example: 'id de las categorias',
+    })
+
     @IsOptional()
-    category?: [
-        {
-            id: string
-        }
-    ]
+    @IsArray()
+    @IsString({ each: true })
+    category: string[];
+
+    @ApiProperty({
+        example: '"caducityDate": "2024-12-31T23:59:59.000Z"'
+    })
+    @IsOptional() 
+    @IsDate()      
+    caducityDate?: Date;
+
+    @ApiProperty({
+        example: 'UUID'
+    })
+    @IsString()
+    @IsOptional()
+    discount?: string;
 
 }
