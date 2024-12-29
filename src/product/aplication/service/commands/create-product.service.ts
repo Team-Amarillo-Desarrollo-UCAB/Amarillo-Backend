@@ -19,6 +19,11 @@ import { IFileUploader } from "src/common/application/file-uploader/file-uploade
 import { IEventHandler } from "src/common/application/event-handler/event-handler.interface";
 import { ICategoryRepository } from "src/category/domain/repositories/category-repository.interface";
 import { CategoryID } from "src/category/domain/value-objects/category-id";
+import { CategoriesExistenceService } from "src/common/application/application-services/common-services/categories-existence-check.service";
+import { DiscountExistenceService } from "src/common/application/application-services/common-services/discount-existence-check.service";
+import { DiscountID } from "src/discount/domain/value-objects/discount-id";
+import { ProductCaducityDate } from "src/product/domain/value-objects/productCaducityDate";
+import { ProductWeight } from "src/product/domain/value-objects/product-weight";
 
 export class CreateProductService implements IApplicationService<CreateProductServiceEntryDTO, CreateProductServiceResponseDTO> {
 
@@ -27,25 +32,49 @@ export class CreateProductService implements IApplicationService<CreateProductSe
         private readonly categoryRepository: ICategoryRepository,
         private readonly fileUploader: IFileUploader,
         private readonly idGenerator: IdGenerator<string>,
-        private readonly eventBus: IEventHandler
+        private readonly eventBus: IEventHandler,
+        private readonly categorieExistenceService: CategoriesExistenceService,
+        private readonly discountExistenceService:DiscountExistenceService
     ) {
 
     }
 
     async execute(data: CreateProductServiceEntryDTO): Promise<Result<CreateProductServiceResponseDTO>> {
 
-        const image_url = await this.fileUploader.UploadFile(data.image)
+        const iconUrls = await Promise.all(
+            data.images.map(async (image) => {
+              return this.fileUploader.UploadFile(image); // Subir cada imagen individualmente
+            })
+          );
+      
+        const productImages = iconUrls.map((url) => ProductImage.create(url));
+        
+        // let categorias: CategoryID[] = []
 
-        let categorias: CategoryID[] = []
+        // if (data.category) {
+        //     for (const categoria of data.category) {
+        //         const category = await this.categoryRepository.findCategoryById(categoria)
+        //         if (!category.isSuccess()) {
+        //             return Result.fail<CreateProductServiceResponseDTO>(category.Error, category.StatusCode, category.Message)
+        //         }
+        //         categorias.push(category.Value.Id)
+        //     }
+        // }
 
-        if (data.category) {
-            for (const categoria of data.category) {
-                const category = await this.categoryRepository.findCategoryById(categoria.id)
-                if (!category.isSuccess()) {
-                    return Result.fail<CreateProductServiceResponseDTO>(category.Error, category.StatusCode, category.Message)
-                }
-                categorias.push(category.Value.Id)
-            }
+        // Validar la existencia de las categorías
+        const categoryResult = await this.categorieExistenceService.categoriesExistenceCheck(data.category);
+
+        if (!categoryResult.isSuccess()) {
+            return Result.fail(categoryResult.Error, categoryResult.StatusCode, categoryResult.Message);
+        }
+
+        const discountResult = await this.discountExistenceService.discountExistenceCheck(data.discount);
+
+        if(data.discount){
+    
+          if (!discountResult.isSuccess()) {
+            return Result.fail(discountResult.Error, discountResult.StatusCode, discountResult.Message);
+          }
         }
 
         const producto = Product.create(
@@ -60,9 +89,12 @@ export class CreateProductService implements IApplicationService<CreateProductSe
                 ProductAmount.create(data.precio),
                 ProductCurrency.create(data.moneda)
             ),
-            ProductImage.create(image_url),
+            productImages,            
             ProductStock.create(data.stock),
-            categorias
+            categoryResult.Value,
+            discountResult.Value ? DiscountID.create(data.discount):null,
+            data.caducityDate ? ProductCaducityDate.create(data.caducityDate) : null,
+
         )
         const result = await this.productRepository.saveProductAggregate(producto)
 
@@ -70,14 +102,19 @@ export class CreateProductService implements IApplicationService<CreateProductSe
             return Result.fail(new Error("Producto no creado"), 404, "Producto no creado")
 
         const response: CreateProductServiceResponseDTO = {
-            id_producto: producto.Id.Id,
+            id_producto: producto.Id.Id ,
             nombre: data.nombre,
             descripcion: data.descripcion,
             unidad_medida: data.unidad_medida,
             cantidad_medida: data.cantidad_medida,
             precio: data.precio,
             moneda: data.moneda,
-            stock: data.stock
+            stock: data.stock,
+            category: producto.Categories.map((category) => category.Value) ?? null,
+            images: producto.Images.map((image) => image.Image),
+            caducityDate:data.caducityDate ?? null,
+            discount:data.discount ?? null,        
+
         }
 
         await this.eventBus.publish(producto.pullEvents())

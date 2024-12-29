@@ -14,9 +14,9 @@ import { BundleDescription } from 'src/bundle/domain/value-objects/bundle-descri
 import { BundlePrice } from 'src/bundle/domain/value-objects/bundle-price';
 import { BundleStock } from 'src/bundle/domain/value-objects/bundle-stock';
 import { BundleWeight } from 'src/bundle/domain/value-objects/bundle-weight';
-import { CategoriesExistenceService } from '../queries/categories-existence-check.service';
+import { CategoriesExistenceService } from '../../../../common/application/application-services/common-services/categories-existence-check.service';
 import { ProductsExistenceService } from '../queries/product-existence-check.service';
-import { DiscountExistenceService } from '../queries/discount-existence-check.service';
+import { DiscountExistenceService } from '../../../../common/application/application-services/common-services/discount-existence-check.service';
 import { DiscountID } from 'src/discount/domain/value-objects/discount-id';
 
 export class CreateBundleApplicationService

@@ -18,7 +18,15 @@ export interface CreateProductServiceResponseDTO{
 
     stock: number
 
-    imagen?: string
+    category:string []
+
+    images?: string[]
+
+    caducityDate?:Date
+
+    discount?:string
+
+    weight?:number
 
 
 }

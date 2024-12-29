@@ -24,13 +24,16 @@ export class GetProductByNameService implements IApplicationService<GetProductBy
         const response: GetProductByNameServiceResponseDTO = {
             id_producto: producto.Value.Id.Id,
             nombre: producto.Value.Name,
-            descripcion: producto.Value.Description,
             precio: producto.Value.Price,
             moneda: producto.Value.Moneda,
             stock: producto.Value.Stock,
             unidad_medida: producto.Value.Unit,
             cantidad_medida: producto.Value.CantidadMedida,
-            image: producto.Value.Image
+            descripcion: producto.Value.Description,
+            images: producto.Value.Images ? producto.Value.Images.map(i => i.Image): [],
+            caducityDate: producto.Value.ProductCaducityDate ? producto.Value.ProductCaducityDate.Value : new Date('2029-01-01'),
+            category: producto.Value.Categories ? producto.Value.Categories.map(i=>i.Value) : [],
+            discount: producto.Value.Discount ? producto.Value.Discount.Value : "",
         }
 
         return Result.success(response,202)

@@ -13,9 +13,23 @@ export class GetProductByNameResponseDTO{
     nombre: string
 
     @ApiProperty({
-        example: 'El mejor queso del mundo'
+        example: 2
     })
-    descripcion: string
+    precio: number
+
+    @ApiProperty({
+        example: "$"
+    })
+    moneda: string
+
+
+    @ApiProperty({
+        example: 500
+    })
+    stock: number
+
+
+
 
     @ApiProperty({
         example: "gm"
@@ -28,24 +42,33 @@ export class GetProductByNameResponseDTO{
     cantidad_medida: number
 
     @ApiProperty({
-        example: 2
+        example: 'El mejor queso del mundo'
     })
-    precio: number
-
-    @ApiProperty({
-        example: "$"
-    })
-    moneda: string
-
-    @ApiProperty({
-        example: 500
-    })
-    stock: number
+    descripcion: string
 
 
     @ApiProperty({
         example: "https://res.cloudinary.com/dxttqmyxu/image/upload/v1731614522/bzrj2nraiiz4gbqzsapn.jpg"
     })
-    image: string
+    images?: string[]
+
+    @ApiProperty({
+        example: 'FECHA'
+    })
+    caducityDate?:Date
+
+    @ApiProperty({
+        example: "ID CATEGORIAS"
+    })
+    category?: string[];
+
+    @ApiProperty({
+        example: "ID DEL DESCUENTO"
+    })
+    discount?: string
+
+
+
+
 
 }

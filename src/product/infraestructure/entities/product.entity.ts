@@ -1,9 +1,7 @@
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryColumn } from "typeorm";
 import { HistoricoPrecio } from "./historico-precio.entity";
 import { UnidadMedida } from "src/product/domain/enum/UnidadMedida";
-import { OrmCategory } from "src/category/infraestructure/entities/orm-category";
 import { Detalle_Orden } from "src/order/infraestructure/entites/detalle_orden.entity";
-import { OrmBundle } from "src/bundle/infraestructure/entities/bundle-orm.entity";
 
 @Entity({ name: "producto" })
 export class OrmProduct {
@@ -26,8 +24,8 @@ export class OrmProduct {
     @Column('numeric')
     cantidad_stock: number
 
-    @Column('varchar', { nullable: true })
-    image: string
+    @Column({type:'json', nullable: true })
+    image: string[];
 
     @OneToMany(() => HistoricoPrecio, (historico) => historico.producto,{eager: true})
     historicos: HistoricoPrecio[];
@@ -35,20 +33,15 @@ export class OrmProduct {
     @OneToMany(() => Detalle_Orden, (detalle) => detalle.producto)
     detalles: Detalle_Orden[];
 
-    // Relación muchos a muchos con productos
-    @ManyToMany(() => OrmCategory, (category) => category.products,{eager: true})
-    @JoinTable({
-        name: "category_product",
-        joinColumn: {
-            name: "product_id",
-            referencedColumnName: "id"
-        },
-        inverseJoinColumn: {
-            name: "category_id",
-            referencedColumnName: "id"
-        }
-    })  // Tabla de unión
-    categories: OrmCategory[];
+    @Column({type:'json', nullable: true })
+    categories: string[];
+
+    @Column('date', { nullable: true })
+    caducityDate?: Date;
+
+    @Column('varchar', { nullable: true })
+    discount?: string;
+
 
     static create(
         id: string,
@@ -57,9 +50,11 @@ export class OrmProduct {
         unidad_medida: UnidadMedida,
         cantidad_medida: number,
         cantidad_stock: number,
-        image: string,
-        categories: OrmCategory[],
-        historicos?: HistoricoPrecio[]
+        image?: string[],
+        categories?: string[],
+        caducityDate?: Date,
+        discount?:string,
+        historicos?: HistoricoPrecio[],
     ): OrmProduct {
         const product = new OrmProduct()
         product.id = id
@@ -71,6 +66,9 @@ export class OrmProduct {
         product.image = image
         product.categories = categories
         product.historicos = historicos
+        product.caducityDate = caducityDate;
+        product.discount=discount;
+
         return product
     }
 }

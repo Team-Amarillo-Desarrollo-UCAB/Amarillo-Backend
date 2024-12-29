@@ -17,6 +17,10 @@ import { CategoryID } from "src/category/domain/value-objects/category-id";
 import { ProductPriceModified } from "./domain-event/product-price-modified";
 import { ProductStockModified } from "./domain-event/product-stock-modified";
 import { ProductDescriptionModified } from "./domain-event/product-description-modified";
+import { DiscountID } from "src/discount/domain/value-objects/discount-id";
+import { ProductCaducityDate } from "./value-objects/productCaducityDate";
+import { ProductWeight } from './value-objects/product-weight';
+import { Category } from '../../category/domain/category.entity';
 
 export class Product extends AggregateRoot<ProductId> {
 
@@ -26,9 +30,11 @@ export class Product extends AggregateRoot<ProductId> {
         private description: ProductDescription,
         private unit: ProductUnit,
         private price: ProductPrice,
-        private image: ProductImage,
         private stock: ProductStock,
-        private categories: CategoryID[]
+        private images?: ProductImage[],
+        private categories?: CategoryID[],
+        private discount?: DiscountID,
+        private caducityDate?:ProductCaducityDate,
     ) {
         const event = ProductCreated.create(
             id.Id,
@@ -38,11 +44,15 @@ export class Product extends AggregateRoot<ProductId> {
             unit.Cantidad_medida,
             price.Amount,
             price.Currency,
-            image.Image,
+            images,
             stock.Stock,
-            categories
+            categories,
+            discount,
+            caducityDate,
         );
         super(id, event)
+
+        this.ensureValidState();
     }
 
     get Name(): string {
@@ -69,8 +79,8 @@ export class Product extends AggregateRoot<ProductId> {
         return this.price.Currency
     }
 
-    get Image(): string {
-        return this.image.Image;
+    get Images(): ProductImage[] {
+        return this.images;
     }
 
     get Stock(): number {
@@ -80,6 +90,16 @@ export class Product extends AggregateRoot<ProductId> {
     get Categories(): CategoryID[] {
         return this.categories
     }
+
+    get Discount(): DiscountID{
+        return this.discount
+    }
+
+    get ProductCaducityDate(): ProductCaducityDate | undefined {
+        return this.caducityDate;
+      }
+
+
 
     modifiedName(nombre: ProductName){
         if(!this.name.equals(nombre))
@@ -139,34 +159,42 @@ export class Product extends AggregateRoot<ProductId> {
 
     protected applyEvent(event: DomainEvent): void {
         switch (event.eventName) {
-            //patron estado o estrategia, esto es una cochinada el switch case
-            // Otra opcion es no manejarlo de esta forma, discutir luego del parcial :)
             case 'ProductCreated':
                 const productCreated: ProductCreated = event as ProductCreated;
-                this.name = ProductName.create(productCreated.name)
-                this.description = ProductDescription.create(productCreated.description)
+                
+                this.name = ProductName.create(productCreated.name);
+                this.description = ProductDescription.create(productCreated.description);
                 this.unit = ProductUnit.create(
                     productCreated.unit,
                     ProductCantidadMedida.create(productCreated.cantidad_medida)
-                )
+                );
                 this.price = ProductPrice.create(
                     ProductAmount.create(productCreated.amount),
                     ProductCurrency.create(productCreated.currency)
-                )
-                this.image = ProductImage.create(productCreated.image)
-                this.stock = ProductStock.create(productCreated.stock)
-                this.categories = productCreated.categories
+                );
+                this.images = productCreated.images.map(i => ProductImage.create(i.Image));
+                this.stock = ProductStock.create(productCreated.stock);
+                this.categories = productCreated.categories;
+    
+                if (productCreated.discount) {
+                    this.discount = DiscountID.create(productCreated.discount.Value);
+                }
+    
+                if (productCreated.caducityDate) {
+                    this.caducityDate = ProductCaducityDate.create(productCreated.caducityDate.Value);
+                }
+    
                 break;
-
         }
     }
+    
     protected ensureValidState(): void {
         if (
             !this.name ||
             !this.description ||
             !this.unit ||
             !this.price ||
-            !this.image ||
+            !this.images ||
             !this.stock
         )
             throw new Error('El producto tiene que ser valido');
@@ -178,9 +206,11 @@ export class Product extends AggregateRoot<ProductId> {
         description: ProductDescription,
         unit: ProductUnit,
         price: ProductPrice,
-        image: ProductImage,
+        images: ProductImage[],
         stock: ProductStock,
-        categories: CategoryID[]
+        categories?: CategoryID[],
+        discount?: DiscountID,
+        caducityDate?: ProductCaducityDate
     ): Product {
         return new Product(
             id,
@@ -188,9 +218,11 @@ export class Product extends AggregateRoot<ProductId> {
             description,
             unit,
             price,
-            image,
             stock,
-            categories
+            images,
+            categories,
+            discount,
+            caducityDate
         )
     }
 
