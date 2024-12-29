@@ -7,9 +7,9 @@ export interface CreateProductServiceEntryDTO extends ApplicationServiceEntryDto
 
     descripcion: string
 
-    unidad_medida: UnidadMedida
+    unidad_medida: UnidadMedida//MEASUREMENT
 
-    cantidad_medida: number
+    cantidad_medida: number//WEIGHT
 
     precio: number
 
@@ -17,12 +17,13 @@ export interface CreateProductServiceEntryDTO extends ApplicationServiceEntryDto
 
     stock: number
 
-    category?: [
-        {
-            id: string
-        }
-    ]
+    category?: string[]
 
-    image?: string
+    images?: string[],
+
+    caducityDate?:Date
+    discount?:string;
+
+
 
 }

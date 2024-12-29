@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsArray, IsOptional, IsCurrency, IsInt, Min, IsPositive } from 'class-validator';
+import { IsString, IsNumber, IsArray, IsOptional, IsCurrency, IsInt, Min, IsPositive, IsDate } from 'class-validator';
 
 export class GetAllBundlesResponseDTO {
     @IsString()
@@ -29,6 +29,10 @@ export class GetAllBundlesResponseDTO {
     @Min(0)
     stock: number;
 
+    @IsDate()
+    @IsOptional()
+    caducityDate?:Date
+
     @IsArray()
     @IsString({ each: true })
     category: string[];
@@ -38,5 +42,6 @@ export class GetAllBundlesResponseDTO {
     productId: string[];
 
     @IsString()
-    discount: string;
+    @IsOptional()
+    discount?: string;
 }

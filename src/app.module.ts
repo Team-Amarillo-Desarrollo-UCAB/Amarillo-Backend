@@ -11,9 +11,9 @@ import { CategoryController } from './category/infraestructure/controller/catego
 import { OrderController } from './order/infraestructure/controller/order.controller';
 import { CuponController } from './cupon/infraestructure/controller/cupon.controller';
 import { BundleController } from './bundle/infraestructure/controller/bundle.controller';
-import { CategoriesExistenceService } from './bundle/application/services/queries/categories-existence-check.service';
+import { CategoriesExistenceService } from './common/application/application-services/common-services/categories-existence-check.service';
 import { ProductsExistenceService } from './bundle/application/services/queries/product-existence-check.service';
-import { DiscountExistenceService } from './bundle/application/services/queries/discount-existence-check.service';
+import { DiscountExistenceService } from './common/application/application-services/common-services/discount-existence-check.service';
 import { PaymentMethodController } from './payment-method/infraestructure/controller/payment-method.controller';
 import { DiscountController } from './discount/infraestructure/controller/discount.controller';
 

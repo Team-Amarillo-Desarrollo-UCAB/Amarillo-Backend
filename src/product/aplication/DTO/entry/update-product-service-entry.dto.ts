@@ -11,10 +11,7 @@ export interface UpdateProductServiceEntryDTO extends ApplicationServiceEntryDto
     weight?: number
     measurement?: string
     stock?: number
-    category?: [
-        {
-            id: string
-        }
-    ]
+    category?: string[]
+    
 
 }

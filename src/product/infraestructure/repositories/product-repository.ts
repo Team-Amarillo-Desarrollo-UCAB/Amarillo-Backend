@@ -83,24 +83,76 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
         return Result.success(resultado, 202)
     }
 
-    async findAllProducts(page: number, limit: number): Promise<Result<Product[]>> {
-        const products = await this.find({
-            skip: page,
-            take: limit,
-            relations: ['historicos'],
-        })
+    async findAllProducts(
+        page: number = 1,
+        limit: number = 10,
+        category?: string[],
+        name?: string,
+        price?: number,
+        discount?: string
+    ): Promise<Result<Product[]>> {
+        if (page < 1) {
+            page = 1;
+        }
 
-        if (!products)
-            return Result.fail<Product[]>(new Error(`Productos no almacenados`), 404, `Productos no almacenados`)
+        const offset = (page - 1) * limit;
+        console.log('Offset calculado:', offset);
 
-        const resultado = await Promise.all(
-            products.map(async (product) => {
-                return await this.ormProductMapper.fromPersistenceToDomain(product); // Retorna el Product
-            })
-        );
+        try {
+            const totalCount = await this.createQueryBuilder('producto').getCount();
 
-        return Result.success<Product[]>(resultado, 202)
+            if (offset >= totalCount) {
+                return Result.success<Product[]>([], 200);
+            }
+
+            const queryBuilder = this.createQueryBuilder('producto');
+
+            if (category && category.length > 0) {
+                console.log('Filtrando por categorías:', category);
+                queryBuilder.andWhere(
+                    `producto.categories::jsonb @> :categories`,
+                    { categories: category },
+                );
+            }
+
+            if (name) {
+                console.log('Filtrando por nombre del producto:', name);
+                queryBuilder.andWhere('LOWER(producto.name) LIKE LOWER(:name)', { name: `%${name}%` });
+            }
+
+            if (price) {
+                console.log('Filtrando por precio:', price);
+                queryBuilder.andWhere('producto.price = :price', { price });
+            }
+
+            if (discount) {
+                console.log('Filtrando por descuento:', discount);
+                queryBuilder.andWhere('producto.discount = :discount', { discount });
+            }
+
+            queryBuilder.skip(offset).take(limit);
+
+            const products = await queryBuilder.getMany();
+
+            if (!products || products.length === 0) {
+                return Result.success<Product[]>([], 200);
+            }
+
+            const domainProducts = await Promise.all(
+                products.map((product) => this.ormProductMapper.fromPersistenceToDomain(product))
+            );
+
+            return Result.success<Product[]>(domainProducts, 200);
+        } catch (error) {
+            console.error('Error en findAllProducts:', error);
+            return Result.fail<Product[]>(
+                new Error('Error al buscar productos'),
+                500,
+                'Error interno del servidor'
+            );
+        }
     }
+
 
     async verifyNameProduct(name: string): Promise<Result<boolean>> {
 

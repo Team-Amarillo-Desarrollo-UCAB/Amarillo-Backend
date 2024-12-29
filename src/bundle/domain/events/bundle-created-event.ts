@@ -3,7 +3,7 @@ import { BundleCaducityDate } from '../value-objects/bundle-caducityDate';
 import { ProductId } from "src/product/domain/value-objects/product-id";
 import { BundleImage } from "../value-objects/bundle-image";
 import { CategoryID } from "src/category/domain/value-objects/category-id";
-import { Measurement } from "../enum/measurement-enum";
+import { Measurement } from "../../../common/domain/enum/commons-enums/measurement-enum";
 import { BundleCurrency } from "../enum/bundle-currency-enum";
 import { DiscountID } from "src/discount/domain/value-objects/discount-id";
 

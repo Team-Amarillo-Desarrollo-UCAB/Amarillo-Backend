@@ -2,5 +2,10 @@ import { ApplicationServiceEntryDto } from "src/common/application/application-s
 
 export interface GetAllProductServiceEntryDTO extends ApplicationServiceEntryDto{
     limit?: number
-    page?: number 
+    page?: number
+    category?:string[];
+    name?:string; 
+    price?:number; 
+    popular?:string;
+    discount?:string;
 }
