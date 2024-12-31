@@ -80,7 +80,7 @@ export class CategoryController {
   ) {
     const entry: GetCategoryByIdServiceEntryDTO = {
       userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
-      id_category: id
+      id: id
     }
 
     const service =

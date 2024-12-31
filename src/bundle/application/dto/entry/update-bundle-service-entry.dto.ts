@@ -10,7 +10,7 @@ export interface UpdateBundleServiceEntryDto extends ApplicationServiceEntryDto{
     weight?: number
     measurement?: string //(kg,gr,mg,ml,lt,cm3)
     stock?: number
-    category: string[
+    category?: string[
         // {
         // id: string
         // }
