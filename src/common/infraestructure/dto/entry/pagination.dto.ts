@@ -7,7 +7,7 @@ export class PaginationDto {
   @IsOptional()
   @IsPositive()
   @Type(() => Number) // enableImplicitConversions: true
-  limit?: number = 10;
+  perpage?: number = 10;
 
   @ApiProperty({ required: false, default: 1, minimum: 1 })
   @IsOptional()

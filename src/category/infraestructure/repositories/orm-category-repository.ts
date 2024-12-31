@@ -67,7 +67,7 @@ export class OrmCategoryRepository extends Repository<OrmCategory> implements IC
 
   async findAllCategories(
     page: number = 1,
-    limit: number = 10,
+    perpage: number = 10,
     categoryName?: string,
     discount?: string
   ): Promise<Result<Category[]>> {
@@ -76,7 +76,7 @@ export class OrmCategoryRepository extends Repository<OrmCategory> implements IC
       page = 1;
     }
   
-    const offset = (page - 1) * limit;
+    const offset = (page - 1) * perpage;
   
     const queryBuilder = this.createQueryBuilder('category');
   
@@ -98,7 +98,7 @@ export class OrmCategoryRepository extends Repository<OrmCategory> implements IC
     }
   
     // Aplicamos paginación con skip y take
-    queryBuilder.skip(offset).take(limit);
+    queryBuilder.skip(offset).take(perpage);
   
     // Intentamos obtener las categorías
     const categories = await queryBuilder.getMany();

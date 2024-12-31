@@ -8,7 +8,8 @@ import {
   Logger,
   Inject,
   BadRequestException,
-  ParseUUIDPipe
+  ParseUUIDPipe,
+  Patch
 } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { DataSource } from 'typeorm';
@@ -43,6 +44,12 @@ import { ProductMapper } from '../../../product/infraestructure/mappers/product-
 import { DiscountExistenceService } from '../../../common/application/application-services/common-services/discount-existence-check.service';
 import { OrmDiscountRepository } from '../../../discount/infraestructure/repositories/orm-discount.repository';
 import { OrmDiscountMapper } from '../../../discount/infraestructure/mappers/discount.mapper';
+import { UpdateBundleServiceEntryDto } from 'src/bundle/application/dto/entry/update-bundle-service-entry.dto';
+import { PerformanceDecorator } from 'src/common/application/application-services/decorators/performance-decorator/performance-decorator';
+import { UpdateBundleApplicationService } from 'src/bundle/application/services/commands/update-bundle.service';
+import { EventBus } from '../../../common/infraestructure/event-bus/event-bus';
+import { UpdateBundleEntryDTO } from '../dto/entry/update-bundle-entry.dto';
+import { UpdateBundleResponseDTO } from '../dto/response/update-bundle-response.dto';
 
 
 @ApiTags("Bundle")
@@ -185,7 +192,7 @@ export class BundleController {
     );
 
     console.log("Page en controller paginacion Query =", paginacion.page)
-    console.log("Limit en controller paginacion Query =", paginacion.limit)
+    console.log("Limit en controller paginacion Query =", paginacion.perpage)
 
 
     const data: GetAllBundlesServiceEntryDTO = {
@@ -195,7 +202,7 @@ export class BundleController {
     };
 
     console.log("Page en controller data vari =", data.page)
-    console.log("Limit en controller data vari =", data.limit)
+    console.log("Limit en controller data vari =", data.perpage)
 
     const result = await service.execute(data);
 
@@ -221,4 +228,47 @@ export class BundleController {
 
     return response;
   }
+
+  //"/bundle/:id"
+  @Patch("/:id")
+    @ApiOkResponse({
+        description: 'Actualiza la imformacion de un combo',
+        type: UpdateBundleResponseDTO,
+    })
+    async updateProudct(
+        @Body() request: UpdateBundleEntryDTO
+    ) {
+
+        const data: UpdateBundleServiceEntryDto = {
+            userId: '',
+            ...request
+        }
+
+        const eventBus = EventBus.getInstance()
+
+        console.log("request: ", request)
+
+        const service =
+            new ExceptionDecorator(
+                new LoggingDecorator(
+                    new PerformanceDecorator(
+                        new UpdateBundleApplicationService (
+                            this.bundleRepository,
+                          eventBus
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new HttpExceptionHandler()
+            )
+
+        const result = await service.execute(data)
+
+        const response: UpdateBundleResponseDTO = { ...result.Value }
+
+        return response
+
+    }
+
 }
