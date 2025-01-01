@@ -439,7 +439,7 @@ export class OrderController {
         const data: GetAllOrdersServiceEntryDTO = {
             userId: '',
             page: pagination.page,
-            limit: pagination.limit
+            limit: pagination.perpage
         }
 
         const service =

@@ -13,7 +13,7 @@ export interface IBundleRepository {
     
     findBundleByName(name: string): Promise<Result<Bundle>>
 
-    //updateBundle(id:string):Promise<Result<Bundle>>
+    updateBundle(b:Bundle):Promise<Result<Bundle>>
 
     deleteBundle(id:string):Promise<Result<Bundle>>
 }

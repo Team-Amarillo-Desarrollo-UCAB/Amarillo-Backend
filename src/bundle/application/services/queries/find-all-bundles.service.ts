@@ -15,8 +15,11 @@ export class FindAllBundlesApplicationService
   }
 
   async execute(data: GetAllBundlesServiceEntryDTO): Promise<Result<GetAllBundlesServiceResponseDTO[]>> {
-    data.page = data.page * data.limit - data.limit;
-    const bundlesResult = await this.bundleRepository.findAllBundles(data.page, data.limit, data.category, data.name, data.price, data.popular, data.discount);
+    data.page = data.page * data.perpage - data.perpage;
+    console.log("DATA.DISCOUNT ANTES DE LLAMAR A REPO:",data.discount)
+    console.log("DATA.NAME ANTES DE LLAMAR A REPO:",data.name)
+
+    const bundlesResult = await this.bundleRepository.findAllBundles(data.page, data.perpage, data.category, data.name, data.price, data.popular, data.discount);
 
     
 

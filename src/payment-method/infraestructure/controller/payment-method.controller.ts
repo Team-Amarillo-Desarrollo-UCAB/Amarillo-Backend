@@ -91,7 +91,7 @@ export class PaymentMethodController {
         const data: GetAllPaymentMethodServiceEntryDTO = {
             userId: '',
             page: pagination.page,
-            limit: pagination.limit
+            limit: pagination.perpage
         }
 
         const service =

@@ -15,6 +15,17 @@ export class OrmBundleRepository extends Repository<OrmBundle> implements IBundl
         this.ormBundleMapper = ormBundleMapper;
       }
 
+    async updateBundle(b:Bundle): Promise<Result<Bundle>> {
+       try{
+        const bundle = await this.ormBundleMapper.fromDomainToPersistence(b)
+        await this.save(bundle)
+        return Result.success<Bundle>(b,200)
+       }catch(error){
+        return Result.fail<Bundle>(new Error(error.message), error.code, error.message)
+       }
+
+    }
+
       async findAllBundles(
         page: number = 1,
         limit: number = 10,

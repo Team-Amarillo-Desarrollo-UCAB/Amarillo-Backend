@@ -34,7 +34,7 @@ export class CreateCategoryApplicationService
     const iconId = await this.idGenerator.generateId();
 
     // Subir el archivo de icono y obtener la URL resultante
-    const iconUrl = await this.fileUploader.UploadFile(data.icon);
+    const iconUrl = await this.fileUploader.UploadFile(data.image);
     
 
     // Crear la entidad de categoría con sus respectivos V.O
@@ -52,9 +52,9 @@ export class CreateCategoryApplicationService
     }
 
     const response: CreateCategoryServiceResponseDTO ={
-      categoryID:category.Id.Value,
-      categoryName:category.getCategoryName().Value,
-      categoryImage:category.getCategoryImage().Value,
+      id:category.Id.Value,
+      name:category.getCategoryName().Value,
+      image:category.getCategoryImage().Value,
     }
 
     // Retorna éxito si la categoría se guarda correctamente

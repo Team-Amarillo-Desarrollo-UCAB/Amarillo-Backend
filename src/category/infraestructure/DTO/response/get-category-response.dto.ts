@@ -6,11 +6,11 @@ export class GetCategoryResponseDTO{
         example: 'Familiar'
     })
     @IsString()
-    categoryName: string
+    name: string
 
     @ApiProperty({
         example: 'base64image',
     })
     @IsString()
-    categoryImage?: string;
+    image?: string;
 }
