@@ -88,8 +88,6 @@ export class DiscountController {
 
     const data: CreateDiscountServiceEntryDto = { userId: "24117a35-07b0-4890-a70f-a082c948b3d4", ...entry }
 
-    console.log("Data para crear en infraestructura:", data)
-
     const service = new LoggingDecorator(
       new CreateDiscountApplicationService(this.discountRepository, this.idGenerator, this.fileUploader),
       new NativeLogger(this.logger),
@@ -108,7 +106,7 @@ export class DiscountController {
     description: 'Devuelve la informacion de todos los descuentos',
     type: GetAllDiscountsResponseDTO,
   })
-  async getAllProduct(
+  async getAllDiscount(
     @Query() paginacion: PaginationDto
   ) {
     const service =

@@ -31,13 +31,13 @@ export class ProductMapper implements IMapper<Product, OrmProduct> {
 
         let ormCaducityDate = null;
 
-        if(domain.ProductCaducityDate && domain.ProductCaducityDate.Value){
+        if (domain.ProductCaducityDate && domain.ProductCaducityDate.Value) {
             ormCaducityDate = domain.ProductCaducityDate.Value
         }
 
         let ormDiscount = null;
 
-        if(domain.Discount && domain.Discount.Value){
+        if (domain.Discount && domain.Discount.Value) {
             ormDiscount = domain.Discount.Value
         }
 
@@ -57,12 +57,12 @@ export class ProductMapper implements IMapper<Product, OrmProduct> {
             domain.CantidadMedida,
             domain.Stock,
             domain.Images.map((i) => i.Image),
-            domain.Categories.map(i=>i.Value),
+            domain.Categories.map(i => i.Value),
             ormCaducityDate,
             ormDiscount,
             null
-            
-            
+
+
         )
 
         return product
@@ -79,7 +79,7 @@ export class ProductMapper implements IMapper<Product, OrmProduct> {
             return CategoryID.create(id);
         });
 
-  
+
 
 
         let precio: HistoricoPrecio | undefined = undefined;
@@ -94,30 +94,30 @@ export class ProductMapper implements IMapper<Product, OrmProduct> {
 
 
 
-            const product = Product.create(
-                ProductId.create(persistence.id),
-                ProductName.create(persistence.name),
-                ProductDescription.create(persistence.description),
-                ProductUnit.create(
-                    persistence.unidad_medida,
-                    ProductCantidadMedida.create(persistence.cantidad_medida)
-                ),
-                ProductPrice.create(
-                    precio ? ProductAmount.create(precio.precio) : ProductAmount.create(5),
-                    precio ? ProductCurrency.create(precio.moneda.simbolo) : ProductCurrency.create('usd')
-                ),
-                bundleImages,
-                ProductStock.create(persistence.cantidad_stock),
-                categories,
-                persistence.discount ? DiscountID.create(persistence.discount) : null,
-                persistence.caducityDate ? ProductCaducityDate.create(persistence.caducityDate) : null,
-            );
-        
-            return product;
+        const product = Product.create(
+            ProductId.create(persistence.id),
+            ProductName.create(persistence.name),
+            ProductDescription.create(persistence.description),
+            ProductUnit.create(
+                persistence.unidad_medida,
+                ProductCantidadMedida.create(persistence.cantidad_medida)
+            ),
+            ProductPrice.create(
+                precio ? ProductAmount.create(precio.precio) : ProductAmount.create(5),
+                precio ? ProductCurrency.create(precio.moneda.simbolo) : ProductCurrency.create('usd')
+            ),
+            bundleImages,
+            ProductStock.create(persistence.cantidad_stock),
+            categories,
+            persistence.discount ? DiscountID.create(persistence.discount) : null,
+            persistence.caducityDate ? ProductCaducityDate.create(persistence.caducityDate) : null,
+        );
 
-        
+        return product;
 
-        
+
+
+
 
     }
 

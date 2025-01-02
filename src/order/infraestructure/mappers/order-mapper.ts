@@ -27,6 +27,7 @@ import { OrderBundleCantidad } from "src/order/domain/value-object/order-bundle/
 import { OrderBundlePrice } from "src/order/domain/value-object/order-bundle/order-bundle-price";
 import { OrderBundleAmount } from "src/order/domain/value-object/order-bundle/order-bundle-amount";
 import { OrderBundleCurrency } from "src/order/domain/value-object/order-bundle/order-bundle-currency";
+import { UserId } from "src/user/domain/value-object/user-id";
 
 export class OrderMapper implements IMapper<Order, OrmOrder> {
 
@@ -44,7 +45,6 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
 
         if (domain.Productos.length > 0) {
             for (const producto of domain.Productos) {
-                console.log("Producto para mappear: ", producto)
                 ormDetalles.push(
                     Detalle_Orden.create(
                         await this.idGenerator.generateId(),
@@ -54,7 +54,6 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
                         null
                     )
                 )
-                console.log("Producto mapeado")
             }
         }
 
@@ -74,12 +73,11 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
             }
         }
 
-        console.log("Detalles de la orden para persistir: ", ormDetalles)
-
-        const order = OrmOrder.create(
+        const order = OrmOrder.createWithUser(
             domain.Id.Id,
             domain.Fecha_creacion.Date_creation,
             domain.Monto.Total,
+            domain.Comprador.Id,
             ormDetalles
         )
 
@@ -101,10 +99,15 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
         let combos: OrderBundle[] = []
         let moneda: string = null
         let precio: number = null
+
         for (const detalle of persistence.detalles) {
+
+            console.log("Detalle a mappear: ", detalle)
+
             if (detalle.producto) {
 
                 let producto = detalle.producto
+
                 for (const h of producto.historicos) {
                     if (!h.fecha_fin) {
                         moneda = h.moneda.simbolo
@@ -113,17 +116,14 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
                     }
                 }
 
-                if (!precio) precio = 5
-                if (!moneda) moneda = 'usd'
-
                 productos.push(
                     OrderProduct.create(
                         ProductId.create(detalle.id_producto),
                         OrderProductName.create(detalle.producto.name),
                         OrderProductCantidad.create(detalle.cantidad),
                         OrderProductPrice.create(
-                            OrderProductAmount.create(precio ? precio : 5),
-                            OrderProductCurrency.create(moneda ? moneda : '$')
+                            OrderProductAmount.create(precio),
+                            OrderProductCurrency.create(moneda)
                         )
                     )
                 )
@@ -161,6 +161,7 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
             OrderCreationDate.create(persistence.fecha_creacion),
             productos,
             combos,
+            persistence.id_user ? UserId.create(persistence.id_user) : null,
             OrderTotal.create(persistence.monto_total),
         )
         order.pullEvents()

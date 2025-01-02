@@ -31,6 +31,7 @@ export class RabbitEventBus implements IEventHandler {
 
     // Propiedad estática para verificar si la conexión ya ha sido inicializada
     private static connectionInitialized = false;
+    private exchange = "pubsub_topic"
     private connection: amqp.Connection;
 
     // Constructor privado para evitar que se instancien directamente fuera de la clase
@@ -73,8 +74,8 @@ export class RabbitEventBus implements IEventHandler {
 
         try {
             const channel = await this.connection.createChannel();
-            const exchange = 'pubsub_topic';
-            await channel.assertExchange(exchange, 'topic', { durable: false }); // Usamos el exchange de tipo 'topic'
+            const exchange = 'pubsub_topic';  // Usamos el exchange de tipo 'topic'
+            await channel.assertExchange(exchange, 'topic', { durable: false });
 
             for (const event of events) {
                 const routingKey = event.eventName;  // Usamos la clave de enrutamiento basada en el nombre del evento
@@ -90,7 +91,7 @@ export class RabbitEventBus implements IEventHandler {
         }
     }
 
-    async subscribe(eventName: string, callback: (event: DomainEvent) => Promise<void>): Promise<IEventSubscriber> {
+    async subscribe(eventName: string, callback: (event: DomainEvent) => Promise<void>, operation: string): Promise<IEventSubscriber> {
         if (!this.connection) {
             throw new Error("RabbitMQ connection not initialized.");
         }
@@ -101,16 +102,18 @@ export class RabbitEventBus implements IEventHandler {
             await channel.assertExchange(exchange, 'topic', { durable: false });
 
             // Crear una cola exclusiva para este consumidor
-            const q = await channel.assertQueue('', { exclusive: true });
+            const q = await channel.assertQueue(operation, { durable: false });
 
             // Vincular la cola a la clave de enrutamiento que corresponda al nombre del evento
             await channel.bindQueue(q.queue, exchange, eventName);
 
+            await channel.prefetch(1);  // Solo procesa un mensaje a la vez
+
             // Consumir los mensajes de la cola
-            channel.consume(q.queue, async (msg) => {
+            await channel.consume(q.queue, async (msg) => {
                 if (msg) {
                     const event_data = JSON.parse(msg.content.toString());
-                    console.log("mensaje recibido en JSON: ",event_data)
+                    console.log("mensaje recibido en JSON: ", event_data)
                     let event: DomainEvent;
                     switch (eventName) {
                         case 'OrderCreated':
@@ -198,6 +201,13 @@ export class RabbitEventBus implements IEventHandler {
 
                     // Acknowledge del mensaje
                     channel.ack(msg);
+
+                    const remainingMessages = await channel.checkQueue(q.queue);
+                    if (remainingMessages.messageCount === 0) {
+                        await channel.deleteQueue(q.queue);  // Eliminar la cola manualmente
+                        console.log(`Cola ${q.queue} eliminada.`);
+                    }
+
                 }
             }, { noAck: false });
 

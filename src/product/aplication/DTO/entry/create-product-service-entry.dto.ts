@@ -3,27 +3,26 @@ import { UnidadMedida } from "src/product/domain/enum/UnidadMedida"
 
 export interface CreateProductServiceEntryDTO extends ApplicationServiceEntryDto {
 
-    nombre: string
+    name: string
 
-    descripcion: string
+    description: string
 
-    unidad_medida: UnidadMedida//MEASUREMENT
+    price: number
 
-    cantidad_medida: number//WEIGHT
+    currency: string
 
-    precio: number
+    weight: number
 
-    moneda: string
+    measurement: UnidadMedida
 
     stock: number
 
-    category?: string[]
-
     images?: string[],
 
+    category?: {id: string}[]
+
     caducityDate?:Date
+
     discount?:string;
-
-
 
 }

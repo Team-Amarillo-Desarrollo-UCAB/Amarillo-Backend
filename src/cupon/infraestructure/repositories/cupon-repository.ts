@@ -7,6 +7,7 @@ import { ICuponRepository } from "src/cupon/domain/repositories/cupon-repository
 import { OrmCupon } from "../entites/cupon.entity";
 import { CuponNotFoundException } from "../exceptions/cupon-not-found-exception";
 import { CuponRegisteredException } from "../exceptions/cupon-code-registered-exception";
+import { UserId } from "src/user/domain/value-object/user-id";
 
 export class CuponRepository extends Repository<OrmCupon> implements ICuponRepository {
 
@@ -18,7 +19,6 @@ export class CuponRepository extends Repository<OrmCupon> implements ICuponRepos
         super(OrmCupon, dataSource.createEntityManager())
         this.cuponMapper = cuponMapper
     }
-
 
     async findCuponByCode(code: string): Promise<Result<Cupon>> {
         const cupon = await this.findOne({
@@ -71,7 +71,10 @@ export class CuponRepository extends Repository<OrmCupon> implements ICuponRepos
     async deleteCupon(id: string): Promise<Result<Cupon>> {
         const cupon = await this.findOneBy({ id });
         if (cupon) {
-            await this.delete(cupon);
+            await this.createQueryBuilder('cupon')
+                .delete()
+                .where('id = :id', { id })
+                .execute();
             return Result.success<Cupon>(await this.cuponMapper.fromPersistenceToDomain(cupon), 200);
         }
         return Result.fail<Cupon>(new CuponNotFoundException(id), 403, `Cupon ${id} not found`)
@@ -88,6 +91,34 @@ export class CuponRepository extends Repository<OrmCupon> implements ICuponRepos
         const resultado = await this.cuponMapper.fromPersistenceToDomain(cupon)
 
         return Result.success(resultado, 200)
+    }
+
+    async findAllCuponsByUser(id_user: UserId): Promise<Result<Cupon[]>> {
+
+        try {
+            const find_cupones = await this.createQueryBuilder('cupon')
+                .innerJoin('cupon.users', 'user') // Unir la relación de usuarios
+                .where('user.id = :id_user', { id_user }) // Filtrar por el ID del usuario
+                .getMany(); // Obtener los registros
+
+
+            if (!find_cupones)
+                return Result.fail<Cupon[]>(new Error(`Cupones no almacenadas`), 404, `Cupones no almacenadas`)
+
+            const result: Cupon[] = []
+
+            for (const cupon of find_cupones) {
+
+                result.push(
+                    await this.cuponMapper.fromPersistenceToDomain(cupon)
+                )
+
+            }
+
+            return Result.success<Cupon[]>(result, 202)
+        } catch (error) {
+            return Result.fail<Cupon[]>(new Error(`Error al buscar los cupones`), 500, `Error al buscar los cupones`)
+        }
     }
 
 }

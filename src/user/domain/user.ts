@@ -12,6 +12,7 @@ import { UserImage } from "./value-object/user-image";
 import { UserNameModified } from "./events/user-name-modified-event";
 import { UserEmailModified } from "./events/user-email-modified-event";
 import { UserPhoneModified } from "./events/user-phone-modified-event";
+import { CuponId } from "src/cupon/domain/value-objects/cupon-id";
 
 export class User extends AggregateRoot<UserId> {
 
@@ -20,6 +21,7 @@ export class User extends AggregateRoot<UserId> {
     private phone: UserPhone;
     private image: UserImage;
     private role: UserRole;
+    private cupones: CuponId[] = []
 
     protected constructor(
         id: UserId,
@@ -27,7 +29,8 @@ export class User extends AggregateRoot<UserId> {
         email: UserEmail,
         phone: UserPhone,
         image: UserImage,
-        role: UserRole
+        role: UserRole,
+        cupones?: CuponId[]
     ) {
         const userCreated: UserCreated = UserCreated.create(
             id.Id,
@@ -37,12 +40,13 @@ export class User extends AggregateRoot<UserId> {
             image.Image,
             role.Role
         );
-        super(id,userCreated);
+        super(id, userCreated);
         this.name = name
         this.email = email
         this.phone = phone
         this.image = image
         this.role = role
+        cupones ? this.cupones = cupones : null
     }
 
     protected applyEvent(event: DomainEvent): void {
@@ -54,7 +58,7 @@ export class User extends AggregateRoot<UserId> {
                 this.phone = UserPhone.create(userCreated.userPhone)
                 this.email = UserEmail.create(userCreated.userEmail)
                 this.role = UserRole.create(userCreated.userRole)
-                this.image = UserImage.create(userCreated.userImage)    
+                this.image = UserImage.create(userCreated.userImage)
                 break;
             case 'UserNameModified':
                 const userNameModified: UserNameModified = event as UserNameModified;
@@ -75,7 +79,7 @@ export class User extends AggregateRoot<UserId> {
             !this.name ||
             !this.phone ||
             !this.email ||
-            !this.role  ||
+            !this.role ||
             !this.image
         )
             throw new InvalidUser('El usuario tiene que ser valido');
@@ -101,16 +105,24 @@ export class User extends AggregateRoot<UserId> {
         return this.image.Image
     }
 
+    get Cupons(): CuponId[]{
+        return this.cupones
+    }
+
     public updateName(name: UserName): void {
         this.onEvent(UserNameModified.create(this.Id.Id, name.Name));
-      }
-    
+    }
+
     public updateEmail(email: UserEmail): void {
         this.onEvent(UserEmailModified.create(this.Id.Id, email.Email));
     }
 
     public updatePhone(phone: UserPhone): void {
         this.onEvent(UserPhoneModified.create(this.Id.Id, phone.Phone));
+    }
+
+    public addCupon(cupon: CuponId) {
+        this.cupones.push(cupon)
     }
 
     static create(
@@ -121,6 +133,18 @@ export class User extends AggregateRoot<UserId> {
         image: UserImage,
         role: UserRole
     ): User {
-        return new User(id, name, email, phone, image,role);
+        return new User(id, name, email, phone, image, role)
+    }
+
+    static createWithCupons(
+        id: UserId,
+        name: UserName,
+        phone: UserPhone,
+        email: UserEmail,
+        image: UserImage,
+        role: UserRole,
+        cupones?: CuponId[]
+    ): User {
+        return new User(id, name, email, phone, image, role, cupones)
     }
 }

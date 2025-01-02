@@ -137,6 +137,7 @@ export class OrmBundleRepository extends Repository<OrmBundle> implements IBundl
     
         if (bundle) {
             // Convierte la entidad persistente encontrada a una entidad de dominio
+            console.log("Combo encontrado: ",bundle)
             return Result.success<Bundle>(
                 await this.ormBundleMapper.fromPersistenceToDomain(bundle),
                 202

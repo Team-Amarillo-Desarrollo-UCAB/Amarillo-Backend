@@ -26,6 +26,9 @@ import { IFileUploader } from "src/common/application/file-uploader/file-uploade
 import { CloudinaryFileUploader } from "src/common/infraestructure/cloudinary-file-uploader/cloudinary-file-uploader";
 import { LoggingDecorator } from "src/common/application/application-services/decorators/logging-decorator/logging.decorator";
 import { NativeLogger } from "src/common/infraestructure/logger/logger";
+import { ICuponRepository } from "src/cupon/domain/repositories/cupon-repository.interface";
+import { CuponRepository } from "src/cupon/infraestructure/repositories/cupon-repository";
+import { CuponMapper } from "src/cupon/infraestructure/mappers/cupon-mapper";
 
 
 //UserMapper
@@ -39,6 +42,7 @@ export class UserController {
   private readonly idGenerator: IdGenerator<string>
   private readonly encryptor: IEncryptor
   private readonly ormAccountRepository: IAccountRepository<OrmUser>
+  private readonly cuponRepository: ICuponRepository
   private readonly eventBus = RabbitEventBus.getInstance();
 
   constructor(
@@ -50,6 +54,7 @@ export class UserController {
     this.userRepository = new OrmUserRepository(new UserMapper(), dataSource)
     this.encryptor = new EncryptorBcrypt()
     this.ormAccountRepository = new OrmAccountRepository(dataSource)
+    this.cuponRepository = new CuponRepository(new CuponMapper(), dataSource)
   }
 
 
@@ -115,5 +120,17 @@ export class UserController {
       return Respuesta
     }
     return { Id: resultUpdate.Value.userId }
+  }
+
+  @Post('add/cupon/:code')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    description:
+      'Agregar un cupon a la lista de cupones de un usuario',
+    type: UpdateUserProfileSwaggerResponseDto,
+  })
+  async addCupon(@GetUser() user){
+
   }
 }

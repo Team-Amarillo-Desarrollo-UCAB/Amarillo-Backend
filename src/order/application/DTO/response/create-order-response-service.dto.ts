@@ -1,23 +1,45 @@
 import { EnumOrderEstados } from "src/order/domain/enum/order-estados-enum"
 
-export interface CreateOrderResponseServiceDTO{
+export interface CreateOrderResponseServiceDTO {
 
-    id_orden: string
+    id: string
 
-    detalle_productos: {
-        id_detalle: string
-        id_producto: string
-        cantidad: number
+    orderState: string
+
+    orderCreatedDate: Date
+
+    totalAmount: number
+
+    currency: string
+
+    products: {
+        id: string
+        quantity: number
+        nombre: string
+        descripcion: string
+        price: number
+        currency: string
+        images: string[]
     }[]
 
-    detalle_combos: {
-        id_detalle: string,
-        id_combo: string,
-        cantidad: number
+    bundles: {
+        id: string,
+        quantity: number
+        nombre: string
+        descripcion: string
+        price: number
+        currency: string
+        images: string[]
     }[]
 
-    fecha_creacion: Date
-    
-    estado: EnumOrderEstados
+    orderReciviedDate?: Date
+
+    orderReport?: string
+
+    orderPayment?: {
+        amount: number,
+        currency: string,
+        paymentMethod: string
+    }
 
 }

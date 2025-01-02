@@ -14,9 +14,10 @@ import {
     Patch,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Post,
-    Query
+    Query,
+    UseGuards
 } from "@nestjs/common";
-import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { DataSource } from "typeorm";
 
 import { GetProductResponseDTO } from "src/product/infraestructure/DTO/response/get-product-response.dto";
@@ -63,6 +64,7 @@ import { DiscountExistenceService } from 'src/common/application/application-ser
 import { OrmDiscountRepository } from 'src/discount/infraestructure/repositories/orm-discount.repository';
 import { OrmDiscountMapper } from 'src/discount/infraestructure/mappers/discount.mapper';
 import { ProductParamsEntryDTO } from '../DTO/entry/product-params-entry.dto';
+import { JwtAuthGuard } from 'src/auth/infraestructure/jwt/decorator/jwt-auth.guard';
 
 @ApiTags("Product")
 @Controller("product")
@@ -97,17 +99,20 @@ export class ProductController {
         this.monedaRepository = new MonedaRepository(dataSource)
         this.imageTransformer = new ImageTransformer();
         this.fileUploader = new CloudinaryFileUploader(),
-        this.categoryMapper = new OrmCategoryMapper(),
-        this.categoriesExistenceService = new CategoriesExistenceService(new OrmCategoryRepository(new OrmCategoryMapper(), this.dataSource))  
+            this.categoryMapper = new OrmCategoryMapper(),
+            this.categoriesExistenceService = new CategoriesExistenceService(new OrmCategoryRepository(new OrmCategoryMapper(), this.dataSource))
         this.discountExistenceService = new DiscountExistenceService(new OrmDiscountRepository(new OrmDiscountMapper(), this.dataSource))
     }
 
     @Post('create')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @ApiOkResponse({
         description: 'Crea un nuevo producto en la base de datos',
         type: CreateProductEntryDTO,
     })
     async createProduct(
+        @GetUser() user,
         @Body() entry: CreateProductEntryDTO
     ): Promise<string> {
 
@@ -157,11 +162,14 @@ export class ProductController {
     }
 
     @Get('one/:id')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @ApiOkResponse({
         description: 'Devuelve la informacion de un producto dado el id',
         type: GetProductResponseDTO,
     })
     async getProduct(
+        @GetUser() user,
         @Param('id', ParseUUIDPipe) id: string
     ) {
         const entry: GetProductByIdServiceEntryDTO = {
@@ -189,23 +197,31 @@ export class ProductController {
     }
 
     @Get('many')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @ApiOkResponse({
         description: 'Devuelve la informacion de todos los productos',
         type: GetAllProductsResponseDTO,
         isArray: true
     })
     async getAllProduct(
+        @GetUser() user,
         @Query() paginacion: PaginationDto,
-        @Query() queryEntryParams: ProductParamsEntryDTO
+        @Query() queryEntryParams: ProductParamsEntryDTO,
     ) {
         const service =
-            new LoggingDecorator(
-                new GetAllProductService(this.productRepository),
-                new NativeLogger(this.logger)
+            new ExceptionDecorator(
+                new PerformanceDecorator(
+                    new LoggingDecorator(
+                        new GetAllProductService(this.productRepository),
+                        new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new HttpExceptionHandler()
             )
-
         const data: GetAllProductServiceEntryDTO = {
-            userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+            userId: user.id,
             ...paginacion,
             ...queryEntryParams
         }
@@ -223,11 +239,14 @@ export class ProductController {
     }
 
     @Get('one/by/name')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @ApiOkResponse({
         description: 'Devuelve la informacion de un producto dado el nombre',
         type: GetProductByNameResponseDTO,
     })
     async getProductByName(
+        @GetUser() user,
         @Query('name') name: string
     ) {
         console.log(name)
@@ -250,10 +269,13 @@ export class ProductController {
     }
 
     @Delete('delete/:id')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @ApiOkResponse({
         description: 'Eliminacion de un producto',
     })
     async deleteProduct(
+        @GetUser() user,
         @Param('id', ParseUUIDPipe) id: string
     ) {
 
@@ -282,11 +304,14 @@ export class ProductController {
     }
 
     @Patch('update')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @ApiOkResponse({
         description: 'Actualiza la imformacion de un producto',
         type: UpdateProductResponseDTO,
     })
     async updateProudct(
+        @GetUser() user,
         @Body() request: UpdateProductEntryDTO
     ) {
 
@@ -325,11 +350,11 @@ export class ProductController {
 
         await this.eventBus.subscribe('testCreated', async (event: testCreated) => {
             console.log("evento reaccion: ", event)
-        })
+        }, 'Primera reaccion')
 
         await this.eventBus.subscribe('testCreated', async (event: testCreated) => {
             console.log("evento reaccion 2: ", event)
-        })
+        }, 'Segunda reaccion')
 
         console.log("hola")
 

@@ -73,14 +73,14 @@ export class AuthController {
     constructor(
         @Inject('DataSource') private readonly dataSource: DataSource,
         private jwtAuthService: JwtService
-        
+
     ) {
         this.logger = new Logger('AuthController')
         this.uuidGenerator = new UuidGenerator()
         this.tokenGenerator = new JwtGenerator(jwtAuthService)
         this.encryptor = new EncryptorBcrypt()
-        this.userRepository = new OrmUserRepository( new UserMapper(), dataSource )
-        this.ormAccountRepository = new OrmAccountRepository( dataSource )
+        this.userRepository = new OrmUserRepository(new UserMapper(), dataSource)
+        this.ormAccountRepository = new OrmAccountRepository(dataSource)
         this.fileUploader = new CloudinaryFileUploader()
     }
 
@@ -92,36 +92,36 @@ export class AuthController {
     })
     async signUpUser(@Body() signUpDto: SignUpUserEntryInfraDto) {
         var data = { userId: 'none', ...signUpDto }
-        if ( !data.type ) data = { type: 'CLIENT', ...data }
+        if (!data.type) data = { type: 'CLIENT', ...data }
 
         const plainToHash = await this.encryptor.hashPassword(signUpDto.password)
         this.eventBus.subscribe('UserCreated', async (event: UserCreated) => {
-            const ormUser = OrmUser.create( 
-                event.userId, event.userName, event.userPhone, event.userEmail, event.userImage, plainToHash, data.type, 
+            const ormUser = OrmUser.create(
+                event.userId, event.userName, event.userPhone, event.userEmail, event.userImage, plainToHash, data.type,
             )
-            this.ormAccountRepository.saveUser( ormUser )
+            this.ormAccountRepository.saveUser(ormUser)
             const sender = new NodemailerEmailSender();
             const user_id = event.userId;
             sender.sendWelcomeEmail(event.userEmail, "Jamal", user_id);
-        });
+        }, "Notificar usuario registrado");
 
 
-        const signUpApplicationService = 
-        //new ExceptionDecorator( 
-             new LoggingDecorator(
-        //         new PerformanceDecorator(    
-                    new SignUpUserApplicationService(
-                        this.eventBus,
-                        this.userRepository,
-                        this.uuidGenerator, 
-                        this.fileUploader
-                     ), 
-                     new NativeLogger(this.logger)
-            //     ),
-            //     new NativeLogger(this.logger)
-            // ),
-            // new HttpExceptionHandler()
-        )
+        const signUpApplicationService =
+            //new ExceptionDecorator( 
+            new LoggingDecorator(
+                //         new PerformanceDecorator(    
+                new SignUpUserApplicationService(
+                    this.eventBus,
+                    this.userRepository,
+                    this.uuidGenerator,
+                    this.fileUploader
+                ),
+                new NativeLogger(this.logger)
+                //     ),
+                //     new NativeLogger(this.logger)
+                // ),
+                // new HttpExceptionHandler()
+            )
         const resultService = (await signUpApplicationService.execute({
             userId: 'none',
             email: data.email,
@@ -141,53 +141,53 @@ export class AuthController {
         type: [ForgetPasswordEntryInfraDto],
         description: 'Email para generar código de confirmación',
     })
-    async getCodeForUpdatePasswordUser(@Body() getCodeUpdateDto: ForgetPasswordEntryInfraDto ) {
+    async getCodeForUpdatePasswordUser(@Body() getCodeUpdateDto: ForgetPasswordEntryInfraDto) {
         this.cleanSecretCodes()
         const data = { userId: 'none', ...getCodeUpdateDto, }
-            
+
         const service = //new ExceptionDecorator( 
             new LoggingDecorator(
-              //  new PerformanceDecorator(
-                    new GetCodeUpdatePasswordUserInfraService(
-                        this.ormAccountRepository,
-                        getCodeUpdateDto.email,
-                        new SecretCodeGenerator(),
-                    ), 
-                    new NativeLogger(this.logger)
-               // ),
-               // new NativeLogger(this.logger)
+                //  new PerformanceDecorator(
+                new GetCodeUpdatePasswordUserInfraService(
+                    this.ormAccountRepository,
+                    getCodeUpdateDto.email,
+                    new SecretCodeGenerator(),
+                ),
+                new NativeLogger(this.logger)
+                // ),
+                // new NativeLogger(this.logger)
             )
-           // new HttpExceptionHandler()
+        // new HttpExceptionHandler()
         //)
         const result = await service.execute(data)
-        this.secretCodes = this.secretCodes.filter( e => e.email != result.Value.email )
-        this.secretCodes.push( result.Value )
-        console.log( this.secretCodes )
-        return { 
+        this.secretCodes = this.secretCodes.filter(e => e.email != result.Value.email)
+        this.secretCodes.push(result.Value)
+        console.log(this.secretCodes)
+        return {
             date: result.Value.date,
             code: result.Value.code
-         } 
+        }
     }
 
     @Put('change/password')
     @ApiOkResponse({ description: 'Cambiar la contraseña del usuario', type: ChangePasswordSwaggerResponseDto })
-    async changePasswordUser(@Body() updatePasswordDto: ChangePasswordEntryInfraDto ) {     
+    async changePasswordUser(@Body() updatePasswordDto: ChangePasswordEntryInfraDto) {
         this.cleanSecretCodes()
-        const result = this.signCode(updatePasswordDto.code, updatePasswordDto.email)  
-        if ( !result ) throw new BadRequestException('invalid secret code')
-        const data = { userId: 'none',  ...updatePasswordDto }
+        const result = this.signCode(updatePasswordDto.code, updatePasswordDto.email)
+        if (!result) throw new BadRequestException('invalid secret code')
+        const data = { userId: 'none', ...updatePasswordDto }
         const service = //new ExceptionDecorator( 
-            new LoggingDecorator(  
+            new LoggingDecorator(
                 //new PerformanceDecorator(
-                    new ChangePasswordUserInfraService(
-                        this.ormAccountRepository,
-                        this.encryptor
-                    ), 
-                    new NativeLogger(this.logger)
-             //   ),
+                new ChangePasswordUserInfraService(
+                    this.ormAccountRepository,
+                    this.encryptor
+                ),
+                new NativeLogger(this.logger)
+                //   ),
                 //new NativeLogger(this.logger)
             )
-           // new HttpExceptionHandler()
+        // new HttpExceptionHandler()
         //)
         const result2 = await service.execute(data)
         // return { 
@@ -197,34 +197,34 @@ export class AuthController {
     }
 
     @Post('code/validate')
-    @ApiOkResponse({  description: 'Validar codigo de cambio de contraseña', type: ValidateCodeForgetPasswordSwaggerResponseDto })
-    async validateCodeForgetPassword( @Body() codeValDto: CodeValidateEntryInfraDto ) {  
-        if ( !this.validateCode( codeValDto.code, codeValDto.email ) ) throw new BadRequestException('invalid secret code')
-        console.log( "Se ha validado exitosamente la clave temporal" )
+    @ApiOkResponse({ description: 'Validar codigo de cambio de contraseña', type: ValidateCodeForgetPasswordSwaggerResponseDto })
+    async validateCodeForgetPassword(@Body() codeValDto: CodeValidateEntryInfraDto) {
+        if (!this.validateCode(codeValDto.code, codeValDto.email)) throw new BadRequestException('invalid secret code')
+        console.log("Se ha validado exitosamente la clave temporal")
     }
 
-    private validateCode( code: string, email: string ) {
+    private validateCode(code: string, email: string) {
         var nowTime = new Date().getTime()
-        var search = this.secretCodes.filter( e => (e.code == code && e.email == email) )
-        if ( search.length == 0 ) return false
-        if ( (nowTime - search[0].date)/1000 >= 300 ) return false   
+        var search = this.secretCodes.filter(e => (e.code == code && e.email == email))
+        if (search.length == 0) return false
+        if ((nowTime - search[0].date) / 1000 >= 300) return false
         return true
     }
 
-    private signCode( code: string, email: string ) {
+    private signCode(code: string, email: string) {
         var nowTime = new Date().getTime()
-        var search = this.secretCodes.filter( e => (e.code == code && e.email == email) )
-        if ( search.length == 0 ) return false
-        if ( (nowTime - search[0].date)/1000 >= 300 ) return false   
-        this.secretCodes = this.secretCodes.filter( e => (e.code != code && e.email != email) )
+        var search = this.secretCodes.filter(e => (e.code == code && e.email == email))
+        if (search.length == 0) return false
+        if ((nowTime - search[0].date) / 1000 >= 300) return false
+        this.secretCodes = this.secretCodes.filter(e => (e.code != code && e.email != email))
         return true
     }
 
     private async cleanSecretCodes() {
         var nowTime = new Date().getTime()
-        this.secretCodes = this.secretCodes.filter( e => {
-            var diff = (nowTime - e.date)/1000
-            if ( diff <= 600 ) return e
+        this.secretCodes = this.secretCodes.filter(e => {
+            var diff = (nowTime - e.date) / 1000
+            if (diff <= 600) return e
         })
         this.accountRepository = new OrmAccountRepository(this.dataSource)
     }
@@ -273,14 +273,14 @@ export class AuthController {
     @UseGuards(JwtAuthGuard)
     @ApiOkResponse({ description: 'Obtener usuario actual', type: CurrentUserSwaggerResponseDto })
     @ApiBearerAuth()
-    async currentUser( @GetUser() user ) {  
+    async currentUser(@GetUser() user) {
         return {
             id: user.id,
             email: user.email,
             name: user.name,
             phone: user.phone,
             image: user.image
-        } 
+        }
     }
 
 }
