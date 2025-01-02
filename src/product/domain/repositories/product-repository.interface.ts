@@ -6,7 +6,7 @@ export interface IProductRepository {
     updateProductAggregate(product: Product): Promise<Result<Product>>
     findProductById(id: string): Promise<Result<Product>>;
     findProductByName(name: string): Promise<Result<Product>>
-    findAllProducts(page: number, limit: number, category?:string[], name?:string, price?:number, discount?:string): Promise<Result<Product[]>>
+    findAllProducts(page: number, perpage: number, category?:string[], name?:string, price?:number, discount?:string): Promise<Result<Product[]>>
     verifyNameProduct(name: string): Promise<Result<boolean>>
     deleteProduct(id: string): Promise<Result<boolean>>
 }

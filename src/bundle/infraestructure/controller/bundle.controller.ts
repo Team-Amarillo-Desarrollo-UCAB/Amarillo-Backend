@@ -36,7 +36,7 @@ import { IFileUploader } from 'src/common/application/file-uploader/file-uploade
 import { UuidGenerator } from 'src/common/infraestructure/id-generator/uuid-generator';
 import { CloudinaryFileUploader } from 'src/common/infraestructure/cloudinary-file-uploader/cloudinary-file-uploader';
 import { BundleCurrency } from 'src/bundle/domain/enum/bundle-currency-enum';
-import { Measurement } from 'src/common/domain/enum/commons-enums/measurement-enum';
+import { Measurement } from 'src/bundle/domain/enum/measurement-enum';
 import { CategoriesExistenceService } from 'src/common/application/application-services/common-services/categories-existence-check.service';
 import { ProductsExistenceService } from 'src/bundle/application/services/queries/product-existence-check.service';
 import { OrmCategoryRepository } from 'src/category/infraestructure/repositories/orm-category-repository';

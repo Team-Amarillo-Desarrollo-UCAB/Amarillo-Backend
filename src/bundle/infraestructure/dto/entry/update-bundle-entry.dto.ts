@@ -2,7 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, IsUUID, Min, ValidateNested } from "class-validator";
 import { Bundle } from "src/bundle/domain/bundle.entity";
 import { BundleCurrency } from "src/bundle/domain/enum/bundle-currency-enum";
-import { Measurement } from "src/common/domain/enum/commons-enums/measurement-enum";
+import { Measurement } from "src/bundle/domain/enum/measurement-enum";
 
 export class UpdateBundleEntryDTO {
 

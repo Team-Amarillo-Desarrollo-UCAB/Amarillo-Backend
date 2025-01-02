@@ -1,5 +1,5 @@
 import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface";
-import { Measurement } from "../../../common/domain/enum/commons-enums/measurement-enum";
+import { Measurement } from "../enum/measurement-enum";
 
 export class BundleWeightModified extends DomainEvent {
     protected constructor(

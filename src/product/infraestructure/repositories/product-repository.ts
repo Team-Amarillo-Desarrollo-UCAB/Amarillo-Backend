@@ -38,12 +38,12 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
     async updateProductAggregate(product: Product): Promise<Result<Product>> {
         try {
             const producto = await this.ormProductMapper.fromDomainToPersistence(product)
-            const historico = await this.historicoPrecioRepository.find({
-                where: {
-                    producto: { id: producto.id },
-                }
-            });
-            producto.historicos = historico
+            // const historico = await this.historicoPrecioRepository.find({
+            //     where: {
+            //         producto: { id: producto.id },
+            //     }
+            // });
+            // producto.historicos = historico
             console.log("producto para actualizar: ", producto)
             await this.save(producto)
             return Result.success<Product>(product, 200)
@@ -55,10 +55,7 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
     }
 
     async findProductById(id: string): Promise<Result<Product>> {
-        const product = await this.findOne({
-            where: { id: id },
-            relations: ['historicos'],
-        });
+        const product = await this.findOneBy({ id });
 
         if (!product)
             return Result.fail<Product>(new Error(`Producto con id ${id} no encontrado`), 404, `Producto con id ${id} no encontrado`)
@@ -72,7 +69,6 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
 
         const product = await this.findOne({
             where: { name: name },
-            relations: ['historicos'],
         });
 
         if (!product)
@@ -84,8 +80,8 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
     }
 
     async findAllProducts(
-        page: number = 1,
-        limit: number = 10,
+        page,
+        perpage: number = 10,
         category?: string[],
         name?: string,
         price?: number,
@@ -95,7 +91,10 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
             page = 1;
         }
 
-        const offset = (page - 1) * limit;
+        console.log("PAGE:",page)
+        console.log("PERPAGE:",perpage)
+
+        const offset = (page - 1) * perpage;
         console.log('Offset calculado:', offset);
 
         try {
@@ -130,7 +129,7 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
                 queryBuilder.andWhere('producto.discount = :discount', { discount });
             }
 
-            queryBuilder.skip(offset).take(limit);
+            queryBuilder.skip(offset).take(perpage);
 
             const products = await queryBuilder.getMany();
 

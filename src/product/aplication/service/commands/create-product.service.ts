@@ -85,12 +85,15 @@ export class CreateProductService implements IApplicationService<CreateProductSe
                 data.unidad_medida,
                 ProductCantidadMedida.create(data.cantidad_medida)
             ),
+
+         
+            
+            productImages, 
+            ProductStock.create(data.stock),
             ProductPrice.create(
                 ProductAmount.create(data.precio),
                 ProductCurrency.create(data.moneda)
-            ),
-            productImages,            
-            ProductStock.create(data.stock),
+            ),  
             categoryResult.Value,
             discountResult.Value ? DiscountID.create(data.discount):null,
             data.caducityDate ? ProductCaducityDate.create(data.caducityDate) : null,

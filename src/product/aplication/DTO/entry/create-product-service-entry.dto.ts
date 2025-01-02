@@ -1,4 +1,5 @@
 import { ApplicationServiceEntryDto } from "src/common/application/application-services/DTO/application-service-entry.dto"
+import { Moneda } from "src/product/domain/enum/Monedas"
 import { UnidadMedida } from "src/product/domain/enum/UnidadMedida"
 
 export interface CreateProductServiceEntryDTO extends ApplicationServiceEntryDto {
@@ -13,7 +14,7 @@ export interface CreateProductServiceEntryDTO extends ApplicationServiceEntryDto
 
     precio: number
 
-    moneda: string
+    moneda: Moneda
 
     stock: number
 
