@@ -44,7 +44,7 @@ export class CreateOrderPayPalEntryDTO {
     @IsArray()
     @IsNotEmpty()
     @Type(() => Object) // Aquí transformamos los objetos en una forma estándar sin necesidad de un DTO adicional
-    products: { id: string; quantity: number }[];
+    products?: { id: string; quantity: number }[];
 
     @ApiProperty({
         description: 'Lista de combos asociados al pago',

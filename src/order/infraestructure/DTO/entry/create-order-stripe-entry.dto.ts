@@ -57,4 +57,13 @@ export class CreateOrderStripeEntryDTO {
     @IsNotEmpty()
     @IsOptional()
     bundles?: { id: string; quantity: number }[]
+
+    @ApiProperty({
+        description: 'Codigo del cupon a aplicar en la orden',
+        example: "qwerty"
+    })
+    @IsString()
+    @IsNotEmpty()
+    @IsOptional()
+    cupon_code?: string
 }

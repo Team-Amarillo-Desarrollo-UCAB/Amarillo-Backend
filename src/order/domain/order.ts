@@ -76,7 +76,7 @@ export class Order extends AggregateRoot<OrderId> {
     }
 
     get Moneda() {
-        return this.productos[0].Moneda()
+        return this.payment.CurrencyPayment().Currency
     }
 
     get Payment() {
