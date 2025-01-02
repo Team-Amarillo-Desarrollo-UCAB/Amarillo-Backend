@@ -43,6 +43,7 @@ export class CreateOrderPayPalEntryDTO {
     })
     @IsArray()
     @IsNotEmpty()
+    @IsOptional()
     @Type(() => Object) // Aquí transformamos los objetos en una forma estándar sin necesidad de un DTO adicional
     products?: { id: string; quantity: number }[];
 

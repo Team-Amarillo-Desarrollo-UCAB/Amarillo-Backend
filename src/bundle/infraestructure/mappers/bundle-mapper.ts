@@ -61,7 +61,7 @@ export class BundleMapper implements IMapper<Bundle, OrmBundle> {
             return ProductId.create(id);
         });
 
-        const stock = BundleStock.create(products.length);
+        const stock = BundleStock.create(persistence.stock);
 
         console.log("DISCOUNT EN MAPPER:",persistence.discount)
         console.log("CADUCITY DATE EN BUNDLE MAPPER:",persistence.caducityDate)

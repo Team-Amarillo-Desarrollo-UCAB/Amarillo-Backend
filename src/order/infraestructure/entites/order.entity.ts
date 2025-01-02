@@ -16,12 +16,8 @@ export class OrmOrder {
     @Column({ type: "numeric" })
     monto_total: number
 
-    @Column({ name: 'id_user', type: "uuid", unique: false })
+    @Column({ name: 'id_user', type: "uuid", unique: false, nullable: true })
     id_user: string
-
-    @ManyToOne(() => OrmUser )
-    @JoinColumn({ name: 'id_user' })
-    user: OrmUser
 
     @OneToMany(() => Detalle_Orden, (detalle) => detalle.orden, { eager: true })
     detalles: Detalle_Orden[];

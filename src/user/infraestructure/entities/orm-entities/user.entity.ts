@@ -28,8 +28,8 @@ export class OrmUser {
     @Column('enum', { enum: EnumUserRole, default: 'CLIENT' })
     type: EnumUserRole
 
-    @OneToMany(() => OrmOrder, (orden) => orden.user, { eager: true })
-    ordenes: OrmOrder[];
+    /*@OneToMany(() => OrmOrder, (orden) => orden.user, { eager: true, nullable: true })
+    ordenes: OrmOrder[];*/
 
     // TODO: Relaciones con las ordenes y carrito mas adelante
     /*@OneToMany(() => OrmCupon, (cupon) => cupon.user, {eager: true, nullable: true})

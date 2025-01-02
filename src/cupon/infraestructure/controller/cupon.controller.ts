@@ -30,6 +30,7 @@ import { DeleteCouponApplicationService } from "src/cupon/application/command/de
 import { JwtAuthGuard } from "src/auth/infraestructure/jwt/decorator/jwt-auth.guard"
 import { GetUser } from "src/auth/infraestructure/jwt/decorator/get-user.param.decorator"
 import { GetCuponByUserServiceEntryDTO } from "src/cupon/application/DTO/entry/get-cupon-by-user-service-entry.dto"
+import { isNumber } from "class-validator"
 
 @ApiTags("Cupon")
 @Controller('cupon')

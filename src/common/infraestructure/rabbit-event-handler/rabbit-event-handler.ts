@@ -152,7 +152,8 @@ export class RabbitEventBus implements IEventHandler {
                         case 'OrderTotalCalculated':
                             event = OrderTotalCalculated.create(
                                 event_data.id,
-                                event_data.total
+                                event_data.total,
+                                event_data.moneda
                             )
                             break;
                         case 'ProductCreated':

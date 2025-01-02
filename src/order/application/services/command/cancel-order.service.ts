@@ -29,7 +29,7 @@ export class CancelOrderService implements IApplicationService<CancelOrderServic
 
         orden.cancelarOrden()
 
-        const save = await this.orderRepository.canceledOrder(orden)
+        const save = await this.orderRepository.changeOrderState(orden)
 
         if(!save.isSuccess())
             return Result.fail(save.Error,save.StatusCode,save.Message)

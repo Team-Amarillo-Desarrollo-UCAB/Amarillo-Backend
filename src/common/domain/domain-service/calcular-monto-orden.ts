@@ -5,6 +5,7 @@ import { InvalidPaymentMethod } from "src/payment-method/domain/domain-exception
 import { Cupon } from "src/cupon/domain/cupon";
 import { ITaxesCalculationPort } from "./taxes-calculation.port";
 import { OrderTotal } from "src/order/domain/value-object/order-total";
+import { Moneda } from "src/product/domain/enum/Monedas";
 
 export class OrderCalculationTotal {
 
@@ -40,11 +41,11 @@ export class OrderCalculationTotal {
                 monto_total -= cupon.Amount()
         }
 
-        const total = OrderTotal.create(monto_total)
+        const total = OrderTotal.create(monto_total,Moneda.USD)
 
         let impuestos = await this.taxesCalculationService.execute(total)
 
-        orden.assignOrderCost(OrderTotal.create(monto_total + impuestos.Value))
+        orden.assignOrderCost(OrderTotal.create(monto_total + impuestos.Value,Moneda.USD))
 
         const result = await this.metodoPagoService.execute(orden)
 

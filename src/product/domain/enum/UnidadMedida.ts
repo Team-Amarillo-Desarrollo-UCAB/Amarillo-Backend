@@ -1,6 +1,6 @@
 export enum UnidadMedida{
     KG = 'kg',
-    GRAMOS = 'g',
+    GRAMOS = 'gr',
     LITROS = 'l',
     MILIGRAMOS = 'mg',
     MILILITROS = 'lt',

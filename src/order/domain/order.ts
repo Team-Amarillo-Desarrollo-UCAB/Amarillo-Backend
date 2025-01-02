@@ -14,6 +14,9 @@ import { OrderBundle } from "./entites/order-bundle";
 import { UserId } from "src/user/domain/value-object/user-id";
 import { OrderCanceled } from "./domain-event/order-canceled-event";
 import { OrderReciviedDate } from "./value-object/order-recivied-date";
+import { InvalidOrderState } from "./domain-exception/invalid-order-state";
+import { OrderRecivied } from "./domain-event/order-recivied-event";
+import { OrderSent } from "./domain-event/order-sent-event";
 
 export class Order extends AggregateRoot<OrderId> {
 
@@ -59,7 +62,7 @@ export class Order extends AggregateRoot<OrderId> {
         return this.fecha_creacion
     }
 
-    get Fecha_entrega(){
+    get Fecha_entrega() {
         return this.fecha_creacion
     }
 
@@ -97,14 +100,48 @@ export class Order extends AggregateRoot<OrderId> {
 
     // TODO: Implementación del metodo para cambiar el estado de la orden con sus validaciones
     cambiarEstado(estado: EnumOrderEstados): void {
+
         if (!this.estado.equals(OrderEstado.create(estado))) {
 
-            this.estado = OrderEstado.create(estado)
+            if (estado === EnumOrderEstados.EN_CAMINO)
+                this.changeStateOrderRecivied()
 
+            if (estado === EnumOrderEstados.ENTREGADA)
+                this.chnageStateOrderSent()
+
+            if (estado === EnumOrderEstados.CANCELED)
+                this.cancelarOrden()
         }
     }
 
+    private changeStateOrderRecivied(): void {
+        if (this.estado.equals(OrderEstado.create(EnumOrderEstados.CANCELED)))
+            throw new InvalidOrderState('La orden no se puede cambiar si ya fue cancelada')
+        this.estado = OrderEstado.create(EnumOrderEstados.ENTREGADA)
+        this.events.push(
+            OrderRecivied.create(
+                this.Id,
+                this.estado
+            )
+        )
+    }
+
+    private chnageStateOrderSent(): void {
+        if (this.estado.equals(OrderEstado.create(EnumOrderEstados.CANCELED)))
+            throw new InvalidOrderState('La orden no se puede cambiar si ya fue cancelada')
+        this.estado = OrderEstado.create(EnumOrderEstados.EN_CAMINO)
+        this.events.push(
+            OrderSent.create(
+                this.Id,
+                this.estado
+            )
+        )
+    }
+
     cancelarOrden() {
+        if (this.estado.equals(OrderEstado.create(EnumOrderEstados.EN_CAMINO)))
+            throw new InvalidOrderState('La orden no se puede cancelar debido a que esta en camino')
+
         this.estado = OrderEstado.create(EnumOrderEstados.CANCELED)
         this.events.push(
             OrderCanceled.create(
@@ -115,7 +152,7 @@ export class Order extends AggregateRoot<OrderId> {
     }
 
     assignOrderCost(monto: OrderTotal): void {
-        this.onEvent(OrderTotalCalculated.create(this.Id.Id, monto.Total))
+        this.onEvent(OrderTotalCalculated.create(this.Id.Id, monto.Total, monto.Currency))
     }
 
     asignarMetodoPago(payment: OrderPayment): void {
@@ -134,7 +171,10 @@ export class Order extends AggregateRoot<OrderId> {
                 break;
             case 'OrderTotalCalculated':
                 const orderTotalCalculated = event as OrderTotalCalculated
-                this.montoTotal = OrderTotal.create(orderTotalCalculated.total)
+                this.montoTotal = OrderTotal.create(
+                    orderTotalCalculated.total,
+                    orderTotalCalculated.moneda
+                )
                 break;
         }
     }

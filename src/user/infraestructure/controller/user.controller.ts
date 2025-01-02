@@ -1,4 +1,4 @@
-import { Controller, Inject, Post } from "@nestjs/common";
+import { Controller, Inject, Param, Post } from "@nestjs/common";
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { DataSource } from "typeorm";
 
@@ -29,6 +29,11 @@ import { NativeLogger } from "src/common/infraestructure/logger/logger";
 import { ICuponRepository } from "src/cupon/domain/repositories/cupon-repository.interface";
 import { CuponRepository } from "src/cupon/infraestructure/repositories/cupon-repository";
 import { CuponMapper } from "src/cupon/infraestructure/mappers/cupon-mapper";
+import { AddCuponUserServiceEntryDto } from "src/user/application/DTO/params/add-cupon-user-service-entry.dto";
+import { ExceptionDecorator } from "src/common/application/application-services/decorators/exception-decorator/exception.decorator";
+import { PerformanceDecorator } from "src/common/application/application-services/decorators/performance-decorator/performance-decorator";
+import { AddCuponUserService } from "src/user/application/service/command/add-cupon-user.service";
+import { HttpExceptionHandler } from "src/common/infraestructure/exception-handler/http-exception-handler-code";
 
 
 //UserMapper
@@ -130,7 +135,29 @@ export class UserController {
       'Agregar un cupon a la lista de cupones de un usuario',
     type: UpdateUserProfileSwaggerResponseDto,
   })
-  async addCupon(@GetUser() user){
+  async addCupon(@GetUser() user, @Param('code') code: string) {
+    const data: AddCuponUserServiceEntryDto = {
+      userId: user.id,
+      code: code
+    }
 
+    const service =
+      new ExceptionDecorator(
+        new PerformanceDecorator(
+          new LoggingDecorator(
+            new AddCuponUserService(
+              this.userRepository,
+              this.cuponRepository
+            ),
+            new NativeLogger(this.logger)
+          ),
+          new NativeLogger(this.logger)
+        ),
+        new HttpExceptionHandler()
+      )
+
+    const response = await service.execute(data)
+
+    return response
   }
 }

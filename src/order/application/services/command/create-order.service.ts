@@ -139,6 +139,8 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
 
                 }
 
+                console.log("Antes")
+
                 combos.push(
                     OrderBundle.create(
                         BundleID.create(combo.Id.Value),
@@ -150,6 +152,8 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
                         )
                     )
                 )
+                
+                console.log("Despues")
 
                 detalle_combos.push({
                     id: combo.Id,
@@ -165,6 +169,8 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
 
             }
         }
+
+        console.log("Se llego")
 
         // Se crean los atributos extras de la entidad de dominio
         const id_orden = await this.idGenerator.generateId()
@@ -201,8 +207,12 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
 
         const result = await this.orderRepository.saveOrderAggregate(orden)
 
+        console.log("Hay un error")
+
         if (!result.isSuccess())
             return Result.fail(new Error("Orden no creada"), 404, "Orden no creada")
+
+        console.log("Hasta Aqui funciona")
 
         const response: CreateOrderResponseServiceDTO = {
             id: result.Value.Id.Id,

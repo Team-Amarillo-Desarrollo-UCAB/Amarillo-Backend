@@ -1,6 +1,6 @@
 import { IApplicationService } from "src/common/application/application-services/application-service.interface"
-import { ICuponRepository } from "src/cupon/domain/repositories/cupon-repository.interface" 
-import { GetAllCuponServiceEntryDTO } from "../../DTO/entry/get-all-cupon-service-entry.dto" 
+import { ICuponRepository } from "src/cupon/domain/repositories/cupon-repository.interface"
+import { GetAllCuponServiceEntryDTO } from "../../DTO/entry/get-all-cupon-service-entry.dto"
 import { Result } from "src/common/domain/result-handler/Result"
 import { GetAllCuponServiceResponseDTO } from "../../DTO/response/get-all-cupon-service-response.dto"
 
@@ -14,9 +14,12 @@ export class GetAllCouponService implements IApplicationService<GetAllCuponServi
     }
 
     async execute(data: GetAllCuponServiceEntryDTO): Promise<Result<GetAllCuponServiceResponseDTO[]>> {
-        data.page = data.page * data.limit - data.limit;
 
-        const coupons = await this.cuponRepository.findAllCoupons(data.page, data.limit)
+        data.page = (data.page * data.perPage) - data.perPage;
+
+        console.log(data.page)
+
+        const coupons = await this.cuponRepository.findAllCoupons(data.page, data.perPage)
 
         if (!coupons.isSuccess)
             throw new Error("Method not implemented.")
@@ -34,7 +37,7 @@ export class GetAllCouponService implements IApplicationService<GetAllCuponServi
             }
         )
 
-        return Result.success(response,202)
+        return Result.success(response, 202)
     }
 
     get name(): string {

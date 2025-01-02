@@ -28,6 +28,7 @@ import { OrderBundlePrice } from "src/order/domain/value-object/order-bundle/ord
 import { OrderBundleAmount } from "src/order/domain/value-object/order-bundle/order-bundle-amount";
 import { OrderBundleCurrency } from "src/order/domain/value-object/order-bundle/order-bundle-currency";
 import { UserId } from "src/user/domain/value-object/user-id";
+import { Moneda } from "src/product/domain/enum/Monedas";
 
 export class OrderMapper implements IMapper<Order, OrmOrder> {
 
@@ -73,6 +74,8 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
             }
         }
 
+        console.log()
+
         const order = OrmOrder.createWithUser(
             domain.Id.Id,
             domain.Fecha_creacion.Date_creation,
@@ -97,6 +100,7 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
 
         let productos: OrderProduct[] = []
         let combos: OrderBundle[] = []
+        let currency: Moneda
         let moneda: string = null
         let precio: number = null
 
@@ -152,6 +156,7 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
 
         console.log(orderEstado)
 
+        persistence.pago ? currency = persistence.pago.moneda : null
 
         console.log("Orden para transformar: ", persistence)
 
@@ -162,8 +167,9 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
             productos,
             combos,
             persistence.id_user ? UserId.create(persistence.id_user) : null,
-            OrderTotal.create(persistence.monto_total),
+            OrderTotal.create(persistence.monto_total, persistence.pago.moneda),
         )
+
         order.pullEvents()
         console.log("Orden transformada: ", order)
 

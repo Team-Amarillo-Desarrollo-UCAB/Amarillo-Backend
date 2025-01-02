@@ -27,7 +27,7 @@ export class UserMapper implements IMapper<User, OrmUser> {
 
     async fromPersistenceToDomain(persistence: OrmUser): Promise<User> {
 
-        if (persistence.cupons != null) {
+        /*if (persistence.cupons != null) {
             const domainUser = User.createWithCupons(
                 UserId.create(persistence.id),
                 UserName.create(persistence.name),
@@ -38,7 +38,7 @@ export class UserMapper implements IMapper<User, OrmUser> {
                 persistence.cupons.map((c) => CuponId.create(c))
             );
             return domainUser
-        }
+        }*/
 
         const domainUser = User.create(
             UserId.create(persistence.id),

@@ -82,6 +82,11 @@ import { OrmDiscountMapper } from "src/discount/infraestructure/mappers/discount
 import { OrmDiscountRepository } from "src/discount/infraestructure/repositories/orm-discount.repository";
 import { ITaxesCalculationPort } from "src/common/domain/domain-service/taxes-calculation.port";
 import { TaxesCalculationAdapter } from "src/common/infraestructure/domain-services-adapters/taxes-calculation-order.adapter";
+import { ChangeOrderStateResponseDTO } from "../DTO/response/change-order-state-response.dto";
+import { ChangeOrderStateEntryDTO } from "../DTO/entry/change-order-state-entry.dto";
+import { ChangeOrderServiceEntryDTO } from "src/order/application/DTO/entry/change-order-service-entry.dto";
+import { ChangeOrderStateService } from "src/order/application/services/command/change-order-state.service";
+import { ChangeOrderServiceResponseDTO } from "src/order/application/DTO/response/change-order-service-response.dto";
 
 @ApiTags("Order")
 @Controller("order")
@@ -546,29 +551,28 @@ export class OrderController {
 
     }
 
-    @Post('cancel/:id')
+    @Post('change/state')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOkResponse({
-        description: 'Devuelve la informacion de todas las ordenes activas de un usuario',
-        type: CancelOrderResponseDTO,
-        isArray: true
+        description: 'Cambia el estado de una orden',
+        type: ChangeOrderStateResponseDTO,
     })
-    async cancelOrder(
+    async changeState(
         @GetUser() user,
-        @Param() id: string
+        @Body() request: ChangeOrderStateEntryDTO
     ) {
 
-        const data: CancelOrderServiceEntryDTO = {
+        const data: ChangeOrderServiceEntryDTO = {
             userId: user.id,
-            order_id: id
+            ...request
         }
 
         const service =
             new ExceptionDecorator(
                 new LoggingDecorator(
                     new PerformanceDecorator(
-                        new CancelOrderService(
+                        new ChangeOrderStateService(
                             this.orderRepository,
                             this.eventBus
                         ),
@@ -581,7 +585,7 @@ export class OrderController {
 
         const result = await service.execute(data)
 
-        const response: CancelOrderResponseDTO = {
+        const response: ChangeOrderServiceResponseDTO = {
             ...result.Value
         }
 

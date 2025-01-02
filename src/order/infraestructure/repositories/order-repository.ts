@@ -47,6 +47,8 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
 
             await this.paymentRepository.save(payment);
 
+            console.log("Hasta aqui sigue todo bien")
+
             orden.pago = payment
 
             const salvada = await this.save(orden)
@@ -73,7 +75,7 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
         }
     }
 
-    async canceledOrder(order: Order): Promise<Result<Order>> {
+    async changeOrderState(order: Order): Promise<Result<Order>> {
 
         const queryRunner = this.ormEstadoOrdenRepository.manager.connection.createQueryRunner();
         await queryRunner.startTransaction();
@@ -116,7 +118,8 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
 
     async findOrderById(id: string): Promise<Result<Order>> {
         const order = await this.findOne({
-            where: { id: id }
+            where: { id: id },
+            relations: ['detalles']
         });
 
         if (!order)
