@@ -6,6 +6,7 @@ import {
     ConflictException,
 } from '@nestjs/common';
 import { IExceptionHandlerCode } from 'src/common/application/exception-handler/exception-handler-code.interface';
+import { UnauthorizedException } from '@nestjs/common';
 
 export class HttpExceptionHandler implements IExceptionHandlerCode {
 
@@ -13,6 +14,8 @@ export class HttpExceptionHandler implements IExceptionHandlerCode {
         switch (status) {
             case 400:
                 return this.BadRequest(msg, error);
+            case 401:
+                return this.Unauthorized(msg,error)
             case 403:
                 return this.Forbidden(msg, error)
             case 404:
@@ -26,6 +29,9 @@ export class HttpExceptionHandler implements IExceptionHandlerCode {
         }
     }
 
+    private Unauthorized(msg: string, error?: any):void{
+        throw new UnauthorizedException(msg,error);
+    }
     private Conflict(msg: string, error?: any): void {
         throw new ConflictException(msg, error);
     }

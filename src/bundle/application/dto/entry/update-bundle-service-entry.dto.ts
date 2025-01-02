@@ -1,4 +1,6 @@
+import { BundleCurrency } from 'src/bundle/domain/enum/bundle-currency-enum';
 import { ApplicationServiceEntryDto } from '../../../../common/application/application-services/DTO/application-service-entry.dto';
+import { Measurement } from 'src/common/domain/enum/commons-enums/measurement-enum';
 
 export interface UpdateBundleServiceEntryDto extends ApplicationServiceEntryDto{
     id:string
@@ -6,9 +8,9 @@ export interface UpdateBundleServiceEntryDto extends ApplicationServiceEntryDto{
     description?: string
     images?:string [ ]// base-64
     price?: number
-    currency?: string //(usd | bsf | eur)
+    currency?: BundleCurrency //(usd | bsf | eur)
     weight?: number
-    measurement?: string //(kg,gr,mg,ml,lt,cm3)
+    measurement?: Measurement //(kg,gr,mg,ml,lt,cm3)
     stock?: number
     category?: string[
         // {

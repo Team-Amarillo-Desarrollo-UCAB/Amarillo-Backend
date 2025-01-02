@@ -1,16 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, IsUUID, Min, ValidateNested } from "class-validator";
+import { Bundle } from "src/bundle/domain/bundle.entity";
 import { BundleCurrency } from "src/bundle/domain/enum/bundle-currency-enum";
 import { Measurement } from "src/common/domain/enum/commons-enums/measurement-enum";
 
 export class UpdateBundleEntryDTO {
-    @ApiProperty({
-        example: "fb078b8f-b622-4292-9d94-b0bd71551162"
-    })
-    @IsString()
-    @IsNotEmpty()
-    @IsOptional()
-    id: string;
+
 
     @ApiProperty({
         example: 'Cheese Tris'
@@ -43,10 +38,11 @@ export class UpdateBundleEntryDTO {
     price?: number;
 
     @ApiProperty({
-        example: "$"
+        example: "usd | bsf | eur"
     })
     @IsOptional()
-    currency?: string;
+    @IsEnum(BundleCurrency)
+    currency?: BundleCurrency;
 
     @ApiProperty({
         example: 200
