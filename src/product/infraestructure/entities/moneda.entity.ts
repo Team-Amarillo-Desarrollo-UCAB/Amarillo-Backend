@@ -14,7 +14,6 @@ export class OrmMoneda {
 
   static create(
     id: string,
-    nombre: string,
     simbolo: string
 ): OrmMoneda {
     const moneda = new OrmMoneda()

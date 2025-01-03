@@ -11,28 +11,28 @@ export class TaxesCalculationAdapter implements ITaxesCalculationPort {
     }
 
     async execute(t: OrderTotal): Promise<Result<number>> {
-    //     try {
-    //         const response = await axios.get<{ ivaPercentage: number }>(this.ivaApiUrl);
-    //         if (response.status === 200 && response.data.ivaPercentage) {
-    //             const ivaPercentage = response.data.ivaPercentage;
-    //             const iva = t.Total * (ivaPercentage / 100);
-    //             return Result.success(iva, 200);
-    //         }
-    //         return Result.fail<number>(
-    //             new Error("No se pudo obtener el porcentaje del IVA"),
-    //             response.status,
-    //             "El servicio externo no devolvió datos válidos"
-    //         );
-    //     } catch (error) {
-    //         return Result.fail<number>(
-    //             new Error(error.message),
-    //             500,
-    //             "Error al consultar el servicio externo de IVA"
-    //         );
-    //     }
-    // }
+        //     try {
+        //         const response = await axios.get<{ ivaPercentage: number }>(this.ivaApiUrl);
+        //         if (response.status === 200 && response.data.ivaPercentage) {
+        //             const ivaPercentage = response.data.ivaPercentage;
+        //             const iva = t.Total * (ivaPercentage / 100);
+        //             return Result.success(iva, 200);
+        //         }
+        //         return Result.fail<number>(
+        //             new Error("No se pudo obtener el porcentaje del IVA"),
+        //             response.status,
+        //             "El servicio externo no devolvió datos válidos"
+        //         );
+        //     } catch (error) {
+        //         return Result.fail<number>(
+        //             new Error(error.message),
+        //             500,
+        //             "Error al consultar el servicio externo de IVA"
+        //         );
+        //     }
+        // }
 
-    const iva = t.Total * 0.16
-    return Result.success(iva,200)
+        const iva = t.Total * 0.16
+        return Result.success(iva, 200)
     }
 }

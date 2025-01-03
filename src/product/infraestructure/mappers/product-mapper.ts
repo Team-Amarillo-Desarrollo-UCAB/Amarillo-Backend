@@ -30,13 +30,13 @@ export class ProductMapper implements IMapper<Product, OrmProduct> {
 
         let ormCaducityDate = null;
 
-        if(domain.ProductCaducityDate && domain.ProductCaducityDate.Value){
+        if (domain.ProductCaducityDate && domain.ProductCaducityDate.Value) {
             ormCaducityDate = domain.ProductCaducityDate.Value
         }
 
         let ormDiscount = null;
 
-        if(domain.Discount && domain.Discount.Value){
+        if (domain.Discount && domain.Discount.Value) {
             ormDiscount = domain.Discount.Value
         }
 
@@ -79,7 +79,7 @@ export class ProductMapper implements IMapper<Product, OrmProduct> {
             return CategoryID.create(id);
         });
 
-  
+
 
 
         // let precio: HistoricoPrecio | undefined = undefined;
@@ -117,9 +117,9 @@ export class ProductMapper implements IMapper<Product, OrmProduct> {
         
             return product;
 
-        
 
-        
+
+
 
     }
 

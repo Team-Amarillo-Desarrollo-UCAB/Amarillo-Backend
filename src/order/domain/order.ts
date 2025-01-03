@@ -5,32 +5,35 @@ import { EnumOrderEstados } from "./enum/order-estados-enum";
 import { OrderEstado } from "./value-object/order-estado";
 import { OrderCreationDate } from './value-object/order-fecha-creacion';
 import { OrderTotal } from './value-object/order-total';
-import { OrderDetail } from "./entites/order-detail";
 import { OrderCreated } from "./domain-event/order-created-event";
 import { OrderProduct } from "./entites/order-product";
 import { OrderPayment } from "./entites/order-payment";
 import { OrderTotalCalculated } from "./domain-event/order-amount-calculated";
 import { InvalidOrder } from "./domain-exception/invalid-order";
 import { OrderBundle } from "./entites/order-bundle";
+import { UserId } from "src/user/domain/value-object/user-id";
+import { OrderCanceled } from "./domain-event/order-canceled-event";
+import { OrderReciviedDate } from "./value-object/order-recivied-date";
+import { InvalidOrderState } from "./domain-exception/invalid-order-state";
+import { OrderRecivied } from "./domain-event/order-recivied-event";
+import { OrderSent } from "./domain-event/order-sent-event";
 
 export class Order extends AggregateRoot<OrderId> {
 
-    // TODO: Se creara el servicio de dominio para calcular el shipping fee y el monto total
-    // TODO: Agregar la referencia al usuario?
     private montoTotal: OrderTotal
     private payment: OrderPayment
+    private fecha_entrega: OrderReciviedDate
+
     protected constructor(
         id: OrderId,
         private estado: OrderEstado,
         private fecha_creacion: OrderCreationDate,
+        private comprador: UserId,
         private productos: OrderProduct[],
         private bundles: OrderBundle[],
+        //fecha_entrega: OrderReciviedDate,
         montoTotal?: OrderTotal,
-        //private detalles: OrderDetail[]
     ) {
-        
-        console.log(productos)
-        console.log(bundles)
 
         if ((productos.length === 0) && (bundles.length === 0))
             throw new InvalidOrder("La orden debe contener al menos un producto o un combo")
@@ -40,6 +43,7 @@ export class Order extends AggregateRoot<OrderId> {
             id.Id,
             estado.Estado,
             fecha_creacion.Date_creation,
+            //fecha_entrega.ReciviedDate,
             productos,
             bundles
         )
@@ -47,7 +51,7 @@ export class Order extends AggregateRoot<OrderId> {
         super(id, event)
 
         montoTotal ? this.montoTotal = montoTotal : this.montoTotal = null
-
+        //this.fecha_entrega = fecha_entrega
     }
 
     get Estado() {
@@ -55,6 +59,10 @@ export class Order extends AggregateRoot<OrderId> {
     }
 
     get Fecha_creacion() {
+        return this.fecha_creacion
+    }
+
+    get Fecha_entrega() {
         return this.fecha_creacion
     }
 
@@ -71,11 +79,15 @@ export class Order extends AggregateRoot<OrderId> {
     }
 
     get Moneda() {
-        return this.productos[0].Moneda()
+        return this.montoTotal.Currency
     }
 
     get Payment() {
         return this.payment
+    }
+
+    get Comprador() {
+        return this.comprador
     }
 
     calcularMontoProductos(): number {
@@ -88,19 +100,62 @@ export class Order extends AggregateRoot<OrderId> {
 
     // TODO: Implementación del metodo para cambiar el estado de la orden con sus validaciones
     cambiarEstado(estado: EnumOrderEstados): void {
+
         if (!this.estado.equals(OrderEstado.create(estado))) {
 
-            this.estado = OrderEstado.create(estado)
+            if (estado === EnumOrderEstados.EN_CAMINO)
+                this.changeStateOrderRecivied()
 
+            if (estado === EnumOrderEstados.ENTREGADA)
+                this.chnageStateOrderSent()
+
+            if (estado === EnumOrderEstados.CANCELED)
+                this.cancelarOrden()
         }
     }
 
-    assignOrderCost(monto: number): void {
-        this.onEvent(OrderTotalCalculated.create(this.Id.Id, monto))
+    private changeStateOrderRecivied(): void {
+        if (this.estado.equals(OrderEstado.create(EnumOrderEstados.CANCELED)))
+            throw new InvalidOrderState('La orden no se puede cambiar si ya fue cancelada')
+        this.estado = OrderEstado.create(EnumOrderEstados.ENTREGADA)
+        this.events.push(
+            OrderRecivied.create(
+                this.Id,
+                this.estado
+            )
+        )
+    }
+
+    private chnageStateOrderSent(): void {
+        if (this.estado.equals(OrderEstado.create(EnumOrderEstados.CANCELED)))
+            throw new InvalidOrderState('La orden no se puede cambiar si ya fue cancelada')
+        this.estado = OrderEstado.create(EnumOrderEstados.EN_CAMINO)
+        this.events.push(
+            OrderSent.create(
+                this.Id,
+                this.estado
+            )
+        )
+    }
+
+    cancelarOrden() {
+        if (this.estado.equals(OrderEstado.create(EnumOrderEstados.EN_CAMINO)))
+            throw new InvalidOrderState('La orden no se puede cancelar debido a que esta en camino')
+
+        this.estado = OrderEstado.create(EnumOrderEstados.CANCELED)
+        this.events.push(
+            OrderCanceled.create(
+                this.Id,
+                this.estado
+            )
+        )
+    }
+
+    assignOrderCost(monto: OrderTotal): void {
+        this.onEvent(OrderTotalCalculated.create(this.Id.Id, monto.Total, monto.Currency))
     }
 
     asignarMetodoPago(payment: OrderPayment): void {
-        console.log("Metodo de pago para asignar: ",payment)
         this.payment = payment
     }
 
@@ -116,7 +171,10 @@ export class Order extends AggregateRoot<OrderId> {
                 break;
             case 'OrderTotalCalculated':
                 const orderTotalCalculated = event as OrderTotalCalculated
-                this.montoTotal = OrderTotal.create(orderTotalCalculated.total)
+                this.montoTotal = OrderTotal.create(
+                    orderTotalCalculated.total,
+                    orderTotalCalculated.moneda
+                )
                 break;
         }
     }
@@ -139,8 +197,10 @@ export class Order extends AggregateRoot<OrderId> {
         id: OrderId,
         estado: OrderEstado,
         fecha_creacion: OrderCreationDate,
+        //fecha_entrega: OrderReciviedDate,
         productos: OrderProduct[],
         bundles: OrderBundle[],
+        userId?: UserId,
         montoTotal?: OrderTotal
     ): Order {
 
@@ -148,10 +208,14 @@ export class Order extends AggregateRoot<OrderId> {
             id,
             estado,
             fecha_creacion,
+            userId,
             productos,
             bundles,
+            //fecha_entrega,
             montoTotal ? montoTotal : null
         )
     }
+
+
 
 }

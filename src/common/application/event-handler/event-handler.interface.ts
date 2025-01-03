@@ -6,6 +6,6 @@ export interface IEventHandler {
 
     publish ( events: DomainEvent[] ): Promise<void>
 
-    subscribe ( eventName: string, callback: ( event: DomainEvent ) => Promise<void> ): Promise<IEventSubscriber>
+    subscribe ( eventName: string, callback: ( event: DomainEvent ) => Promise<void>, operation: string ): Promise<IEventSubscriber>
 
 }

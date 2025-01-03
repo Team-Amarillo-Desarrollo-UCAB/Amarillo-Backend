@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { Type } from "class-transformer";
+import { IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 class ProductDto {
     @ApiProperty({ description: 'ID del producto', type: String })
@@ -23,7 +24,7 @@ export class CreateOrderPayPalEntryDTO {
 
     @ApiProperty({
         description: 'Método de pago',
-        example: 'credit',
+        example: 'PayPal',
     })
     @IsString()
     @IsNotEmpty()
@@ -39,18 +40,29 @@ export class CreateOrderPayPalEntryDTO {
     @ApiProperty({
         description: 'Lista de productos asociados al pago',
         required: true,
-        type: [ProductDto],
-    })
-    @IsArray()
-    @IsNotEmpty()
-    products: { id: string; quantity: number }[];
-
-    @ApiProperty({
-        description: 'Lista de combos asociados al pago',
-        type: [ProductDto],
     })
     @IsArray()
     @IsNotEmpty()
     @IsOptional()
-    bundles?: { id: string; quantity: number }[]
+    @Type(() => Object) // Aquí transformamos los objetos en una forma estándar sin necesidad de un DTO adicional
+    products?: { id: string; quantity: number }[];
+
+    @ApiProperty({
+        description: 'Lista de combos asociados al pago',
+        type: [Object],
+    })
+    @IsArray()
+    @IsNotEmpty()
+    @IsOptional()
+    @Type(() => Object) // Aquí igualmente, transformamos los objetos en una forma estándar
+    bundles?: { id: string; quantity: number }[];
+
+    @ApiProperty({
+        description: 'Codigo del cupon a aplicar en la orden',
+        example: "qwerty"
+    })
+    @IsString()
+    @IsNotEmpty()
+    @IsOptional()
+    cupon_code?: string
 }

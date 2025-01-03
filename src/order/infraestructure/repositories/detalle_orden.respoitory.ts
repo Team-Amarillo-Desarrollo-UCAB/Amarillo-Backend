@@ -15,8 +15,8 @@ export class DetalleRepository extends Repository<Detalle_Orden>{
             return Result.success( resultado, 200 )
         } catch ( error )
         {
+            console.log("Error al guardar: ",error)
             return Result.fail( new Error( error.message ), error.code, error.message )
-
         }
     }
 

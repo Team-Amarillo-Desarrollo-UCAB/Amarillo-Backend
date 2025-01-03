@@ -10,20 +10,13 @@ import { EnumOrderEstados } from "src/order/domain/enum/order-estados-enum";
 import { OrderEstado } from "src/order/domain/value-object/order-estado";
 import { OrderCreationDate } from "src/order/domain/value-object/order-fecha-creacion";
 import { IProductRepository } from "src/product/domain/repositories/product-repository.interface";
-import { OrderTotal } from "src/order/domain/value-object/order-total";
-import { OrderDetail } from "src/order/domain/entites/order-detail";
-import { ProductId } from "src/product/domain/value-objects/product-id";
-import { OrderDetalleCantidad } from "src/order/domain/value-object/order-detalle.ts/order-detalle-cantidad";
-import { OrderDetalleId } from "src/order/domain/value-object/order-detalle.ts/order-detalle-id";
 import { IEventHandler } from "src/common/application/event-handler/event-handler.interface";
-import { Product } from "src/product/domain/product";
 import { OrderProduct } from "src/order/domain/entites/order-product";
 import { OrderProductName } from "src/order/domain/value-object/order-product/order-product-name";
 import { OrderProductCantidad } from "src/order/domain/value-object/order-product/order-product-cantidad";
 import { OrderProductPrice } from "src/order/domain/value-object/order-product/order-product-price";
 import { OrderProductAmount } from "src/order/domain/value-object/order-product/order-product-amount";
 import { OrderProductCurrency } from "src/order/domain/value-object/order-product/order-product-currency";
-import { IPaymentMethod } from "src/common/domain/domain-service/determinar-metodo-pago.interface";
 import { OrderCalculationTotal } from "src/common/domain/domain-service/calcular-monto-orden";
 import { OrderBundle } from "src/order/domain/entites/order-bundle";
 import { BundleID } from "src/bundle/domain/value-objects/bundle-id";
@@ -32,15 +25,23 @@ import { OrderBundleCantidad } from "src/order/domain/value-object/order-bundle/
 import { OrderBundlePrice } from "src/order/domain/value-object/order-bundle/order-bundle-price";
 import { OrderBundleAmount } from "src/order/domain/value-object/order-bundle/order-bundle-amount";
 import { OrderBundleCurrency } from "src/order/domain/value-object/order-bundle/order-bundle-currency";
-import { Detalle_Orden } from "src/order/infraestructure/entites/detalle_orden.entity";
 import { IBundleRepository } from "src/bundle/domain/repositories/bundle-repository.interface";
+import { InvalidProductStock } from "src/product/domain/domain-exception/invalid-product-stock";
+import { UserId } from "src/user/domain/value-object/user-id";
+import { ICuponRepository } from "src/cupon/domain/repositories/cupon-repository.interface";
+import { Cupon } from "src/cupon/domain/cupon";
+import { IDiscountRepository } from "src/discount/domain/repositories/discount.repository.interface";
 
 export class CreateOrderService implements IApplicationService<CreateOrderEntryServiceDTO, CreateOrderResponseServiceDTO> {
+
+    //TODO: Verificar todas estas responsabilidades
 
     constructor(
         private readonly orderRepository: IOrderRepository,
         private readonly productRepository: IProductRepository,
         private readonly bundleRepostiory: IBundleRepository,
+        private readonly cuponRepository: ICuponRepository,
+        private readonly discountRepository: IDiscountRepository,
 
         private readonly idGenerator: IdGenerator<string>,
         private readonly eventHandler: IEventHandler,
@@ -57,27 +58,58 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
 
         let productos: OrderProduct[] = []
         let combos: OrderBundle[] = []
-        // TODO: Deberia ser un servicio de aplicacion
+        let detalle_productos: any[] = []
+        let detalle_combos: any[] = []
 
         // Se crean los productos para la entidad de dominio
         if (data.products) {
-            for (const producto of data.products) {
-                const product = await this.productRepository.findProductById(producto.id)
+            for (const p of data.products) {
+                const find_product = await this.productRepository.findProductById(p.id)
 
-                if (!product.isSuccess())
+                if (!find_product.isSuccess())
                     return Result.fail<CreateOrderResponseServiceDTO>(new Error("Producto no encontrado"), 404, "Producto no encontrado")
+
+                const producto = find_product.Value
+
+                if (producto.Stock < p.quantity)
+                    return Result.fail<CreateOrderResponseServiceDTO>(new InvalidProductStock("Cantidad excede el stock actual del producto"), 409, "Cantidad excede el stock actual del producto")
+
+                let precio_producto = producto.Price
+
+                if (producto.Discount && producto.Discount.Value != null) {
+
+                    const find_discount = await this.discountRepository.findDiscountById(producto.Discount.Value)
+
+                    if (!find_discount.isSuccess())
+                        return Result.fail<CreateOrderResponseServiceDTO>(find_discount.Error, find_discount.StatusCode, find_discount.Message)
+
+                    precio_producto -= precio_producto * (find_discount.Value.Percentage.Value / 100)
+
+                }
 
                 productos.push(
                     OrderProduct.create(
-                        product.Value.Id,
-                        OrderProductName.create(product.Value.Name),
-                        OrderProductCantidad.create(producto.quantity),
+                        producto.Id,
+                        OrderProductName.create(producto.Name),
+                        OrderProductCantidad.create(p.quantity),
                         OrderProductPrice.create(
-                            OrderProductAmount.create(product.Value.Price),
-                            OrderProductCurrency.create(product.Value.Moneda)
+                            OrderProductAmount.create(precio_producto),
+                            OrderProductCurrency.create(producto.Moneda)
                         )
                     )
                 )
+
+                detalle_productos.push({
+                    id: producto.Id.Id,
+                    quantity: p.quantity,
+                    nombre: producto.Name,
+                    descripcion: producto.Description,
+                    price: producto.Price,
+                    currency: producto.Moneda,
+                    images: producto.Images.map((imagen) => {
+                        return imagen.Image
+                    })
+                })
 
             }
         }
@@ -85,28 +117,60 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
         // Se crean los bundle para la entidad de dominio
         if (data.bundles) {
             for (const c of data.bundles) {
-                const combo = await this.bundleRepostiory.findBundleById(c.id)
+                const find_combo = await this.bundleRepostiory.findBundleById(c.id)
 
-                if (!combo.isSuccess())
+                if (!find_combo.isSuccess())
                     return Result.fail<CreateOrderResponseServiceDTO>(new Error("Combo no encontrado"), 404, "Combo no encontrado")
-                console.log("Combo encontrado: ",combo)
+
+                const combo = find_combo.Value
+
+                if (combo.stock.Value < c.quantity)
+                    return Result.fail<CreateOrderResponseServiceDTO>(new Error("Cantidad excede el stock actual del combo"), 409, "Cantidad excede el stock actual del combo")
+
+                let precio_combo = combo.price.Price
+
+                if (combo.Discount && combo.Discount.Value != null) {
+                    const find_discount = await this.discountRepository.findDiscountById(combo.Discount.Value)
+
+                    if (!find_discount.isSuccess())
+                        return Result.fail<CreateOrderResponseServiceDTO>(find_discount.Error, find_discount.StatusCode, find_discount.Message)
+
+                    precio_combo -= precio_combo * (find_discount.Value.Percentage.Value / 100)
+
+                }
+
+                console.log("Antes")
+
                 combos.push(
                     OrderBundle.create(
-                        BundleID.create(combo.Value.Id.Value),
-                        OrderBundleName.create(combo.Value.name.Value),
-                        OrderBundleCantidad.create(combo.Value.stock.Value),
+                        BundleID.create(combo.Id.Value),
+                        OrderBundleName.create(combo.name.Value),
+                        OrderBundleCantidad.create(c.quantity),
                         OrderBundlePrice.create(
-                            OrderBundleAmount.create(combo.Value.price.Price),
-                            OrderBundleCurrency.create(combo.Value.price.Currency)
+                            OrderBundleAmount.create(precio_combo),
+                            OrderBundleCurrency.create(combo.price.Currency)
                         )
                     )
                 )
+                
+                console.log("Despues")
+
+                detalle_combos.push({
+                    id: combo.Id,
+                    quantity: c.quantity,
+                    nombre: combo.name,
+                    descripcion: combo.description,
+                    price: combo.price.Price,
+                    currency: combo.price.Currency,
+                    images: combo.images.map((imagen) => {
+                        return imagen.Value
+                    })
+                })
 
             }
         }
 
-        console.log("Productos de la orden: ", productos)
-        console.log("Combos de la orden: ", combos)
+        console.log("Se llego")
 
         // Se crean los atributos extras de la entidad de dominio
         const id_orden = await this.idGenerator.generateId()
@@ -118,57 +182,48 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
             OrderEstado.create(estado),
             OrderCreationDate.create(fecha_creacion),
             productos,
-            combos
+            combos,
+            UserId.create(data.userId)
         )
 
-        console.log("Orden sin el pago: ",orden)
+        let cupon: Cupon
+
+        if (data.cupon_code) {
+            const find_cupon = await this.cuponRepository.findCuponByCode(data.cupon_code)
+
+            if (!find_cupon.isSuccess())
+                return Result.fail<CreateOrderResponseServiceDTO>(find_cupon.Error, find_cupon.StatusCode, find_cupon.Message)
+
+            cupon = find_cupon.Value
+        }
 
         // Se utiliza el servicio de dominio para calcular el monto y asignarle el metodo de pago
-        const result_domain = await this.calcularTotalService.execute(orden)
+        const result_domain = await this.calcularTotalService.execute(orden, cupon)
 
         if (!result_domain.isSuccess())
             return Result.fail<CreateOrderResponseServiceDTO>(result_domain.Error, result_domain.StatusCode, result_domain.Message)
 
         orden = result_domain.Value
 
-        console.log("orden creada: ", orden)
-
         const result = await this.orderRepository.saveOrderAggregate(orden)
+
+        console.log("Hay un error")
 
         if (!result.isSuccess())
             return Result.fail(new Error("Orden no creada"), 404, "Orden no creada")
 
-        console.log("Orden alamacenada")
-
-        let detalle_productos = await Promise.all(
-            productos.map(async (p) => {
-                return {
-                    id_detalle: await this.idGenerator.generateId(),
-                    id_producto: p.Id.Id,
-                    cantidad: p.Cantidad().Value,
-                };
-            })
-        );
-
-        let detalle_combos = await Promise.all(
-            combos.map(async (c) => {
-                return {
-                    id_detalle: await this.idGenerator.generateId(),
-                    id_combo: c.Id.Value,
-                    cantidad: c.Cantidad().Value,
-                };
-            })
-        );
+        console.log("Hasta Aqui funciona")
 
         const response: CreateOrderResponseServiceDTO = {
-            id_orden: result.Value.Id.Id,
-            detalle_productos: detalle_productos,
-            detalle_combos: detalle_combos,
-            fecha_creacion: result.Value.Fecha_creacion.Date_creation,
-            estado: result.Value.Estado.Estado
+            id: result.Value.Id.Id,
+            orderState: result.Value.Estado.Estado,
+            orderCreatedDate: result.Value.Fecha_creacion.Date_creation,
+            totalAmount: result.Value.Monto.Total,
+            currency: result.Value.Moneda,
+            products: detalle_productos,
+            bundles: detalle_combos,
         }
 
-        console.log("Eventos de la orden: ",orden.pullEvents())
         await this.eventHandler.publish(orden.pullEvents())
 
         return Result.success(response, 200)

@@ -46,6 +46,7 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
             // producto.historicos = historico
             console.log("producto para actualizar: ", producto)
             await this.save(producto)
+            console.log("producto actualizado")
             return Result.success<Product>(product, 200)
         } catch (error) {
             console.log(error)

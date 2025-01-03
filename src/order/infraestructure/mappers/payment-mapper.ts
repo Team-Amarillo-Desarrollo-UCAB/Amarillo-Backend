@@ -26,7 +26,7 @@ export class PaymentMapper implements IMapper<OrderPayment, Payment> {
             OrderPaymentId.create(persistence.id),
             OrderPaymentName.create(persistence.metodo),
             OrderPaymentCurrency.create(persistence.moneda),
-            OrderTotal.create(persistence.monto)
+            OrderTotal.create(persistence.monto, persistence.moneda)
         )
 
         return pago

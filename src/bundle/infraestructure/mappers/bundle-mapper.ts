@@ -59,7 +59,7 @@ export class BundleMapper implements IMapper<Bundle, OrmBundle> {
             return ProductId.create(id);
         });
 
-        const stock = BundleStock.create(products.length);
+        const stock = BundleStock.create(persistence.stock);
 
         const bundle = Bundle.create(
             BundleID.create(persistence.id),

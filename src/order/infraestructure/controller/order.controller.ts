@@ -67,6 +67,26 @@ import { OrmBundleRepository } from "src/bundle/infraestructure/repositories/orm
 import { BundleMapper } from "src/bundle/infraestructure/mappers/bundle-mapper";
 import { HistoricoPrecioRepository } from "src/product/infraestructure/repositories/historico-precio.repository";
 import { BundleStock } from "src/bundle/domain/value-objects/bundle-stock";
+import { ICuponRepository } from "src/cupon/domain/repositories/cupon-repository.interface";
+import { CuponRepository } from "src/cupon/infraestructure/repositories/cupon-repository";
+import { CuponMapper } from "src/cupon/infraestructure/mappers/cupon-mapper";
+import { GetPastOrdersServiceEntryDTO } from "src/order/application/DTO/entry/get-past-orders-service-entry.dto";
+import { GetPastOrdersService } from "src/order/application/services/queries/get-past-orders.service";
+import { GetActiveOrdersService } from "src/order/application/services/queries/get-active-orders.service";
+import { GetActiveOrdersServiceEntryDTO } from "src/order/application/DTO/entry/get-active-orders-service-entry.dto";
+import { CancelOrderServiceEntryDTO } from "src/order/application/DTO/entry/cancel-order-service-entry.dto";
+import { CancelOrderService } from "src/order/application/services/command/cancel-order.service";
+import { CancelOrderResponseDTO } from "../DTO/response/cancel-order-response.dto";
+import { IDiscountRepository } from "src/discount/domain/repositories/discount.repository.interface";
+import { OrmDiscountMapper } from "src/discount/infraestructure/mappers/discount.mapper";
+import { OrmDiscountRepository } from "src/discount/infraestructure/repositories/orm-discount.repository";
+import { ITaxesCalculationPort } from "src/common/domain/domain-service/taxes-calculation.port";
+import { TaxesCalculationAdapter } from "src/common/infraestructure/domain-services-adapters/taxes-calculation-order.adapter";
+import { ChangeOrderStateResponseDTO } from "../DTO/response/change-order-state-response.dto";
+import { ChangeOrderStateEntryDTO } from "../DTO/entry/change-order-state-entry.dto";
+import { ChangeOrderServiceEntryDTO } from "src/order/application/DTO/entry/change-order-service-entry.dto";
+import { ChangeOrderStateService } from "src/order/application/services/command/change-order-state.service";
+import { ChangeOrderServiceResponseDTO } from "src/order/application/DTO/response/change-order-service-response.dto";
 
 @ApiTags("Order")
 @Controller("order")
@@ -74,22 +94,25 @@ export class OrderController {
 
     private readonly idGenerator: IdGenerator<string>
     private readonly eventBus = RabbitEventBus.getInstance();
+    private readonly logger: Logger = new Logger('OrderController')
+    private readonly taxes: ITaxesCalculationPort
+
     private readonly orderRepository: IOrderRepository
     private readonly productRepository: IProductRepository
-    private readonly logger: Logger = new Logger('OrderController')
+    private readonly cuponReporitory: ICuponRepository
     private readonly detalleRepository: DetalleRepository
-    private readonly estadoOrdenRepository: EstadoOrdenRepository
-    private readonly estadoRepository: EstadoRepository
     private readonly categoryRepository: OrmCategoryRepository
     private readonly paymentMethodRepository: PaymentMethodRepository
     private readonly bundleRepository: OrmBundleRepository;
-    private readonly historicoRepository: HistoricoPrecioRepository
+    private readonly discountRepository: IDiscountRepository
 
 
     constructor(
         @Inject('DataSource') private readonly dataSource: DataSource
     ) {
         this.idGenerator = new UuidGenerator();
+        this.taxes = new TaxesCalculationAdapter()
+
         this.orderRepository =
             new OrderRepository(
                 new OrderMapper(this.idGenerator),
@@ -98,10 +121,13 @@ export class OrderController {
             )
         this.bundleRepository = new OrmBundleRepository(
             new BundleMapper(),
-            this.dataSource//
+            this.dataSource
         );
+        this.cuponReporitory = new CuponRepository(
+            new CuponMapper(),
+            this.dataSource
+        )
         this.categoryRepository = new OrmCategoryRepository(new OrmCategoryMapper(), dataSource)
-        this.historicoRepository = new HistoricoPrecioRepository(dataSource)
         this.productRepository =
             new OrmProductRepository(
                 new ProductMapper(
@@ -110,131 +136,13 @@ export class OrderController {
                 ), dataSource
             )
         this.detalleRepository = new DetalleRepository(dataSource)
-        this.estadoOrdenRepository = new EstadoOrdenRepository(dataSource)
-        this.estadoRepository = new EstadoRepository(dataSource)
         this.paymentMethodRepository = new PaymentMethodRepository(dataSource, new PaymentMethodMapper())
-    }
-
-    // TODO: Probar la validacion con el bearer token
-    @Post('create')
-    //@UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
-    @ApiOkResponse({
-        description: 'Crea una nueva orden en la base de datos',
-        type: CreateOrderResponseDTO
-    })
-    @ApiBody({
-        type: [CreateOrderEntryDTO],
-        description: 'Array de entradas para crear una orden',
-    })
-    async createOrder(
-        //@GetUser() user,
-        @Body() request: CreateOrderRequestDTO,
-    ): Promise<CreateOrderResponseDTO> {
-
-        // Suscripción al evento 'OrderCreated'
-        this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
-            const sender = new NodemailerEmailSender();
-            const order_id = event.id;
-            sender.sendEmail("bastidasluigi05@gmail.com", "Jamal", order_id);
-        });
-
-        // Mapeo de datos para el servicio
-        const data: CreateOrderEntryServiceDTO = {
-            userId: "user.id",
-            products: await Promise.all(
-                request.entry.map(async (detalle) => {
-                    return {
-                        id: detalle.id_producto,
-                        quantity: detalle.cantidad_producto
-                    }
-                })
-            )
-        };
-
-        const service =
-            new LoggingDecorator(
-                new CreateOrderService(
-                    this.orderRepository,
-                    this.productRepository,
-                    this.bundleRepository,
-                    this.idGenerator,
-                    this.eventBus,
-                    new OrderCalculationTotal(
-                        new PaypalPaymentMethod(
-                            "bastidasluigi05@gmail.com",
-                            this.idGenerator
-                        )
-                    )
-                ),
-                new NativeLogger(this.logger)
-            )
-
-        const result = await service.execute(data)
-
-        // TODO: Esto sera reemplazado por el aspecto de HTTPExceptionHandler
-        if (!result.isSuccess())
-            throw result.Error
-
-        // TODO: Se pasara a un servicio de aplicacion o se realizara en el mismo servicio de la orden
-        // Persistencia de la entidad de base de datos detalle
-        const service_create_detalle =
-            new LoggingDecorator(
-                new CreateDetalleService(
-                    this.detalleRepository,
-                    this.orderRepository,
-                    this.productRepository,
-                    this.bundleRepository,
-                    new ProductMapper(
-                        new OrmCategoryMapper(),
-                        this.categoryRepository,
-                    ),
-                    this.idGenerator
-                ),
-                new NativeLogger(this.logger)
-            )
-
-        const result_create_detalle = await service_create_detalle.execute({
-            userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
-            ...result.Value
-        })
-
-        if (!result.isSuccess())
-            throw result_create_detalle.Error
-
-        console.log("Detalle creado")
-
-        // TODO: Se podria realizar utilizando rabbit para subscribirse al evento de creacion?
-        // Persistencia de la entidad de base de datos Estado_Orden
-        const service_create_estado_orden =
-            new LoggingDecorator(
-                new CreateEstadoOrdenService(
-                    this.estadoOrdenRepository,
-                    this.estadoRepository,
-                    this.orderRepository,
-                    new OrderMapper(this.idGenerator)
-                ),
-                new NativeLogger(this.logger)
-            )
-
-        const result_create_estado_orden = await service_create_estado_orden.execute({
-            userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
-            id_orden: result.Value.id_orden,
-            fecha_inicio: result.Value.fecha_creacion,
-            estado: result.Value.estado
-        })
-
-        if (!result_create_estado_orden.isSuccess())
-            throw new Error("Relacion estado orden no creada")
-
-        const response: CreateOrderResponseDTO = {
-            id_order: result.Value.id_orden
-        }
-
-        return response
+        this.discountRepository = new OrmDiscountRepository(new OrmDiscountMapper(),dataSource)
     }
 
     @Get('one/by/:id')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard)
     @ApiOkResponse({
         description: 'Devuelve la informacion de una orden dado el id',
         type: GetOrderByIdReponseDTO
@@ -274,24 +182,29 @@ export class OrderController {
     }
 
     @Post('pay/paypal')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard)
     @ApiOkResponse({
         description: 'Crea la orden con el metodo de pago de PayPal',
         type: CreateOrderResponseDTO
     })
     async orderPayPaypal(
+        @GetUser() user,
         @Body() request: CreateOrderPayPalEntryDTO,
     ) {
 
         // Envia correo electronico para informar de la creacion de la orden
         await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
-            console.log("enviado")
             const sender = new NodemailerEmailSender();
             const order_id = event.id;
-            sender.sendEmail("bastidasluigi05@gmail.com", "Jamal", order_id);
-        });
+            console.log("Receptor: ", user.email)
+            sender.sendEmail(user.email, user.name, order_id);
+        }, 'Notificar orden de compra');
 
         // Decrementa el stock de los productos elegidos en la orden
         await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
+            console.log("Se publico el evento para decrementar los productos")
+
             const productos = event.productos
 
             for (const p of productos) {
@@ -300,13 +213,15 @@ export class OrderController {
                 await this.productRepository.updateProductAggregate(result.Value)
             }
 
-            /*for (const c of combos) {
+            const combos = event.bundles
+
+            for (const c of combos) {
                 const result = await this.bundleRepository.findBundleById(c.Id.Value)
                 result.Value.decreaseStock(BundleStock.create(c.Cantidad().Value))
                 await this.bundleRepository.addBundle(result.Value)
-            }*/
+            }
 
-        })
+        }, 'Decrementar el stock')
 
         // Persistencia de la base de datos para los detalles de una orden
         await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
@@ -330,28 +245,26 @@ export class OrderController {
                 )
 
             const data = {
-                userId: "",
+                userId: user.id,
                 id_orden: event.id,
                 detalle_productos: event.productos.map((detalle) => ({
                     id_producto: detalle.Id.Id,
                     cantidad: detalle.Cantidad().Value
                 })),
-                detalle_combos: event.productos.map((detalle) => ({
-                    id_combo: detalle.Id.Id,
+                detalle_combos: event.bundles.map((detalle) => ({
+                    id_combo: detalle.Id.Value,
                     cantidad: detalle.Cantidad().Value
                 })),
             }
 
             await service.execute(data)
-        });
+        }, 'Crear detalle orden service');
 
         const data: CreateOrderEntryServiceDTO = {
-            userId: "",
+            userId: user.id,
             products: request.products,
             bundles: request.bundles
         };
-
-        console.log(data)
 
         const service =
             new ExceptionDecorator(
@@ -361,13 +274,16 @@ export class OrderController {
                             this.orderRepository,
                             this.productRepository,
                             this.bundleRepository,
+                            this.cuponReporitory,
+                            this.discountRepository,
                             this.idGenerator,
                             this.eventBus,
                             new OrderCalculationTotal(
                                 new PaypalPaymentMethod(
                                     request.email,
                                     this.idGenerator
-                                )
+                                ),
+                                this.taxes
                             )
                         ),
                         new NativeLogger(this.logger)
@@ -380,18 +296,21 @@ export class OrderController {
         const result = await service.execute(data)
 
         const response: CreateOrderResponseDTO = {
-            id_order: result.Value.id_orden
+            ...result.Value
         }
 
         return response
     }
 
     @Post('pay/stripe')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard)
     @ApiOkResponse({
         description: 'Crea la orden con stripe',
         type: CreateOrderResponseDTO
     })
     async orderPayStripe(
+        @GetUser() user,
         @Body() request: CreateOrderStripeEntryDTO,
     ) {
 
@@ -399,11 +318,13 @@ export class OrderController {
         await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
             const sender = new NodemailerEmailSender();
             const order_id = event.id;
-            sender.sendEmail("bastidasluigi05@gmail.com", "Jamal", order_id);
-        });
+            sender.sendEmail(user.email, user.name, order_id);
+        }, 'Notificar orden de compra');
 
         // Decrementa el stock de los productos elegidos en la orden
         await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
+            console.log("Se publico el evento para decrementar los productos")
+
             const productos = event.productos
 
             for (const p of productos) {
@@ -412,13 +333,15 @@ export class OrderController {
                 await this.productRepository.updateProductAggregate(result.Value)
             }
 
-            /*for (const c of combos) {
+            const combos = event.bundles
+
+            for (const c of combos) {
                 const result = await this.bundleRepository.findBundleById(c.Id.Value)
                 result.Value.decreaseStock(BundleStock.create(c.Cantidad().Value))
                 await this.bundleRepository.addBundle(result.Value)
-            }*/
+            }
 
-        })
+        }, 'Decrementar el stock')
 
         // Persistencia de la base de datos para los detalles de una orden
         await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
@@ -445,7 +368,7 @@ export class OrderController {
                 )
 
             const data = {
-                userId: "",
+                userId: user.id,
                 id_orden: event.id,
                 detalle_productos: event.productos.map((detalle) => ({
                     id_producto: detalle.Id.Id,
@@ -459,10 +382,10 @@ export class OrderController {
 
 
             await service.execute(data)
-        });
+        }, 'Crear detalle orden service');
 
         const data: CreateOrderEntryServiceDTO = {
-            userId: "",
+            userId: user.id,
             products: request.products,
             bundles: request.bundles
         };
@@ -475,6 +398,8 @@ export class OrderController {
                             this.orderRepository,
                             this.productRepository,
                             this.bundleRepository,
+                            this.cuponReporitory,
+                            this.discountRepository,
                             this.idGenerator,
                             this.eventBus,
                             new OrderCalculationTotal(
@@ -483,7 +408,8 @@ export class OrderController {
                                     this.idGenerator,
                                     this.paymentMethodRepository,
                                     request.idPayment
-                                )
+                                ),
+                                this.taxes
                             )
                         ),
                         new NativeLogger(this.logger)
@@ -496,7 +422,7 @@ export class OrderController {
         const result = await service.execute(data)
 
         const response: CreateOrderResponseDTO = {
-            id_order: result.Value.id_orden
+            ...result.Value
         }
 
         return response
@@ -542,5 +468,129 @@ export class OrderController {
 
     }
 
+    @Get('past')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOkResponse({
+        description: 'Devuelve la informacion de todas las ordenes pasadas de un usuario',
+        type: GetAllOrdersReponseDTO,
+        isArray: true
+    })
+    async getPastOrdersByUser(
+        @GetUser() user
+    ) {
+
+        const data: GetPastOrdersServiceEntryDTO = {
+            userId: user.id
+        }
+
+        const service =
+            new ExceptionDecorator(
+                new LoggingDecorator(
+                    new PerformanceDecorator(
+                        new GetPastOrdersService(
+                            this.orderRepository
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new HttpExceptionHandler()
+            )
+
+        const result = await service.execute(data)
+
+        const response: GetAllOrdersReponseDTO[] = {
+            ...result.Value
+        }
+
+        return response
+
+    }
+
+    @Get('many/active/:id')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOkResponse({
+        description: 'Devuelve la informacion de todas las ordenes activas de un usuario',
+        type: GetAllOrdersReponseDTO,
+        isArray: true
+    })
+    async getActiveOrdersByUser(
+        @GetUser() user,
+        @Param('id', ParseUUIDPipe) id: string,
+    ) {
+
+        console.log(id)
+
+        const data: GetActiveOrdersServiceEntryDTO = {
+            userId: id
+        }
+
+        const service =
+            new ExceptionDecorator(
+                new LoggingDecorator(
+                    new PerformanceDecorator(
+                        new GetActiveOrdersService(
+                            this.orderRepository
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new HttpExceptionHandler()
+            )
+
+        const result = await service.execute(data)
+
+        const response: GetAllOrdersReponseDTO[] = {
+            ...result.Value
+        }
+
+        return response
+
+    }
+
+    @Post('change/state')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOkResponse({
+        description: 'Cambia el estado de una orden',
+        type: ChangeOrderStateResponseDTO,
+    })
+    async changeState(
+        @GetUser() user,
+        @Body() request: ChangeOrderStateEntryDTO
+    ) {
+
+        const data: ChangeOrderServiceEntryDTO = {
+            userId: user.id,
+            ...request
+        }
+
+        const service =
+            new ExceptionDecorator(
+                new LoggingDecorator(
+                    new PerformanceDecorator(
+                        new ChangeOrderStateService(
+                            this.orderRepository,
+                            this.eventBus
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new HttpExceptionHandler()
+            )
+
+        const result = await service.execute(data)
+
+        const response: ChangeOrderServiceResponseDTO = {
+            ...result.Value
+        }
+
+        return response
+
+    }
 
 }
