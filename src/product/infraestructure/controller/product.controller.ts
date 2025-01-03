@@ -143,20 +143,20 @@ export class ProductController {
         if (!result.isSuccess())
             throw new BadRequestException("Producto no creado");
 
-        const service_infra =
-            new CreateHistoricoPrecioService(
-                this.historicoRepository, this.monedaRepository, this.productRepository, this.idGenerator
-            )
+        // const service_infra =
+        //     new CreateHistoricoPrecioService(
+        //         this.historicoRepository, this.monedaRepository, this.productRepository, this.idGenerator
+        //     )
 
-        const result_infra = await service_infra.execute({
-            userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
-            id_producto: result.Value.id_producto,
-            precio: result.Value.precio,
-            moneda: result.Value.moneda,
-        })
+        // const result_infra = await service_infra.execute({
+        //     userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+        //     id_producto: result.Value.id_producto,
+        //     precio: result.Value.precio,
+        //     moneda: result.Value.moneda,
+        // })
 
-        if (!result_infra.isSuccess())
-            throw new BadRequestException("Historico no creado");
+        // if (!result_infra.isSuccess())
+        //     throw new BadRequestException("Historico no creado");
 
         return "Producto creado"
     }

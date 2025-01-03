@@ -8,7 +8,6 @@ import { ProductUnit } from "src/product/domain/value-objects/product-unit/produ
 import { ProductPrice } from "src/product/domain/value-objects/product-precio/product-price";
 import { ProductAmount } from "src/product/domain/value-objects/product-precio/product-amount";
 import { ProductCantidadMedida } from "src/product/domain/value-objects/product-unit/product-cantidad-medida";
-import { HistoricoPrecio } from "../entities/historico-precio.entity";
 import { ProductCurrency } from "src/product/domain/value-objects/product-precio/product-currency";
 import { ProductImage } from "src/product/domain/value-objects/product-image";
 import { ProductStock } from "src/product/domain/value-objects/product-stock";
@@ -57,12 +56,11 @@ export class ProductMapper implements IMapper<Product, OrmProduct> {
             domain.CantidadMedida,
             domain.Stock,
             domain.Images.map((i) => i.Image),
+            domain.Moneda,
+            domain.Price,
             domain.Categories.map(i => i.Value),
             ormCaducityDate,
             ormDiscount,
-            null
-
-
         )
 
         return product
@@ -82,15 +80,15 @@ export class ProductMapper implements IMapper<Product, OrmProduct> {
 
 
 
-        let precio: HistoricoPrecio | undefined = undefined;
+        // let precio: HistoricoPrecio | undefined = undefined;
 
-        if (persistence.historicos && Array.isArray(persistence.historicos)) {
-            for (const p of persistence.historicos) {
-                if (p.fecha_fin === null) {
-                    precio = p;
-                }
-            }
-        }
+        // if (persistence.historicos && Array.isArray(persistence.historicos)) {
+        //     for (const p of persistence.historicos) {
+        //         if (p.fecha_fin === null) {
+        //             precio = p;
+        //         }
+        //     }
+        // }
 
 
 
@@ -102,20 +100,20 @@ export class ProductMapper implements IMapper<Product, OrmProduct> {
                 persistence.unidad_medida,
                 ProductCantidadMedida.create(persistence.cantidad_medida)
             ),
-            ProductPrice.create(
-                precio ? ProductAmount.create(precio.precio) : ProductAmount.create(5),
-                precio ? ProductCurrency.create(precio.moneda.simbolo) : ProductCurrency.create('usd')
-            ),
             bundleImages,
+
             ProductStock.create(persistence.cantidad_stock),
+            ProductPrice.create(
+                ProductAmount.create(persistence.price),
+                ProductCurrency.create(persistence.currency)
+
+            ),
             categories,
             persistence.discount ? DiscountID.create(persistence.discount) : null,
             persistence.caducityDate ? ProductCaducityDate.create(persistence.caducityDate) : null,
         );
 
         return product;
-
-
 
 
 

@@ -1,5 +1,5 @@
 import { IValueObject } from "src/common/domain/value-object/value-object.interface";
-import { Measurement } from "../../../common/domain/enum/commons-enums/measurement-enum";
+import { Measurement } from "../enum/measurement-enum";
 import { InvalidBundleWeightException } from "../exceptions/invalid-bundle-weight.exception";
 
 export class BundleWeight implements IValueObject<BundleWeight> {

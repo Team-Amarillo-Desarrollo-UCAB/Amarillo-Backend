@@ -15,6 +15,38 @@ export class OrmDiscountRepository
     super(OrmDiscount, dataSource.createEntityManager());
     this.ormDiscountMapper = ormDiscountMapper;
   }
+  async updateDiscount(discount: Discount): Promise<Result<Discount>> {
+       try{
+        const s = await this.addDiscount(discount)
+        return Result.success<Discount>(s.Value,200)
+       }catch(error){
+        return Result.fail<Discount>(new Error(error.message), error.code, error.message)
+       }  
+  }
+
+  async deleteDiscount(id: string): Promise<Result<Discount>> {
+    try {
+        const discount = await this.findOneBy({ id });
+
+        if (!discount) {
+            return Result.fail<Discount>(
+                new DiscountNotFoundException("Discount not found!"),
+                404,
+                'Discount not found'
+            );
+        }
+
+        await this.remove(discount);
+
+        const domainDiscount = await this.ormDiscountMapper.fromPersistenceToDomain(discount);
+
+        return Result.success<Discount>(domainDiscount, 200);
+    } catch (error) {
+        return Result.fail<Discount>(error, 500, error.message);
+    }
+}
+
+
   async findAllDiscounts(page: number, limit: number): Promise<Result<Discount[]>> {
     const discounts = await this.find({
       skip: page,

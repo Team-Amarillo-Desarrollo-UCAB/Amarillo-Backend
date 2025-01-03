@@ -3,8 +3,7 @@ import { IProductRepository } from "src/product/domain/repositories/product-repo
 import { GetAllProductServiceEntryDTO } from "../../DTO/entry/get-all-product-service-entry.dto"
 import { Result } from "src/common/domain/result-handler/Result"
 import { GetAllProductServiceResponseDTO } from "../../DTO/response/get-all-product-service.response"
-import { UnidadMedida } from "src/product/domain/enum/UnidadMedida"
-import { Discount } from '../../../../discount/domain/discount.entity';
+
 
 export class GetAllProductService implements IApplicationService<GetAllProductServiceEntryDTO, GetAllProductServiceResponseDTO[]> {
 
@@ -15,9 +14,18 @@ export class GetAllProductService implements IApplicationService<GetAllProductSe
     }
 
     async execute(data: GetAllProductServiceEntryDTO): Promise<Result<GetAllProductServiceResponseDTO[]>> {
-        data.page = data.page * data.limit - data.limit;
+        // console.log("Valor de page antes del calculo:",data.page)
+        // console.log("Valor de perpage antes del calculo:",data.perpage)
 
-        const products = await this.productRepository.findAllProducts(data.page, data.limit, data.category, data.name, data.price, data.discount)
+
+        // data.page = data.page * data.perpage - data.perpage;
+
+        // console.log("Valor de page despues del calculo:",data.page)
+        // console.log("Valor de perpage despues del calculo:",data.perpage)
+
+        const products = await this.productRepository.findAllProducts(data.page, data.perpage, data.category, data.name, data.price, data.discount)
+
+
 
         if (!products.isSuccess){
             console.log("ENTRAMOS AL IF DE PRODUCTRESULT")

@@ -15,12 +15,11 @@ export class GetAllDiscountService implements IApplicationService<GetAllDiscount
     }
 
     async execute(data: GetAllDiscountServiceEntryDTO): Promise<Result<GetAllDiscountServiceResponseDto[]>> {
-        data.page = data.page * data.limit - data.limit;
+        data.page = data.page * data.perpage - data.perpage;
 
-        const discounts = await this.discountRepository.findAllDiscounts(data.page, data.limit)
+        const discounts = await this.discountRepository.findAllDiscounts(data.page, data.perpage)
 
-        if (!discounts.isSuccess)
-            throw new Error("Method not implemented.")
+        if (!discounts.isSuccess()) return Result.fail(new Error("ERROR al hallar discounts"),500,"ERROR al hallar discounts");
 
         const response: GetAllDiscountServiceResponseDto[] = []
 

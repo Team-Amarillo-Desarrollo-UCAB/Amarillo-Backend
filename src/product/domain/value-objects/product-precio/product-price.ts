@@ -1,6 +1,7 @@
 import { IValueObject } from "src/common/domain/value-object/value-object.interface";
 import { ProductAmount } from "./product-amount";
 import { ProductCurrency } from "./product-currency";
+import { Moneda } from "../../enum/Monedas";
 
 export class ProductPrice implements IValueObject<ProductPrice> {
 
@@ -19,7 +20,7 @@ export class ProductPrice implements IValueObject<ProductPrice> {
         return this.amount.Monto
     }
 
-    get Currency(): string {
+    get Currency(): Moneda {
         return this.currency.Currency
     }
 

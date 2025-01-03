@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany
 import { HistoricoPrecio } from "./historico-precio.entity";
 import { UnidadMedida } from "src/product/domain/enum/UnidadMedida";
 import { Detalle_Orden } from "src/order/infraestructure/entites/detalle_orden.entity";
+import { Moneda } from "src/product/domain/enum/Monedas";
 
 @Entity({ name: "producto" })
 export class OrmProduct {
@@ -27,8 +28,19 @@ export class OrmProduct {
     @Column({type:'json', nullable: true })
     image: string[];
 
-    @OneToMany(() => HistoricoPrecio, (historico) => historico.producto,{eager: true})
-    historicos: HistoricoPrecio[];
+    @Column({
+        type: "enum",
+        enum: Moneda,
+        nullable: true
+    })
+    currency?: Moneda;
+
+
+    // @OneToMany(() => HistoricoPrecio, (historico) => historico.producto,{eager: true})
+    // historicos: HistoricoPrecio[];
+
+    @Column('numeric', { nullable: true })
+    price?: number;
 
     @OneToMany(() => Detalle_Orden, (detalle) => detalle.producto)
     detalles: Detalle_Orden[];
@@ -51,10 +63,12 @@ export class OrmProduct {
         cantidad_medida: number,
         cantidad_stock: number,
         image?: string[],
+        currency?:Moneda,
+        price?:number,
         categories?: string[],
         caducityDate?: Date,
         discount?:string,
-        historicos?: HistoricoPrecio[],
+        //historicos?: HistoricoPrecio[],
     ): OrmProduct {
         const product = new OrmProduct()
         product.id = id
@@ -65,7 +79,9 @@ export class OrmProduct {
         product.cantidad_stock = cantidad_stock
         product.image = image
         product.categories = categories
-        product.historicos = historicos
+        product.currency = currency
+        product.price=price
+        //product.historicos = historicos
         product.caducityDate = caducityDate;
         product.discount=discount;
 
