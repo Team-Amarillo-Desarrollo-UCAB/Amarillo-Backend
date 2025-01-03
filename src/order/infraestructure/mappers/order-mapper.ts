@@ -125,8 +125,8 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
                         OrderProductName.create(detalle.producto.name),
                         OrderProductCantidad.create(detalle.cantidad),
                         OrderProductPrice.create(
-                            OrderProductAmount.create(precio),
-                            OrderProductCurrency.create(moneda)
+                            OrderProductAmount.create(detalle.producto.price),
+                            OrderProductCurrency.create(detalle.producto.currency)
                         )
                     )
                 )
