@@ -1,4 +1,4 @@
 export interface DeleteBundleServiceResponseDto {
-    deletedBundleId: string; 
+    id: string
   }
   

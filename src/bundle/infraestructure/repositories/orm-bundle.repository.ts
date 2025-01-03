@@ -4,6 +4,7 @@ import { IBundleRepository } from "src/bundle/domain/repositories/bundle-reposit
 import { Bundle } from "src/bundle/domain/bundle.entity";
 import { Result } from "src/common/domain/result-handler/Result";
 import { IMapper } from "src/common/application/mappers/mapper.interface";
+import { BundleNotFoundException } from "../exceptions/bundle-not-found-exception";
 
 export class OrmBundleRepository extends Repository<OrmBundle> implements IBundleRepository{
 
@@ -14,6 +15,17 @@ export class OrmBundleRepository extends Repository<OrmBundle> implements IBundl
         super(OrmBundle, dataSource.createEntityManager());
         this.ormBundleMapper = ormBundleMapper;
       }
+
+    async updateBundle(b:Bundle): Promise<Result<Bundle>> {
+       try{
+        //const bundle = await this.ormBundleMapper.fromDomainToPersistence(b)
+        const s = await this.addBundle(b)
+        return Result.success<Bundle>(s.Value,200)
+       }catch(error){
+        return Result.fail<Bundle>(new Error(error.message), error.code, error.message)
+       }
+
+    }
 
       async findAllBundles(
         page: number = 1,
@@ -97,16 +109,9 @@ export class OrmBundleRepository extends Repository<OrmBundle> implements IBundl
     
     async addBundle(bundle: Bundle): Promise<Result<Bundle>> {
         try {
-            // Convierte la entidad de dominio a una entidad persistente
             const ormBundle = await this.ormBundleMapper.fromDomainToPersistence(bundle);
-            console.log('ORM Bundle:', ormBundle);
-            console.log("Antes del this.save de bundle");
-    
-            // Guarda la entidad persistente en la base de datos
             const result = await this.save(ormBundle);
-            console.log("Después del this.save de bundñe");
     
-            // Convierte la entidad persistente guardada de nuevo a una entidad de dominio
             return Result.success<Bundle>(
                 await this.ormBundleMapper.fromPersistenceToDomain(result),
                 201
@@ -126,6 +131,7 @@ export class OrmBundleRepository extends Repository<OrmBundle> implements IBundl
     
         if (bundle) {
             // Convierte la entidad persistente encontrada a una entidad de dominio
+            console.log("Combo encontrado: ",bundle)
             return Result.success<Bundle>(
                 await this.ormBundleMapper.fromPersistenceToDomain(bundle),
                 202
@@ -143,8 +149,28 @@ export class OrmBundleRepository extends Repository<OrmBundle> implements IBundl
     findBundleByName(name: string): Promise<Result<Bundle>> {
         throw new Error("Bundle by name no se implementa para esta entrega.");
     }
-    deleteBundle(id: string): Promise<Result<Bundle>> {
-        throw new Error("Method not implemented.");
+    async deleteBundle(id: string): Promise<Result<Bundle>> {
+        try {
+            const bundle = await this.findOneBy({ id });
+
+            if (!bundle) {
+                return Result.fail<Bundle>(
+                    new BundleNotFoundException(),
+                    404,
+                    'Bundle not found'
+                );
+            }
+
+            await this.remove(bundle);
+
+            const domainBundle = await this.ormBundleMapper.fromPersistenceToDomain(bundle);
+
+            return Result.success<Bundle>(domainBundle, 200);
+        } catch (error) {
+            return Result.fail<Bundle>(error, 500, error.message);
+        }
     }
-    
 }
+
+    
+

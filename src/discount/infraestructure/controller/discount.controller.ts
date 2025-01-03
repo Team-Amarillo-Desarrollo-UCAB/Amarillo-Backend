@@ -11,8 +11,9 @@ import {
   Inject,
   ParseUUIDPipe,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { DataSource } from 'typeorm';
 import { UuidGenerator } from 'src/common/infraestructure/id-generator/uuid-generator';
 import { LoggingDecorator } from 'src/common/application/application-services/decorators/logging-decorator/logging.decorator';
@@ -31,6 +32,27 @@ import { GetAllDiscountsResponseDTO } from '../dto/response/get-all-discounts-re
 import { PaginationDto } from 'src/common/infraestructure/dto/entry/pagination.dto';
 import { GetAllDiscountService } from 'src/discount/application/services/queries/get-all-discount.service';
 import { GetAllDiscountServiceEntryDTO } from 'src/discount/application/dto/entry/get-all-discount-service.dto';
+import { EventBus } from 'src/common/infraestructure/event-bus/event-bus';
+import { ExceptionDecorator } from 'src/common/application/application-services/decorators/exception-decorator/exception.decorator';
+import { UpdateBundleServiceEntryDto } from 'src/bundle/application/dto/entry/update-bundle-service-entry.dto';
+import { CreateBundleApplicationService } from 'src/bundle/application/services/commands/create-bundle.service';
+import { UpdateBundleEntryDTO } from 'src/bundle/infraestructure/dto/entry/update-bundle-entry.dto';
+import { UpdateBundleResponseDTO } from 'src/bundle/infraestructure/dto/response/update-bundle-response.dto';
+import { PerformanceDecorator } from 'src/common/application/application-services/decorators/performance-decorator/performance-decorator';
+import { SecurityDecorator } from 'src/common/application/application-services/decorators/security-decorator/security-decorator';
+import { AuditingDecorator } from 'src/common/application/auditing/auditing.decorator';
+import { HttpExceptionHandler } from 'src/common/infraestructure/exception-handler/http-exception-handler-code';
+import { UpdateDiscountApplicationService } from 'src/discount/application/services/commands/update-discount.service';
+import { GetUser } from 'src/auth/infraestructure/jwt/decorator/get-user.param.decorator';
+import { OrmAuditingRepository } from 'src/common/infraestructure/auditing/repositories/orm-auditing-repository';
+import { OrmAccountRepository } from 'src/user/infraestructure/repositories/orm-repositories/orm-account-repository';
+import { UpdateDiscountServiceEntryDto } from 'src/discount/application/dto/entry/update-discount-service-entry.dto';
+import { UpdateDiscountEntryDTO } from '../dto/entry/update-discount-entry.dto';
+import { UpdateDiscountResponseDTO } from '../dto/response/update-discount-response.dto';
+import { JwtAuthGuard } from 'src/auth/infraestructure/jwt/decorator/jwt-auth.guard';
+import { DeleteDiscountApplicationService } from 'src/discount/application/services/commands/delete-discount.service';
+import { DeleteDiscountServiceEntryDto } from 'src/discount/application/dto/entry/delete-discount-service-entry.dto';
+import { DeleteDiscountResponseDTO } from '../dto/response/delete-discount-response.dto';
 
 
 @ApiTags('Discount')
@@ -40,6 +62,8 @@ export class DiscountController {
   private readonly logger: Logger = new Logger('DiscountController');
   private readonly idGenerator: UuidGenerator;
   private readonly fileUploader: IFileUploader;
+  private readonly auditingRepository: OrmAuditingRepository;
+  private readonly accountUserRepository: OrmAccountRepository;
   constructor(@Inject('DataSource') private readonly dataSource: DataSource) {
     this.discountRepository = new OrmDiscountRepository(
       new OrmDiscountMapper(),
@@ -47,6 +71,8 @@ export class DiscountController {
     );
     this.idGenerator = new UuidGenerator();
     this.fileUploader = new CloudinaryFileUploader()
+    this.auditingRepository = new OrmAuditingRepository(dataSource)  
+    this.accountUserRepository = new OrmAccountRepository(dataSource)
   }
 
   /**
@@ -88,8 +114,6 @@ export class DiscountController {
 
     const data: CreateDiscountServiceEntryDto = { userId: "24117a35-07b0-4890-a70f-a082c948b3d4", ...entry }
 
-    console.log("Data para crear en infraestructura:", data)
-
     const service = new LoggingDecorator(
       new CreateDiscountApplicationService(this.discountRepository, this.idGenerator, this.fileUploader),
       new NativeLogger(this.logger),
@@ -103,13 +127,15 @@ export class DiscountController {
     return 'Descuento creado exitosamente';
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('many')
   @ApiOkResponse({
     description: 'Devuelve la informacion de todos los descuentos',
     type: GetAllDiscountsResponseDTO,
   })
-  async getAllProduct(
-    @Query() paginacion: PaginationDto
+  async getAllDiscounts(
+    @Query() paginacion: PaginationDto, @GetUser() user
   ) {
     const service =
       new LoggingDecorator(
@@ -118,7 +144,7 @@ export class DiscountController {
       )
 
     const data: GetAllDiscountServiceEntryDTO = {
-      userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+      userId: user.id,
       ...paginacion
     }
 
@@ -133,6 +159,103 @@ export class DiscountController {
 
     return response
   }
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()  
+  @Patch("/update/:id")
+  @ApiOkResponse({
+      description: 'Actualiza la información de un descuento',
+      type: UpdateDiscountResponseDTO,
+  })
+  async updateDiscount(
+      @Param('id', ParseUUIDPipe) id: string,
+      @Body() request: UpdateDiscountEntryDTO, @GetUser() user
+  ) {
+      const data: UpdateDiscountServiceEntryDto = {
+          userId: user.id,
+          id: id,
+          ...request
+      }
+  
+      const eventBus = EventBus.getInstance();
+  
+      const allowedRoles = ['ADMIN'];
+  
+      const service = new ExceptionDecorator(
+          new AuditingDecorator(
+              new SecurityDecorator(
+                  new LoggingDecorator(
+                      new PerformanceDecorator(
+                          new UpdateDiscountApplicationService(
+                              this.discountRepository,
+                              eventBus
+                          ),
+                          new NativeLogger(this.logger)
+                      ),
+                      new NativeLogger(this.logger)
+                  ),
+                  this.accountUserRepository,
+                  allowedRoles
+              ),
+              this.auditingRepository,
+              this.idGenerator
+          ),
+          new HttpExceptionHandler()
+      );
+  
+      const result = await service.execute(data);
+  
+      const response: UpdateDiscountResponseDTO = { ...result.Value };
+  
+      return response;
+  }
+
+  @UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+@Delete('/delete/:id')
+async deleteDiscount(
+    @Param('id', ParseUUIDPipe) id: string, @GetUser() user
+): Promise<DeleteDiscountResponseDTO> {
+    const infraEntryDto: DeleteDiscountResponseDTO = { id: id };
+    const eventBus = EventBus.getInstance();
+
+    const serviceEntryDto: DeleteDiscountServiceEntryDto = {
+        id: infraEntryDto.id,
+        userId: user.id
+    };
+
+    const allowedRoles = ['ADMIN'];
+
+    const service = new ExceptionDecorator(
+        new AuditingDecorator(
+            new SecurityDecorator(
+                new LoggingDecorator(
+                    new PerformanceDecorator(
+                        new DeleteDiscountApplicationService(
+                            this.discountRepository,
+                            eventBus
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                this.accountUserRepository,
+                allowedRoles
+            ),
+            this.auditingRepository,
+            this.idGenerator
+        ),
+        new HttpExceptionHandler()
+    );
+
+    const result = await service.execute(serviceEntryDto);
+
+    const infraResponseDto: DeleteDiscountResponseDTO = {
+        id: id
+    };
+    return infraResponseDto;
+}
+
+  
 
 
 }

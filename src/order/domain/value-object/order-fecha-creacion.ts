@@ -1,4 +1,5 @@
 import { IValueObject } from "src/common/domain/value-object/value-object.interface";
+import { InvalidOrderCreationDate } from "../domain-exception/invalid-order-date";
 
 export class OrderCreationDate implements IValueObject<OrderCreationDate> {
 
@@ -8,11 +9,9 @@ export class OrderCreationDate implements IValueObject<OrderCreationDate> {
         const today = new Date();
 
         if (
-            date_creation.getFullYear() !== today.getFullYear() &&
-            date_creation.getMonth() !== today.getMonth() &&
-            date_creation.getDate() !== today.getDate()
+            date_creation > today
         ) {
-            throw new Error("La fecha de creación no es del mismo día y año que la fecha actual.");
+            throw new InvalidOrderCreationDate("La fecha de creación es invalida");
         }
 
 

@@ -19,6 +19,10 @@ import { BundleCaducityDateModified } from "./events/bundle-caducity-date-modifi
 import { InvalidBundleException } from "./exceptions/invalid-bundle.exception";
 import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface";
 import { DiscountID } from "src/discount/domain/value-objects/discount-id";
+import { BundleDiscountModified } from "./events/bundle-discount-modified";
+import { BundleProductsModified } from "./events/bundle-products-modified-event";
+import { BundleCategoryModified } from "./events/bundle-category-modified-event";
+import { BundleImagesModified } from "./events/bundle-images-modified-event";
 
 export class Bundle extends AggregateRoot<BundleID> {
     // Definición de atributos de la entidad
@@ -156,11 +160,56 @@ export class Bundle extends AggregateRoot<BundleID> {
           this.bundleCaducityDate = caducityDateModified.date ? BundleCaducityDate.create(caducityDateModified.date) : undefined;
           break;
 
-        // Aquí se pueden agregar más eventos de modificación si es necesario.
+        case 'BundleCategoryModified':
+        const categoryModified = event as BundleCategoryModified;
+
+        let cats: CategoryID[] = []
+         
+         for (const cm of categoryModified.category){
+
+          cats.push(CategoryID.create(cm))
+
+         }
+        this.bundleCategories = cats
+        break;
+
+        case 'BundleProductsModified':
+        const productsModified = event as BundleProductsModified
+
+        let prods: ProductId[] = []
+         
+        for (const pr of productsModified.productIds){
+
+         prods.push(ProductId.create(pr))
+
+        }
+       this.bundleProducts = prods
+       break;
+
+       case 'BundleDiscountModified':
+        const discountModified = event as BundleDiscountModified
+        this.discount = discountModified.discount ? DiscountID.create(discountModified.discount) : undefined;
+          break;
+
+        case 'BundleImagesModified':
+        const imagesModified = event as BundleImagesModified
+        
+        let imas: BundleImage[] = []
+         
+        for (const im of imagesModified.images){
+
+         imas.push(BundleImage.create(im))
+
+        }
+       this.bundleImages = imas
+       break; 
+
+         
+
       }
     }
   
-    // Métodos para actualizar atributos específicos
+    // Métodos para actualizar atributos específicos mediante eventos de dominio
     public updateName(name: BundleName): void {
       this.onEvent(BundleNameModified.create(this.Id.Value, name.Value));
     }
@@ -183,6 +232,22 @@ export class Bundle extends AggregateRoot<BundleID> {
 
     public updateCaducityDate(caducityDate: BundleCaducityDate): void {
       this.onEvent(BundleCaducityDateModified.create(this.Id.Value, caducityDate.Value));
+    }
+
+    public updateDiscount(discount: DiscountID):void{
+      this.onEvent(BundleDiscountModified.create(this.Id.Value, discount.Value))
+    }
+
+    public updateProducts(products: ProductId[]){
+      this.onEvent(BundleProductsModified.create(this.Id.Value, products.map(i=>i.Id)))
+    }
+
+    public updateCategories(categories: CategoryID[]){
+      this.onEvent(BundleCategoryModified.create(this.Id.Value, categories.map(i=>i.Value)))
+    }
+
+    public updateImages(images:BundleImage[]){
+      this.onEvent(BundleImagesModified.create(this.Id.Value, images.map(i=>i.Value)))
     }
   
     // Validación del estado

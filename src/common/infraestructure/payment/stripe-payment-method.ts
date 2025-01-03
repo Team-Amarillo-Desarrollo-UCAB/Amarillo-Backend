@@ -10,6 +10,7 @@ import { OrderPaymentName } from 'src/order/domain/value-object/oder-payment/ord
 import { EnumPaymentMethod } from 'src/payment-method/domain/enum/PaymentMethod';
 import { OrderPaymentCurrency } from 'src/order/domain/value-object/oder-payment/order-payment-currency';
 import { IPaymentMethodRepository } from 'src/payment-method/domain/repositories/payment-method-repository.interface';
+import { Moneda } from 'src/product/domain/enum/Monedas';
 
 export class StripePaymentMethod implements IPaymentMethod {
 
@@ -37,10 +38,10 @@ export class StripePaymentMethod implements IPaymentMethod {
 
             const method = await this.paymentMethodRepository.findPaymentMethodById(this.idPayment)
 
-            if(!method.isSuccess())
-                return Result.fail<Order>(method.Error,404,method.Message)
+            if (!method.isSuccess())
+                return Result.fail<Order>(method.Error, 404, method.Message)
 
-            console.log("monto de la compra: ",orden.Monto.Total)
+            console.log("monto de la compra: ", orden.Monto.Total)
 
             // Crea un PaymentIntent con el token del frontend;
             const paymentIntent = await this.stripe.paymentIntents.create({
@@ -55,13 +56,13 @@ export class StripePaymentMethod implements IPaymentMethod {
             const pago = OrderPayment.create(
                 OrderPaymentId.create(await this.idGenerator.generateId()),
                 OrderPaymentName.create(EnumPaymentMethod.STRIPE),
-                OrderPaymentCurrency.create('usd'),
+                OrderPaymentCurrency.create(Moneda.USD),
                 orden.Monto
             )
-            
+
             orden.asignarMetodoPago(pago)
 
-            console.log("Pago de la orden: ",orden.Payment)
+            console.log("Pago de la orden: ", orden.Payment)
 
             console.log("El pago fue procesado")
             // Si el pago es exitoso, devuelve un estado con el resultado

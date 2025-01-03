@@ -1,5 +1,5 @@
 import { BundleCurrency } from "src/bundle/domain/enum/bundle-currency-enum"
-import { Measurement } from "src/common/domain/enum/commons-enums/measurement-enum"
+import { Measurement } from "src/bundle/domain/enum/measurement-enum"
 import { ApplicationServiceEntryDto } from "src/common/application/application-services/DTO/application-service-entry.dto"
 
 export interface CreateBundleServiceEntryDto extends ApplicationServiceEntryDto{

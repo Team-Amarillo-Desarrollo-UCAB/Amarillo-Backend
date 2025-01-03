@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, Inject, Logger, Param, ParseUUIDPipe, Post, Query } from "@nestjs/common"
-import { ApiBody, ApiOkResponse, ApiTags } from "@nestjs/swagger"
+import { Body, Controller, Delete, Get, Inject, Logger, Param, ParseUUIDPipe, Post, Query, UseGuards } from "@nestjs/common"
+import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiTags } from "@nestjs/swagger"
 import { CuponRepository } from "../repositories/cupon-repository"
 import { IdGenerator } from "src/common/application/id-generator/id-generator.interface"
 import { DataSource } from "typeorm"
@@ -27,6 +27,10 @@ import { DeleteCouponResponseDto } from "./DTO/response/delete-cupon-response.dt
 import { DeleteCouponEntryDto } from "./DTO/entry/delete-coupon-entry.dto"
 import { DeleteCuponServiceEntryDto } from "src/cupon/application/DTO/entry/delete-cupon-service-entry.dto"
 import { DeleteCouponApplicationService } from "src/cupon/application/command/delete-cupon.service"
+import { JwtAuthGuard } from "src/auth/infraestructure/jwt/decorator/jwt-auth.guard"
+import { GetUser } from "src/auth/infraestructure/jwt/decorator/get-user.param.decorator"
+import { GetCuponByUserServiceEntryDTO } from "src/cupon/application/DTO/entry/get-cupon-by-user-service-entry.dto"
+import { isNumber } from "class-validator"
 
 @ApiTags("Cupon")
 @Controller('cupon')
@@ -114,6 +118,46 @@ export class CuponController {
         return response
     }
 
+    @Get('many/by/user')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOkResponse({
+        description: 'Devuelve la informacion de todos los cupones de un usuario',
+        type: GetAllCouponsResponseDTO,
+    })
+    async getAllCouponUser(
+        @GetUser() user
+    ) {
+        const service =
+            new ExceptionDecorator(
+                new PerformanceDecorator(
+                    new LoggingDecorator(
+                        new GetAllCouponService(this.cuponRepository),
+                        new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new HttpExceptionHandler()
+            )
+
+
+        const data: GetCuponByUserServiceEntryDTO = {
+            userId: user.id
+        }
+
+        const result = await service.execute(data)
+
+        if (!result.isSuccess())
+            return result.Error
+
+        const response: GetAllCouponsResponseDTO[] = result.Value.map((cupon) => ({
+            ...cupon,
+            amount: cupon.amount.toString()
+        }));
+
+        return response
+    }
+
     @Get('one/by/code')
     @ApiOkResponse({
         description: 'Devuelve la informacion de un Cupón dado el código',
@@ -144,11 +188,11 @@ export class CuponController {
 
 
     @ApiOkResponse({
-        description: 'Elimina un copón por su ID',
+        description: 'Elimina un cupón por su ID',
         type: DeleteCouponResponseDto,
     })
     @Delete('/delete/:id')
-    async deleteCategory(
+    async deleteCupon(
         @Param('id', ParseUUIDPipe) id: string,
     ): Promise<DeleteCouponResponseDto> {
         const infraEntryDto: DeleteCouponEntryDto = { cuponId: id };

@@ -13,16 +13,16 @@ export class GetCategoryByIdService implements IApplicationService<GetCategoryBy
   }
     
     async execute(data: GetCategoryByIdServiceEntryDTO): Promise<Result<GetCategoryByIdServiceResponseDTO>> {
-        const category = await this.categoryRepository.findCategoryById(data.id_category)
+        const category = await this.categoryRepository.findCategoryById(data.id)
 
         if (!category.isSuccess())
             return Result.fail(new Error("Categoría no encontrada"), 404, "Categoría no encontrada")
 
         const response: GetCategoryByIdServiceResponseDTO = {
 
-            categoryID:category.Value.Id.Value,
-            categoryName:category.Value.getCategoryName().Value,
-            categoryImage:category.Value.getCategoryImage().Value,
+            id:category.Value.Id.Value,
+            name:category.Value.getCategoryName().Value,
+            image:category.Value.getCategoryImage().Value,
 
         }
 

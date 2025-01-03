@@ -74,8 +74,6 @@ export class CreateDetalleService implements IApplicationService
 
             const result = await this.detalleRepository.saveDetalle(detalle_combos)
 
-            console.log("Guardado")
-
             if (!result.isSuccess())
                 return Result.fail(new Error("Detalle de productos no creado"), 404, "Detalle de productos no creado")
 

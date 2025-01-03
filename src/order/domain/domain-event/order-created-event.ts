@@ -9,6 +9,7 @@ export class OrderCreated extends DomainEvent {
         public id: string,
         public estado: EnumOrderEstados,
         public fecha_creacion: Date,
+        //public fecha_entrega: Date,
         public productos: OrderProduct[],
         public bundles: OrderBundle[]
     ) {
@@ -19,6 +20,7 @@ export class OrderCreated extends DomainEvent {
         id: string,
         estado: EnumOrderEstados,
         fecha_creacion: Date,
+        //fecha_entrega: Date,
         productos: OrderProduct[],
         bundles: OrderBundle[]
     ): OrderCreated {
@@ -26,6 +28,7 @@ export class OrderCreated extends DomainEvent {
             id,
             estado,
             fecha_creacion,
+            //fecha_entrega,
             productos,
             bundles
         );

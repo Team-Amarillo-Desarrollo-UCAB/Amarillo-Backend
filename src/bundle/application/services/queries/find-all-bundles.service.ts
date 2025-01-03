@@ -15,11 +15,17 @@ export class FindAllBundlesApplicationService
   }
 
   async execute(data: GetAllBundlesServiceEntryDTO): Promise<Result<GetAllBundlesServiceResponseDTO[]>> {
-    data.page = data.page * data.limit - data.limit;
-    console.log("DATA.DISCOUNT ANTES DE LLAMAR A REPO:",data.discount)
-    console.log("DATA.NAME ANTES DE LLAMAR A REPO:",data.name)
 
-    const bundlesResult = await this.bundleRepository.findAllBundles(data.page, data.limit, data.category, data.name, data.price, data.popular, data.discount);
+    // console.log("Valor de page antes del calculo:",data.page)
+    // console.log("Valor de perpage antes del calculo:",data.perpage)
+
+    // //data.page = data.page * data.perpage - data.perpage;
+
+    // console.log("Valor de page despues del calculo:",data.page)
+    // console.log("Valor de perpage despues del calculo:",data.perpage) 
+
+
+    const bundlesResult = await this.bundleRepository.findAllBundles(data.page, data.perpage, data.category, data.name, data.price, data.popular, data.discount);
 
     
     //EN EL REPO ME TRAE DISCOUNT CON VALOR RANDOM

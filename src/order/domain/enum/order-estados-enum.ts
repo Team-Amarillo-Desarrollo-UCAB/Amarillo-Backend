@@ -1,6 +1,8 @@
 export enum EnumOrderEstados{
     CREATED = 'CREATED',
+    CREADA = 'Creada',
     ENPROGRESO = "En progeso",
     EN_CAMINO = "En camnio",
-    ENTREGADO = "Entregado"
+    ENTREGADA = "Entregada",
+    CANCELED = 'Cancelada'
 }

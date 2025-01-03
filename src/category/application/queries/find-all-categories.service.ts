@@ -14,9 +14,9 @@ export class FindAllCategoriesApplicationService
   }
 
   async execute(data: GetAllCategoriesServiceEntryDTO): Promise<Result<GetAllCategoriesServiceResponseDTO[]>> {
-    data.page = data.page * data.limit - data.limit;
+    data.page = data.page * data.perpage - data.perpage;
     // Obtener todas las categorías desde el repositorio
-    const categoriesResult = await this.categoryRepository.findAllCategories(data.page,data.limit,data.categoryName || '',data.discount|| '');
+    const categoriesResult = await this.categoryRepository.findAllCategories(data.page,data.perpage,data.name || '',data.discount|| '');
 
     
 
@@ -29,9 +29,9 @@ export class FindAllCategoriesApplicationService
 
     // Mapear las entidades de categoría a DTOs de respuesta directamente en el servicio
     const categoriesDto = categoriesResult.Value.map(async(category) => response.push({
-      categoryID: category.getCategoryID().Value,     
-      categoryName: category.getCategoryName().Value,   
-      categoryImage: category.getCategoryImage().Value 
+      id: category.getCategoryID().Value,     
+      name: category.getCategoryName().Value,   
+      image: category.getCategoryImage().Value 
     }));
 
     return Result.success(response, 202);

@@ -5,6 +5,7 @@ import { DiscountID } from "src/discount/domain/value-objects/discount-id";
 import { ProductCaducityDate } from "../value-objects/productCaducityDate";
 import { ProductImage } from "../value-objects/product-image";
 import { ProductWeight } from "../value-objects/product-weight";
+import { Moneda } from 'src/product/domain/enum/Monedas';
 
 export class ProductCreated extends DomainEvent {
     protected constructor(
@@ -14,7 +15,7 @@ export class ProductCreated extends DomainEvent {
         public unit: UnidadMedida,
         public cantidad_medida: number,
         public amount: number,
-        public currency: string,
+        public currency: Moneda,
         public images: ProductImage[],
         public stock: number,
         public categories: CategoryID[],
@@ -32,7 +33,7 @@ export class ProductCreated extends DomainEvent {
         unit: UnidadMedida,
         cantidad_medida: number,
         amount: number,
-        currency: string,
+        currency: Moneda,
         images: ProductImage[],
         stock: number,
         categories: CategoryID[],

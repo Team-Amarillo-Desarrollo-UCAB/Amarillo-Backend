@@ -2,27 +2,50 @@ import { Order } from "src/order/domain/order";
 import { Result } from "../result-handler/Result";
 import { IPaymentMethod } from "./determinar-metodo-pago.interface";
 import { InvalidPaymentMethod } from "src/payment-method/domain/domain-exception/invalid-payment-method";
+import { Cupon } from "src/cupon/domain/cupon";
+import { ITaxesCalculationPort } from "./taxes-calculation.port";
+import { OrderTotal } from "src/order/domain/value-object/order-total";
+import { Moneda } from "src/product/domain/enum/Monedas";
 
 export class OrderCalculationTotal {
 
     private readonly metodoPagoService: IPaymentMethod
-    constructor(metodoPagoService: IPaymentMethod) {
+    private readonly taxesCalculationService: ITaxesCalculationPort
+
+    constructor(metodoPagoService: IPaymentMethod,taxesService: ITaxesCalculationPort) {
         this.metodoPagoService = metodoPagoService
+        this.taxesCalculationService = taxesService
     }
 
-    // TODO: Mas adelante se agregara la aplicacion de los cupones o los descuentos
-    async execute(orden: Order): Promise<Result<Order>> {
+    async execute(orden: Order, cupon?: Cupon): Promise<Result<Order>> {
 
         let monto_total = 0
+
         for (const p of orden.Productos) {
             monto_total += p.Precio().Amount * p.Cantidad().Value
         }
 
-        for(const c of orden.Bundles){
+        for (const c of orden.Bundles) {
             monto_total += c.Precio().Amount * c.Cantidad().Value
         }
 
-        orden.assignOrderCost(monto_total)
+        if (cupon) {
+
+            const fecha_actual = new Date()
+            const fecha_vencimiento = cupon.ExpirationDate()
+
+            fecha_actual.setHours(0, 0, 0, 0)
+            fecha_vencimiento.setHours(0, 0, 0, 0)
+
+            if(fecha_actual.getTime() < fecha_vencimiento.getTime())
+                monto_total -= cupon.Amount()
+        }
+
+        const total = OrderTotal.create(monto_total,Moneda.USD)
+
+        let impuestos = await this.taxesCalculationService.execute(total)
+
+        orden.assignOrderCost(OrderTotal.create(monto_total + impuestos.Value,Moneda.USD))
 
         const result = await this.metodoPagoService.execute(orden)
 

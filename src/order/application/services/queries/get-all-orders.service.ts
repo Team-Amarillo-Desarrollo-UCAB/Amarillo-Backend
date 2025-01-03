@@ -3,7 +3,6 @@ import { GetAllOrdersServiceEntryDTO } from "../../DTO/entry/get-all-orders-entr
 import { GetAllOrdersServiceResponseDTO } from "../../DTO/response/get-all-orders-service-service.dto";
 import { Result } from "src/common/domain/result-handler/Result";
 import { IOrderRepository } from "src/order/domain/repositories/order-repository.interface";
-import { Order } from "src/order/domain/order";
 
 export class GetAllOrdersService implements
     IApplicationService<GetAllOrdersServiceEntryDTO, GetAllOrdersServiceResponseDTO[]> {

@@ -1,5 +1,8 @@
 export enum UnidadMedida{
     KG = 'kg',
-    GRAMOS = 'g',
-    LITROS = 'l',
+    GRAMOS = 'gr',
+    LITROS = 'lt',
+    MILIGRAMOS ='mg',
+    MILILITROS='ml',
+    CM3='cm3'//
 }
