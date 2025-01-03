@@ -2,8 +2,8 @@ import * as admin from 'firebase-admin';
 
 import { PushMulticastDto } from 'src/common/application/push-sender/dto/send-multi-notification-dto';
 import { PushNotificationDto } from 'src/common/application/push-sender/dto/send-notification-dto';
-import { IPushSender } from 'src/common/Application/push-sender/push-sender.interface';
-import { Result } from 'src/common/Domain/result-handler/Result';
+import { IPushSender } from 'src/common/application/push-sender/push-sender.interface';
+import { Result } from 'src/common/domain/result-handler/Result';
 
 export class FirebaseNotifier implements IPushSender {
 

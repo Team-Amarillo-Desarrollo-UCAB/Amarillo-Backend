@@ -1,6 +1,5 @@
-import { IApplicationService } from "src/common/Application/application-services/application-service.interface"
-import { ApplicationServiceEntryDto } from "src/common/Application/application-services/dto/application-service-entry.dto"
-import { Result } from "src/common/Domain/result-handler/Result"
+import { IApplicationService } from "src/common/application/application-services/application-service.interface"
+import { Result } from "src/common/domain/result-handler/Result"
 import { GetNotificationsUserServiceEntryDto } from "../dto/entry/get-all-notifications-by-user-entry.dto";
 import { INotificationAlertRepository } from "../../interface/notification-alert-repository.interface";
 import { GetNotificationsUserServiceResponseDto } from "../dto/response/get-all-notifications-by-user-response.dto";
