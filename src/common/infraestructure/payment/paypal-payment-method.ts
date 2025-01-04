@@ -7,6 +7,7 @@ import { OrderPaymentId } from "src/order/domain/value-object/oder-payment/order
 import { OrderPaymentName } from "src/order/domain/value-object/oder-payment/order-payment-name";
 import { EnumPaymentMethod } from "src/payment-method/domain/enum/PaymentMethod";
 import { OrderPaymentCurrency } from '../../../order/domain/value-object/oder-payment/order-payment-currency';
+import { OrderPaymentTotal } from "src/order/domain/value-object/oder-payment/order-payment-total";
 
 export class PaypalPaymentMethod implements IPaymentMethod {
 
@@ -30,7 +31,7 @@ export class PaypalPaymentMethod implements IPaymentMethod {
             OrderPaymentId.create(await this.idGenerator.generateId()),
             OrderPaymentName.create(EnumPaymentMethod.PAYPAL),
             OrderPaymentCurrency.create(orden.Moneda),
-            orden.Monto,
+            OrderPaymentTotal.create(orden.Monto.Total)
         )
 
         orden.asignarMetodoPago(pago)

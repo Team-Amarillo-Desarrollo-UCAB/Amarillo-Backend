@@ -23,8 +23,6 @@ import { UuidGenerator } from "src/common/infraestructure/id-generator/uuid-gene
 import { RabbitEventBus } from "src/common/infraestructure/rabbit-event-handler/rabbit-event-handler";
 import { IOrderRepository } from "src/order/domain/repositories/order-repository.interface";
 import { OrderRepository } from "../repositories/order-repository";
-import { IMapper } from "src/common/application/mappers/mapper.interface";
-import { CreateOrderEntryDTO } from "../DTO/entry/create-order-entry-dto";
 import { CreateOrderResponseDTO } from "../DTO/response/create-order-response";
 import { CreateOrderEntryServiceDTO } from "src/order/application/DTO/entry/create-order-entry-service";
 import { CreateOrderService } from "src/order/application/services/command/create-order.service";
@@ -34,9 +32,6 @@ import { ProductMapper } from "src/product/infraestructure/mappers/product-mappe
 import { OrderMapper } from "../mappers/order-mapper";
 import { CreateDetalleService } from "../services/command/create-detalle-orden.service";
 import { DetalleRepository } from "../repositories/detalle_orden.respoitory";
-import { CreateEstadoOrdenService } from "../services/command/create-estado-orden.service";
-import { EstadoOrdenRepository } from "../repositories/estado_orden.repository";
-import { EstadoRepository } from "../repositories/estado.repository";
 import { NodemailerEmailSender } from "src/common/infraestructure/utils/nodemailer-email-sender.infraestructure";
 import { OrderCreated } from "src/order/domain/domain-event/order-created-event";
 import { CreateOrderRequestDTO } from "../DTO/entry/create-order-request-dto";
@@ -65,7 +60,6 @@ import { GetAllOrdersReponseDTO } from "../DTO/response/get-all-ordes-response";
 import { PaymentMapper } from "../mappers/payment-mapper";
 import { OrmBundleRepository } from "src/bundle/infraestructure/repositories/orm-bundle.repository";
 import { BundleMapper } from "src/bundle/infraestructure/mappers/bundle-mapper";
-import { HistoricoPrecioRepository } from "src/product/infraestructure/repositories/historico-precio.repository";
 import { BundleStock } from "src/bundle/domain/value-objects/bundle-stock";
 import { ICuponRepository } from "src/cupon/domain/repositories/cupon-repository.interface";
 import { CuponRepository } from "src/cupon/infraestructure/repositories/cupon-repository";
@@ -74,9 +68,6 @@ import { GetPastOrdersServiceEntryDTO } from "src/order/application/DTO/entry/ge
 import { GetPastOrdersService } from "src/order/application/services/queries/get-past-orders.service";
 import { GetActiveOrdersService } from "src/order/application/services/queries/get-active-orders.service";
 import { GetActiveOrdersServiceEntryDTO } from "src/order/application/DTO/entry/get-active-orders-service-entry.dto";
-import { CancelOrderServiceEntryDTO } from "src/order/application/DTO/entry/cancel-order-service-entry.dto";
-import { CancelOrderService } from "src/order/application/services/command/cancel-order.service";
-import { CancelOrderResponseDTO } from "../DTO/response/cancel-order-response.dto";
 import { IDiscountRepository } from "src/discount/domain/repositories/discount.repository.interface";
 import { OrmDiscountMapper } from "src/discount/infraestructure/mappers/discount.mapper";
 import { OrmDiscountRepository } from "src/discount/infraestructure/repositories/orm-discount.repository";
@@ -87,6 +78,15 @@ import { ChangeOrderStateEntryDTO } from "../DTO/entry/change-order-state-entry.
 import { ChangeOrderServiceEntryDTO } from "src/order/application/DTO/entry/change-order-service-entry.dto";
 import { ChangeOrderStateService } from "src/order/application/services/command/change-order-state.service";
 import { ChangeOrderServiceResponseDTO } from "src/order/application/DTO/response/change-order-service-response.dto";
+import { ReportMapper } from "../mappers/report-mapper";
+import { CreateReportEntryDTO } from "../DTO/entry/create-report-entry.dto";
+import { CreateReportResponseDTO } from "../DTO/response/create-report-response.dto";
+import { CreateReportServiceEntryDTO } from "src/order/application/DTO/entry/create-report-service-entry.dto";
+import { CreateReportService } from "src/order/application/services/command/create-report.service";
+import { IShippingFee } from "src/common/domain/domain-service/shipping-fee-calculate.port";
+import { ShippingFeeDistance } from "src/common/infraestructure/domain-services-adapters/shipping-fee-distance.adapter";
+import { OrderLocationDelivery } from '../../domain/value-object/order-location-delivery';
+import Stripe from "stripe";
 
 @ApiTags("Order")
 @Controller("order")
@@ -115,8 +115,9 @@ export class OrderController {
 
         this.orderRepository =
             new OrderRepository(
-                new OrderMapper(this.idGenerator),
+                new OrderMapper(this.idGenerator, new PaymentMapper()),
                 new PaymentMapper(),
+                new ReportMapper(),
                 dataSource
             )
         this.bundleRepository = new OrmBundleRepository(
@@ -137,7 +138,7 @@ export class OrderController {
             )
         this.detalleRepository = new DetalleRepository(dataSource)
         this.paymentMethodRepository = new PaymentMethodRepository(dataSource, new PaymentMethodMapper())
-        this.discountRepository = new OrmDiscountRepository(new OrmDiscountMapper(),dataSource)
+        this.discountRepository = new OrmDiscountRepository(new OrmDiscountMapper(), dataSource)
     }
 
     @Get('one/by/:id')
@@ -173,7 +174,7 @@ export class OrderController {
         console.log("Resultado del servicio: ", result.Value)
 
         const response: GetOrderByIdReponseDTO = {
-            id_orden: id,
+            id: id,
             ...result.Value
         };
 
@@ -262,6 +263,7 @@ export class OrderController {
 
         const data: CreateOrderEntryServiceDTO = {
             userId: user.id,
+            ...request,
             products: request.products,
             bundles: request.bundles
         };
@@ -283,7 +285,8 @@ export class OrderController {
                                     request.email,
                                     this.idGenerator
                                 ),
-                                this.taxes
+                                this.taxes,
+                                new ShippingFeeDistance()
                             )
                         ),
                         new NativeLogger(this.logger)
@@ -386,6 +389,7 @@ export class OrderController {
 
         const data: CreateOrderEntryServiceDTO = {
             userId: user.id,
+            ...request,
             products: request.products,
             bundles: request.bundles
         };
@@ -409,7 +413,8 @@ export class OrderController {
                                     this.paymentMethodRepository,
                                     request.idPayment
                                 ),
-                                this.taxes
+                                this.taxes,
+                                new ShippingFeeDistance()
                             )
                         ),
                         new NativeLogger(this.logger)
@@ -468,7 +473,7 @@ export class OrderController {
 
     }
 
-    @Get('past')
+    @Get('many/past/:id')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOkResponse({
@@ -477,11 +482,12 @@ export class OrderController {
         isArray: true
     })
     async getPastOrdersByUser(
-        @GetUser() user
+        @GetUser() user,
+        @Param('id', ParseUUIDPipe) id: string
     ) {
 
         const data: GetPastOrdersServiceEntryDTO = {
-            userId: user.id
+            userId: id
         }
 
         const service =
@@ -591,6 +597,95 @@ export class OrderController {
 
         return response
 
+    }
+
+    @Post('report')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOkResponse({
+        description: 'Crear un reporte para la orden',
+        type: CreateReportResponseDTO,
+    })
+    async createReport(
+        @GetUser() user,
+        @Body() request: CreateReportEntryDTO
+    ) {
+
+        const data: CreateReportServiceEntryDTO = {
+            userId: user.id,
+            id_orden: request.id_orden,
+            texto: request.texto
+        }
+
+        const service =
+            new ExceptionDecorator(
+                new LoggingDecorator(
+                    new PerformanceDecorator(
+                        new CreateReportService(
+                            this.orderRepository,
+                            this.idGenerator
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new HttpExceptionHandler()
+            )
+
+        const result = await service.execute(data)
+
+        const response: CreateReportResponseDTO = {
+            ...result.Value
+        }
+
+        return response
+
+    }
+
+    @Get('HERE')
+    async testHere() {
+        const ubicacion = OrderLocationDelivery.create(
+            "ojsafa",
+            10.521805,
+            -66.93847,
+        )
+
+        const stripe = new Stripe(process.env.STRIPE_API_SECRET)
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: 10 * 100,  // Monto en centavos (usd * 100)
+            currency: 'usd',
+            confirm: true,
+            payment_method: "pm_card_visa",
+            payment_method_types: ['card'],
+            metadata: {
+                id_pago: '550e8400-e29b-41d4-a716-446655440000',  // Un identificador personalizado
+            }
+        });
+
+        // Primero, obtenemos los PaymentIntents
+        const paymentIntents = await stripe.paymentIntents.list({
+            limit: 100,  // Puedes ajustar el límite según tus necesidades o usar paginación
+        });
+
+        // Luego, filtramos los resultados usando el campo de metadata
+        const filteredPaymentIntents = paymentIntents.data.filter((paymentIntent) => {
+            return paymentIntent.metadata.id_pago === '550e8400-e29b-41d4-a716-446655440000';  // ID personalizado que buscaste
+        });
+
+        if (filteredPaymentIntents.length > 0) {
+            const paymentIntent = filteredPaymentIntents[0];  // Tomamos el primer resultado encontrado
+            console.log('PaymentIntent encontrado:', paymentIntent);
+
+            // Realizamos el reembolso con el PaymentIntent encontrado
+            const reembolso = await stripe.refunds.create({
+                payment_intent: paymentIntent.id
+            });
+            console.log('Reembolso procesado:', reembolso);
+        } else {
+            console.log('No se encontró el PaymentIntent con ese ID de pago.');
+        }
+
+        //this.shippingFee.execute(ubicacion,undefined)
     }
 
 }

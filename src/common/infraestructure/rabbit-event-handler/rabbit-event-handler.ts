@@ -13,6 +13,7 @@ import { OrderBundleCantidad } from 'src/order/domain/value-object/order-bundle/
 import { OrderBundleCurrency } from 'src/order/domain/value-object/order-bundle/order-bundle-currency'
 import { OrderBundleName } from 'src/order/domain/value-object/order-bundle/order-bundle-name'
 import { OrderBundlePrice } from 'src/order/domain/value-object/order-bundle/order-bundle-price'
+import { OrderLocationDelivery } from 'src/order/domain/value-object/order-location-delivery'
 import { OrderProductAmount } from 'src/order/domain/value-object/order-product/order-product-amount'
 import { OrderProductCantidad } from 'src/order/domain/value-object/order-product/order-product-cantidad'
 import { OrderProductCurrency } from 'src/order/domain/value-object/order-product/order-product-currency'
@@ -121,6 +122,7 @@ export class RabbitEventBus implements IEventHandler {
                                 event_data.id,
                                 event_data.estado,
                                 new Date(event_data.fecha_creacion),
+                                new Date(event_data.fecha_entrega),
                                 await Promise.all(
                                     event_data.productos.map(async (p) => {
                                         return OrderProduct.create(
@@ -146,6 +148,11 @@ export class RabbitEventBus implements IEventHandler {
                                             )
                                         )
                                     })
+                                ),
+                                OrderLocationDelivery.create(
+                                    event_data.ubicacion.direccion,
+                                    event_data.ubicacion.longitud,
+                                    event_data.ubicacion.latitud
                                 )
                             );
                             break;
@@ -153,7 +160,10 @@ export class RabbitEventBus implements IEventHandler {
                             event = OrderTotalCalculated.create(
                                 event_data.id,
                                 event_data.total,
-                                event_data.moneda
+                                event_data.subTotal,
+                                event_data.moneda,
+                                event_data.descuento,
+                                event_data.shippingFee
                             )
                             break;
                         case 'ProductCreated':

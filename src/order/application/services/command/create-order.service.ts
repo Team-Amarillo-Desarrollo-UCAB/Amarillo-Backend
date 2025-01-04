@@ -31,6 +31,10 @@ import { UserId } from "src/user/domain/value-object/user-id";
 import { ICuponRepository } from "src/cupon/domain/repositories/cupon-repository.interface";
 import { Cupon } from "src/cupon/domain/cupon";
 import { IDiscountRepository } from "src/discount/domain/repositories/discount.repository.interface";
+import { OrderReciviedDate } from "src/order/domain/value-object/order-recivied-date";
+import { OrderLocationDelivery } from "src/order/domain/value-object/order-location-delivery";
+import { OrderDiscount } from "src/order/domain/value-object/order-discount";
+import { OrderSubTotal } from "src/order/domain/value-object/order-subtotal";
 
 export class CreateOrderService implements IApplicationService<CreateOrderEntryServiceDTO, CreateOrderResponseServiceDTO> {
 
@@ -58,6 +62,8 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
 
         let productos: OrderProduct[] = []
         let combos: OrderBundle[] = []
+        let subTotal: number = 0
+
         let detalle_productos: any[] = []
         let detalle_combos: any[] = []
 
@@ -75,6 +81,7 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
                     return Result.fail<CreateOrderResponseServiceDTO>(new InvalidProductStock("Cantidad excede el stock actual del producto"), 409, "Cantidad excede el stock actual del producto")
 
                 let precio_producto = producto.Price
+                subTotal += precio_producto * p.quantity
 
                 if (producto.Discount && producto.Discount.Value != null) {
 
@@ -83,7 +90,10 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
                     if (!find_discount.isSuccess())
                         return Result.fail<CreateOrderResponseServiceDTO>(find_discount.Error, find_discount.StatusCode, find_discount.Message)
 
-                    precio_producto -= precio_producto * (find_discount.Value.Percentage.Value / 100)
+
+                    //descuento += precio_producto * (find_discount.Value.Percentage.Value / 100)
+
+                    precio_producto -= parseFloat((precio_producto * (find_discount.Value.Percentage.Value / 100)).toFixed(2))
 
                 }
 
@@ -128,6 +138,7 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
                     return Result.fail<CreateOrderResponseServiceDTO>(new Error("Cantidad excede el stock actual del combo"), 409, "Cantidad excede el stock actual del combo")
 
                 let precio_combo = combo.price.Price
+                subTotal += precio_combo * c.quantity
 
                 if (combo.Discount && combo.Discount.Value != null) {
                     const find_discount = await this.discountRepository.findDiscountById(combo.Discount.Value)
@@ -135,11 +146,9 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
                     if (!find_discount.isSuccess())
                         return Result.fail<CreateOrderResponseServiceDTO>(find_discount.Error, find_discount.StatusCode, find_discount.Message)
 
-                    precio_combo -= precio_combo * (find_discount.Value.Percentage.Value / 100)
-
+                    //descuento += precio_combo * (find_discount.Value.Percentage.Value / 100)
+                    precio_combo -= parseFloat((precio_combo * (find_discount.Value.Percentage.Value / 100)).toFixed(2))
                 }
-
-                console.log("Antes")
 
                 combos.push(
                     OrderBundle.create(
@@ -152,8 +161,6 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
                         )
                     )
                 )
-                
-                console.log("Despues")
 
                 detalle_combos.push({
                     id: combo.Id,
@@ -170,17 +177,19 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
             }
         }
 
-        console.log("Se llego")
-
         // Se crean los atributos extras de la entidad de dominio
         const id_orden = await this.idGenerator.generateId()
-        const estado = EnumOrderEstados.CREATED
-        const fecha_creacion = new Date()
 
         let orden = Order.create(
             OrderId.create(id_orden),
-            OrderEstado.create(estado),
-            OrderCreationDate.create(fecha_creacion),
+            OrderEstado.create(EnumOrderEstados.CREATED),
+            OrderCreationDate.create(new Date()),
+            OrderReciviedDate.create(new Date(data.orderReciviedDate)),
+            OrderLocationDelivery.create(
+                data.ubicacion,
+                data.longitud,
+                data.latitud
+            ),
             productos,
             combos,
             UserId.create(data.userId)
@@ -198,7 +207,7 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
         }
 
         // Se utiliza el servicio de dominio para calcular el monto y asignarle el metodo de pago
-        const result_domain = await this.calcularTotalService.execute(orden, cupon)
+        const result_domain = await this.calcularTotalService.execute(orden, OrderSubTotal.create(subTotal), cupon)
 
         if (!result_domain.isSuccess())
             return Result.fail<CreateOrderResponseServiceDTO>(result_domain.Error, result_domain.StatusCode, result_domain.Message)
@@ -207,12 +216,8 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
 
         const result = await this.orderRepository.saveOrderAggregate(orden)
 
-        console.log("Hay un error")
-
         if (!result.isSuccess())
             return Result.fail(new Error("Orden no creada"), 404, "Orden no creada")
-
-        console.log("Hasta Aqui funciona")
 
         const response: CreateOrderResponseServiceDTO = {
             id: result.Value.Id.Id,

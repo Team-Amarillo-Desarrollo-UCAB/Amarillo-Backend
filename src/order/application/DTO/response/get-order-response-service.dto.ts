@@ -2,16 +2,45 @@ import { EnumOrderEstados } from "src/order/domain/enum/order-estados-enum";
 
 export class GetOrderByIdResponseServiceDTO {
 
-    id_orden: string;
+    id: string
 
-    detalle: {
-        id_producto: string;
-        cantidad_producto: number;
-    }[];
+    orderState: EnumOrderEstados
 
-    monto_total: number
+    orderCreatedDate: Date
 
-    fecha_creacion: Date
+    totalAmount: number
 
-    estado: EnumOrderEstados
+    sub_total?: number
+
+    currency: string
+
+    orderDirection: {
+        lat: number,
+        long: number
+    }
+
+    directionName?: string
+
+    products: {
+        id: string,
+        quantity: number
+    }[]
+
+    bundles: {
+        id: string,
+        quantity: number
+    }[]
+
+    orderReciviedDate?: Date
+
+    orderReport?: string
+
+    orderPayment?: {
+        amount: number,
+        currency: string,
+        paymentMethod: string
+    }
+
+    orderDiscount?: number
+
 }

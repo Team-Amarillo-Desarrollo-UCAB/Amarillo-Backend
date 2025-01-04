@@ -17,20 +17,41 @@ export class GetOrderByIdService implements IApplicationService
 
     async execute(data: GetOrderByIdEntryServiceDTO): Promise<Result<GetOrderByIdResponseServiceDTO>> {
 
-        const orden = await this.orderRepository.findOrderById(data.id_orden)
+        const find_orden = await this.orderRepository.findOrderById(data.id_orden)
 
-        if (!orden.isSuccess())
+        if (!find_orden.isSuccess())
             return Result.fail(new Error("Orden no encontrada"), 404, "Orden no encontrada")
 
+        const orden = find_orden.Value
+
         const response: GetOrderByIdResponseServiceDTO = {
-            id_orden: orden.Value.Id.Id,
-            detalle: orden.Value.Productos.map((product) => ({
-                id_producto: product.Id.Id,
-                cantidad_producto: product.Cantidad().Value
+            id: orden.Id.Id,
+            orderState: orden.Estado.Estado,
+            orderCreatedDate: orden.Fecha_creacion.Date_creation,
+            totalAmount: orden.Monto.Total,
+            sub_total: orden.Monto.SubTotal.Value,
+            currency: orden.Monto.Currency,
+            orderDirection: {
+                lat: orden.Direccion.Latitud,
+                long: orden.Direccion.Longitud
+            },
+            directionName: orden.Direccion ? orden.Direccion.Direccion : null,
+            products: orden.Productos.map((product) => ({
+                id: product.Id.Id,
+                quantity: product.Cantidad().Value
             })),
-            monto_total: orden.Value.Monto.Total,
-            fecha_creacion: orden.Value.Fecha_creacion.Date_creation,
-            estado: orden.Value.Estado.Estado
+            bundles: orden.Bundles.map((combo) => ({
+                id: combo.Id.Value,
+                quantity: combo.Cantidad().Value
+            })),
+            orderReciviedDate: orden.Fecha_entrega ? orden.Fecha_entrega.Date_creation : null,
+            orderReport: orden.Reporte ? orden.Reporte.Texto().Texto : null,
+            orderPayment: orden.Payment ? {
+                amount: orden.Payment.AmountPayment().Total,
+                currency: orden.Payment.CurrencyPayment().Currency,
+                paymentMethod: orden.Payment.NameMethod().Name()
+            } : null,
+            orderDiscount: orden.Monto.Discount.Value
         }
 
         return Result.success(response, 202)

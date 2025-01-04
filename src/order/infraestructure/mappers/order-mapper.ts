@@ -7,10 +7,7 @@ import { OrderEstado } from "src/order/domain/value-object/order-estado";
 import { Estado_Orden } from "../entites/Estado-orden/estado_orden.entity";
 import { OrderCreationDate } from "src/order/domain/value-object/order-fecha-creacion";
 import { OrderTotal } from "src/order/domain/value-object/order-total";
-import { OrderDetail } from "src/order/domain/entites/order-detail";
-import { OrderDetalleId } from "src/order/domain/value-object/order-detalle.ts/order-detalle-id";
 import { ProductId } from "src/product/domain/value-objects/product-id";
-import { OrderDetalleCantidad } from "src/order/domain/value-object/order-detalle.ts/order-detalle-cantidad";
 import { EnumOrderEstados } from "src/order/domain/enum/order-estados-enum";
 import { IdGenerator } from "src/common/application/id-generator/id-generator.interface";
 import { OrderProduct } from "src/order/domain/entites/order-product";
@@ -29,15 +26,28 @@ import { OrderBundleAmount } from "src/order/domain/value-object/order-bundle/or
 import { OrderBundleCurrency } from "src/order/domain/value-object/order-bundle/order-bundle-currency";
 import { UserId } from "src/user/domain/value-object/user-id";
 import { Moneda } from "src/product/domain/enum/Monedas";
+import { Payment } from "../entites/payment.entity";
+import { OrderPayment } from "src/order/domain/entites/order-payment";
+import { OrderReciviedDate } from "src/order/domain/value-object/order-recivied-date";
+import { OrderLocationDelivery } from "src/order/domain/value-object/order-location-delivery";
+import { OrderReport } from "src/order/domain/entites/order-report";
+import { OrderReportId } from "src/order/domain/value-object/order-report/order-report-id";
+import { OrderReportText } from "src/order/domain/value-object/order-report/order-report-text";
+import { OrderDiscount } from "src/order/domain/value-object/order-discount";
+import { OrderSubTotal } from "src/order/domain/value-object/order-subtotal";
+import { OrderShippingFee } from "src/order/domain/value-object/order-shipping-fee";
 
 export class OrderMapper implements IMapper<Order, OrmOrder> {
 
     private readonly idGenerator: IdGenerator<string>
+    private readonly paymentMapper: IMapper<OrderPayment, Payment>
 
     constructor(
-        idGenerator: IdGenerator<string>
+        idGenerator: IdGenerator<string>,
+        paymentMapper: IMapper<OrderPayment, Payment>
     ) {
         this.idGenerator = idGenerator
+        this.paymentMapper = paymentMapper
     }
 
     async fromDomainToPersistence(domain: Order): Promise<OrmOrder> {
@@ -74,14 +84,21 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
             }
         }
 
-        console.log()
-
         const order = OrmOrder.createWithUser(
             domain.Id.Id,
             domain.Fecha_creacion.Date_creation,
+            domain.Fecha_entrega.Date_creation,
+            domain.Direccion.Longitud,
+            domain.Direccion.Latitud,
+            domain.Direccion.Direccion,
             domain.Monto.Total,
+            domain.Monto.SubTotal.Value,
+            domain.Monto.Discount.Value,
+            domain.Monto.ShippingFee.Value,
             domain.Comprador.Id,
-            ormDetalles
+            ormDetalles,
+            undefined,
+            await this.paymentMapper.fromDomainToPersistence(domain.Payment)
         )
 
         return order
@@ -110,14 +127,6 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
 
             if (detalle.producto) {
 
-                let producto = detalle.producto
-                // for (const h of producto.historicos) {
-                //     if (!h.fecha_fin) {
-                //         moneda = h.moneda.simbolo
-                //         precio = h.precio
-                //         break;
-                //     }
-                // }
 
                 productos.push(
                     OrderProduct.create(
@@ -157,20 +166,62 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
 
         persistence.pago ? currency = persistence.pago.moneda : null
 
-        console.log("Orden para transformar: ", persistence)
+        if (persistence.reporte && persistence.reporte !== null) {
+            const order = Order.createWithReport(
+                OrderId.create(persistence.id),
+                orderEstado,
+                OrderCreationDate.create(persistence.fecha_creacion),
+                OrderReciviedDate.create(persistence.fecha_entrega),
+                OrderLocationDelivery.create(
+                    persistence.ubicacion,
+                    persistence.longitud,
+                    persistence.latitud
+                ),
+                productos,
+                combos,
+                OrderReport.create(
+                    OrderReportId.create(persistence.reporte.id),
+                    OrderReportText.create(persistence.reporte.texto)
+                ),
+                persistence.id_user ? UserId.create(persistence.id_user) : null,
+                OrderTotal.create(
+                    persistence.monto_total,
+                    persistence.pago.moneda,
+                    OrderDiscount.create(persistence.descuento),
+                    OrderSubTotal.create(persistence.subTotal),
+                    OrderShippingFee.create(persistence.shipping_fee)
+                )
+            )
+            order.asignarMetodoPago(await this.paymentMapper.fromPersistenceToDomain(persistence.pago))
+            order.pullEvents()
+            console.log("Orden transformada: ", order)
+
+            return order
+        }
 
         const order = Order.create(
             OrderId.create(persistence.id),
             orderEstado,
             OrderCreationDate.create(persistence.fecha_creacion),
+            OrderReciviedDate.create(persistence.fecha_entrega),
+            OrderLocationDelivery.create(
+                persistence.ubicacion,
+                persistence.longitud,
+                persistence.latitud
+            ),
             productos,
             combos,
             persistence.id_user ? UserId.create(persistence.id_user) : null,
-            OrderTotal.create(persistence.monto_total, persistence.pago.moneda),
+            OrderTotal.create(
+                persistence.monto_total,
+                persistence.pago.moneda,
+                OrderDiscount.create(persistence.descuento),
+                OrderSubTotal.create(persistence.subTotal),
+                OrderShippingFee.create(persistence.shipping_fee)
+            ),
         )
-
+        order.asignarMetodoPago(await this.paymentMapper.fromPersistenceToDomain(persistence.pago))
         order.pullEvents()
-        console.log("Orden transformada: ", order)
 
         return order
 

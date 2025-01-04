@@ -29,7 +29,7 @@ export class SaveTokenAddressInfraService implements
             token: saveResult.Value.token
         }
 
-        return Result.success(response, 200)
+        return Result.success<SaveTokenServiceResponseDTO>(response, 200)
     }
 
     get name(): string { return this.constructor.name }

@@ -11,31 +11,46 @@ export class StripeOrderReembolsoAdapter implements IOrderReembolsoPort {
     this.stripe = new Stripe(stripeSecretKey, { apiVersion: "2024-11-20.acacia" });
   }
 
-  async execute(o: Order): Promise<Result<string>> {
+  async execute(orden: Order): Promise<Result<string>> {
     try {
-      
-    const intentos = await this.stripe.paymentIntents.list({})
 
-    const orderID = o.Id
+      const paymentIntents = await this.stripe.paymentIntents.list()
 
-    const stripeIntentos = intentos.data.find((i) => i.metadata.orderId === o.Id.Id)
+      const id = orden.Id.Id
 
-      const refund = await this.stripe.refunds.create({
-        payment_intent: stripeIntentos.id
+      const pagos_realizados = paymentIntents.data.filter((paymentIntent) => {
+        return paymentIntent.metadata.id_pago === id;  // ID personalizado que buscaste
       });
 
-      if (refund.status === "succeeded") {
-        return Result.success<string>(
-          `Reembolso exitoso. ID: ${refund.id}`,
-          200
+      if (pagos_realizados.length > 0) {
+        const paymentIntent = pagos_realizados[0];  // Tomamos el primer resultado encontrado
+        console.log('PaymentIntent encontrado:', paymentIntent);
+
+        // Realizamos el reembolso con el PaymentIntent encontrado
+        const reembolso = await this.stripe.refunds.create({
+          payment_intent: paymentIntent.id
+        });
+        console.log('Reembolso procesado:', reembolso);
+
+        if (reembolso.status === "succeeded") {
+          return Result.success<string>(
+            `Reembolso exitoso. ID: ${reembolso.id}`,
+            200
+          );
+        }
+
+        return Result.fail<string>(
+          new Error(`Reembolso fallido. Estado: ${reembolso.status}`),
+          500,
+          "No se pudo procesar el reembolso."
         );
+      } else {
+        console.log('No se encontró el PaymentIntent con ese ID de pago.');
       }
 
-      return Result.fail<string>(
-        new Error(`Reembolso fallido. Estado: ${refund.status}`),
-        500,
-        "No se pudo procesar el reembolso."
-      );
+
+
+
     } catch (error) {
       return Result.fail<string>(
         new Error("Error al procesar el reembolso con Stripe."),

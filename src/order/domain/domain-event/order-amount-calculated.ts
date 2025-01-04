@@ -5,12 +5,29 @@ export class OrderTotalCalculated extends DomainEvent {
     protected constructor(
         public id: string,
         public total: number,
-        public moneda: Moneda
+        public subTotal: number,
+        public moneda: Moneda,
+        public descuento: number,
+        public shippingFee: number
     ) {
         super();
     }
 
-    static create(id: string, total: number, moneda: Moneda) {
-        return new OrderTotalCalculated(id, total,moneda);
+    static create(
+        id: string,
+        total: number,
+        subTotal: number,
+        moneda: Moneda,
+        descuento: number,
+        shippingFee: number
+    ) {
+        return new OrderTotalCalculated(
+            id,
+            total,
+            subTotal,
+            moneda,
+            descuento,
+            shippingFee
+        );
     }
 }

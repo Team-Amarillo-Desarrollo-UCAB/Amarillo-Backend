@@ -3,6 +3,7 @@ import { OrderPaymentId } from "../value-object/oder-payment/order-payment-id";
 import { OrderPaymentName } from "../value-object/oder-payment/order-payment-name";
 import { OrderPaymentCurrency } from "../value-object/oder-payment/order-payment-currency";
 import { OrderTotal } from "../value-object/order-total";
+import { OrderPaymentTotal } from "../value-object/oder-payment/order-payment-total";
 
 export class OrderPayment extends Entity<OrderPaymentId> {
 
@@ -10,7 +11,7 @@ export class OrderPayment extends Entity<OrderPaymentId> {
         id: OrderPaymentId,
         private readonly name: OrderPaymentName,
         private readonly currency: OrderPaymentCurrency,
-        private readonly amount: OrderTotal
+        private readonly amount: OrderPaymentTotal
     ) {
         super(id)
     }
@@ -31,7 +32,7 @@ export class OrderPayment extends Entity<OrderPaymentId> {
         id: OrderPaymentId,
         name: OrderPaymentName,
         currency: OrderPaymentCurrency,
-        amount: OrderTotal
+        amount: OrderPaymentTotal
     ): OrderPayment{
         return new OrderPayment(id,name,currency,amount)
     }
