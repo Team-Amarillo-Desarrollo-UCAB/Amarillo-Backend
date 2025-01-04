@@ -15,11 +15,9 @@ export interface CreateProductServiceEntryDTO extends ApplicationServiceEntryDto
 
     currency: Moneda
 
-    weight: number
+    weight:number
 
     measurement: UnidadMedida
-
-    stock: number
 
     category?: string[]
 

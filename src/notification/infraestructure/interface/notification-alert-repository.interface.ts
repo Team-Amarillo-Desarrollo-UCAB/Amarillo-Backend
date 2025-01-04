@@ -1,4 +1,4 @@
-import { Result } from "src/common/Domain/result-handler/Result"
+import { Result } from "src/common/domain/result-handler/Result"
 import { OrmNotificationAlertEntity } from '../entites/orm-notification-alert.entity';
 import { PaginationDto } from "src/common/infraestructure/dto/entry/pagination.dto";
 

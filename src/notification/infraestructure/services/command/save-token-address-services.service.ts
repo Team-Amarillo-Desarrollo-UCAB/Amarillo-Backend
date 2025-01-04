@@ -1,5 +1,5 @@
-import { IApplicationService } from "src/common/Application/application-services/application-service.interface";
-import { Result } from "src/common/Domain/result-handler/Result";
+import { IApplicationService } from "src/common/application/application-services/application-service.interface";
+import { Result } from "src/common/domain/result-handler/Result";
 import { INotificationAddressRepository } from "../../interface/notification-address-repository.interface";
 import { SaveTokenAddressServiceEntryDto } from "../dto/entry/save-token-address-service-entry.dto";
 import { SaveTokenServiceResponseDTO } from "../dto/response/save-token-service-response";

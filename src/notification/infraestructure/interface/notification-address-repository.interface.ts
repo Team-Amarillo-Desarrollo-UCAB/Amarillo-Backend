@@ -1,4 +1,4 @@
-import { Result } from "src/common/Domain/result-handler/Result"
+import { Result } from "src/common/domain/result-handler/Result"
 import { OrmNotificationAdressEntity } from '../entites/orm-notification-adress.entity';
 
 export interface INotificationAddressRepository {

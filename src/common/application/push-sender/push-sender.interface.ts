@@ -1,4 +1,4 @@
-import { Result } from "../../Domain/result-handler/Result";
+import { Result } from "../../domain/result-handler/Result";
 import { PushMulticastDto } from "./dto/send-multi-notification-dto";
 import { PushNotificationDto } from "./dto/send-notification-dto";
 

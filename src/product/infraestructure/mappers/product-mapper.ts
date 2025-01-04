@@ -61,6 +61,8 @@ export class ProductMapper implements IMapper<Product, OrmProduct> {
             domain.Categories.map(i => i.Value),
             ormCaducityDate,
             ormDiscount,
+
+
         )
 
         return product
@@ -114,6 +116,8 @@ export class ProductMapper implements IMapper<Product, OrmProduct> {
         );
 
         return product;
+
+
 
 
 

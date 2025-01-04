@@ -1,7 +1,7 @@
-import { IApplicationService } from "src/common/Application/application-services/application-service.interface";
-import { Result } from "src/common/Domain/result-handler/Result";
-import { ApplicationServiceEntryDto } from "src/common/Application/application-services/dto/application-service-entry.dto";
+import { IApplicationService } from "src/common/application/application-services/application-service.interface";
+import { Result } from "src/common/domain/result-handler/Result";
 import { INotificationAlertRepository } from "../../interface/notification-alert-repository.interface";
+import { ApplicationServiceEntryDto } from "src/common/application/application-services/DTO/application-service-entry.dto";
 
 export class DeleteNotificationsInfraService implements IApplicationService<ApplicationServiceEntryDto, any> {
     private readonly notiAlertRepository: INotificationAlertRepository
