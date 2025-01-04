@@ -1,4 +1,4 @@
-import { Body, Controller, Inject, Logger, Post, UseGuards } from "@nestjs/common"
+import { Body, Controller, Get, Inject, Logger, Post, UseGuards } from "@nestjs/common"
 import { DataSource } from "typeorm"
 
 import { IPushSender } from "src/common/application/push-sender/push-sender.interface"
@@ -20,6 +20,8 @@ import { PerformanceDecorator } from "src/common/application/application-service
 import { SaveTokenAddressInfraService } from "../services/command/save-token-address-services.service"
 import { NativeLogger } from "src/common/infraestructure/logger/logger"
 import { HttpExceptionHandler } from "src/common/infraestructure/exception-handler/http-exception-handler-code"
+import { Cron, CronExpression } from "@nestjs/schedule"
+import { NotifyGoodDayInfraService } from "../services/notification-services/notify-good-day-services.service"
 
 @ApiTags('Notification')
 @Controller('notifications')
@@ -70,6 +72,27 @@ export class NotificationController {
         }
 
         return response
+    }
+
+    @Cron(CronExpression.EVERY_DAY_AT_7AM)
+    @Get('goodday')  
+    async goodDayNotification() {
+        const service = new ExceptionDecorator( 
+            new LoggingDecorator(
+                new PerformanceDecorator(
+                    new NotifyGoodDayInfraService(
+                        this.notiAddressRepository,
+                        this.notiAlertRepository,
+                        this.uuidGenerator,
+                        this.pushNotifier
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new NativeLogger(this.logger)
+            ),
+            new HttpExceptionHandler()
+        )
+        return (await service.execute( { userId: 'none' } )).Value    
     }
 
 }

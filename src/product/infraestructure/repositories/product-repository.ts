@@ -86,6 +86,7 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
         category?: string[],
         name?: string,
         price?: number,
+        popular?:string,
         discount?: string
     ): Promise<Result<Product[]>> {
         if (page < 1) {
@@ -124,6 +125,16 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
                 console.log('Filtrando por precio:', price);
                 queryBuilder.andWhere('producto.price = :price', { price });
             }
+
+            if (popular && popular.trim() !== '') {
+                console.log('Filtrando por popularidad:', popular);
+                queryBuilder
+                    .leftJoin('Detalle_carrito', 'dc', 'dc.id_producto = producto.id')
+                    .where('dc.id_producto IS NOT NULL')
+                    .groupBy('producto.id')
+                    .addSelect('COUNT(dc.id)', 'popularity')
+                    .orderBy('popularity', 'DESC')
+                }
 
             if (discount) {
                 console.log('Filtrando por descuento:', discount);
