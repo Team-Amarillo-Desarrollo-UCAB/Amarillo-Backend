@@ -1,5 +1,7 @@
 import { ApplicationServiceEntryDto } from "src/common/application/application-services/DTO/application-service-entry.dto"
+import { Moneda } from "src/product/domain/enum/Monedas"
 import { UnidadMedida } from "src/product/domain/enum/UnidadMedida"
+
 
 export interface CreateProductServiceEntryDTO extends ApplicationServiceEntryDto {
 
@@ -7,22 +9,22 @@ export interface CreateProductServiceEntryDTO extends ApplicationServiceEntryDto
 
     description: string
 
-    price: number
+    images?: string[]
 
-    currency: string
+    price:number
 
-    weight: number
+    currency:Moneda
 
+    weight:number
+    
     measurement: UnidadMedida
 
     stock: number
 
-    images?: string[],
-
-    category?: {id: string}[]
+    category?: string[]
 
     caducityDate?:Date
 
     discount?:string;
-
+    
 }

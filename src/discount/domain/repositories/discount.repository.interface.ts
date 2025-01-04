@@ -5,6 +5,10 @@ import { Discount } from '../discount.entity';
 export interface IDiscountRepository {
 
     addDiscount(discount: Discount): Promise<Result<Discount>>;
-    findAllDiscounts(page: number, limit: number):Promise<Result<Discount[]>>
+    findAllDiscounts(page: number, perpage: number):Promise<Result<Discount[]>>
     findDiscountById(id: string): Promise<Result<Discount>>;
+    updateDiscount(discount:Discount): Promise<Result<Discount>>;
+    deleteDiscount(id:string):Promise<Result<Discount>>
+    
+
 }

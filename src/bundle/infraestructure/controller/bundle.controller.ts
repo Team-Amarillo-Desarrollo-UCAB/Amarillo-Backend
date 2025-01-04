@@ -9,9 +9,11 @@ import {
   Inject,
   BadRequestException,
   ParseUUIDPipe,
-  Patch
+  Patch,
+  Delete,
+  UseGuards
 } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { DataSource } from 'typeorm';
 import { CreateBundleEntryDTO } from '../dto/entry/create-bundle-entry.dto';
 import { CreateBundleServiceEntryDto } from 'src/bundle/application/dto/entry/create-bundle-service-entry.dto';
@@ -34,7 +36,7 @@ import { IFileUploader } from 'src/common/application/file-uploader/file-uploade
 import { UuidGenerator } from 'src/common/infraestructure/id-generator/uuid-generator';
 import { CloudinaryFileUploader } from 'src/common/infraestructure/cloudinary-file-uploader/cloudinary-file-uploader';
 import { BundleCurrency } from 'src/bundle/domain/enum/bundle-currency-enum';
-import { Measurement } from 'src/common/domain/enum/commons-enums/measurement-enum';
+import { Measurement } from 'src/bundle/domain/enum/measurement-enum';
 import { CategoriesExistenceService } from 'src/common/application/application-services/common-services/categories-existence-check.service';
 import { ProductsExistenceService } from 'src/bundle/application/services/queries/product-existence-check.service';
 import { OrmCategoryRepository } from 'src/category/infraestructure/repositories/orm-category-repository';
@@ -50,6 +52,17 @@ import { UpdateBundleApplicationService } from 'src/bundle/application/services/
 import { EventBus } from '../../../common/infraestructure/event-bus/event-bus';
 import { UpdateBundleEntryDTO } from '../dto/entry/update-bundle-entry.dto';
 import { UpdateBundleResponseDTO } from '../dto/response/update-bundle-response.dto';
+import { DeleteBundleResponseDTO } from '../dto/response/delete-bundle-response.dto';
+import { DeleteBundleServiceEntryDto } from 'src/bundle/application/dto/entry/delete-bundle-service-entry.dto';
+import { DeleteBundleApplicationService } from 'src/bundle/application/services/commands/delete-bundle.service';
+import { JwtAuthGuard } from 'src/auth/infraestructure/jwt/decorator/jwt-auth.guard';
+import { GetUser } from 'src/auth/infraestructure/jwt/decorator/get-user.param.decorator';
+import { AuditingDecorator } from 'src/common/application/auditing/auditing.decorator';
+import { OrmAuditingRepository } from 'src/common/infraestructure/auditing/repositories/orm-auditing-repository';
+import { OrmUserRepository } from 'src/user/infraestructure/repositories/orm-repositories/orm-user-repository';
+import { UserMapper } from 'src/user/infraestructure/mappers/orm-mapper/user-mapper';
+import { SecurityDecorator } from 'src/common/application/application-services/decorators/security-decorator/security-decorator';
+import { OrmAccountRepository } from 'src/user/infraestructure/repositories/orm-repositories/orm-account-repository';
 
 
 @ApiTags("Bundle")
@@ -60,10 +73,13 @@ export class BundleController {
   private readonly idGenerator: IdGenerator<string>;
   private readonly fileUploader: IFileUploader;
   private readonly categoryMapper: OrmCategoryMapper
+  private readonly auditingRepository: OrmAuditingRepository;
+  private readonly accountUserRepository: OrmAccountRepository;
 
 
   constructor(
     @Inject('DataSource') private readonly dataSource: DataSource,
+    
     private readonly categoriesExistenceService: CategoriesExistenceService,
     private readonly productExistenceService: ProductsExistenceService,
     private readonly discountExistenceService: DiscountExistenceService
@@ -91,6 +107,8 @@ export class BundleController {
         )
       )
     this.discountExistenceService = new DiscountExistenceService(new OrmDiscountRepository(new OrmDiscountMapper(), this.dataSource))
+    this.auditingRepository = new OrmAuditingRepository(dataSource)  
+    this.accountUserRepository = new OrmAccountRepository(dataSource)
   }
 
   /**
@@ -98,34 +116,57 @@ export class BundleController {
    * @param entry - Datos necesarios para crear el bundle.
    * @returns - Mensaje de éxito o error en caso de fallo.
    */
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()  
   @Post('create')
   @ApiOkResponse({
     description: 'Crea un nuevo bundle en la base de datos',
     type: CreateBundleEntryDTO,
   })
-  async createBundle(@Body() entry: CreateBundleEntryDTO) {
+  async createBundle(@Body() entry: CreateBundleEntryDTO, @GetUser() user) {
     const data: CreateBundleServiceEntryDto = {
-      userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+      userId: user.id,
       ...entry,
       currency: entry.currency as BundleCurrency, // Conversión explícita
       measurement: entry.measurement as Measurement
     };
 
-    const service =
-      new ExceptionDecorator(
-        new LoggingDecorator(
-          new CreateBundleApplicationService(
-            this.bundleRepository,
-            this.idGenerator,
-            this.fileUploader,
-            this.categoriesExistenceService,//
-            this.productExistenceService,
-            this.discountExistenceService
-          ),
-          new NativeLogger(this.logger)
-        ),
+
+    const allowedRoles = ['ADMIN']
+
+    const service = new ExceptionDecorator(
+      new AuditingDecorator(
+        new SecurityDecorator(
+          new LoggingDecorator(
+            new PerformanceDecorator(
+              new CreateBundleApplicationService(
+                this.bundleRepository,
+                this.idGenerator,
+                this.fileUploader,
+                this.categoriesExistenceService,
+                this.productExistenceService,
+                this.discountExistenceService
+              ),
+                new NativeLogger(this.logger)
+            ),
+            new NativeLogger(this.logger)
+        )
+          ,
+          this.accountUserRepository,
+          allowedRoles
+    
+        )
+        ,
+          this.auditingRepository,
+          this.idGenerator
+        )
+              
+      ,
         new HttpExceptionHandler()
-      );
+    )
+  
+
+      
 
     const result = await service.execute(data);
 
@@ -143,19 +184,37 @@ export class BundleController {
    * @param id - ID del bundle.
    * @returns - Datos del bundle o un error si no se encuentra.
    */
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('one/:id')
   async getBundleById(
-    @Param('id', ParseUUIDPipe) id: string
+    @Param('id', ParseUUIDPipe) id: string, @GetUser() user
   ): Promise<GetAllBundlesResponseDTO> {
     const entry: GetBundleByIdServiceEntryDTO = {
-      userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+      userId: user.id,
       id_bundle: id,
     };
 
-    const service = new LoggingDecorator(
-      new GetBundleByIdService(this.bundleRepository),
-      new NativeLogger(this.logger)
-    );
+
+
+    const service = new ExceptionDecorator(
+      new AuditingDecorator(
+        new LoggingDecorator(
+          new PerformanceDecorator(
+            new GetBundleByIdService(this.bundleRepository),
+              new NativeLogger(this.logger)
+          ),
+          new NativeLogger(this.logger)
+      )
+        ,
+        this.auditingRepository,
+        this.idGenerator
+      )
+      ,
+        new HttpExceptionHandler()
+    )
+
+    
 
     const result = await service.execute(entry);
 
@@ -174,6 +233,8 @@ export class BundleController {
    * @param queryEntryParams - Parámetros adicionales de entrada.
    * @returns - Listado de bundles en formato paginado.
    */
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('many')
   @ApiOkResponse({
     description: 'Devuelve la información de todos los combos en formato paginado',
@@ -181,28 +242,38 @@ export class BundleController {
   })
   async getAllBundles(
     @Query() paginacion: PaginationDto,
-    @Query() queryEntryParams: BundleParamsEntryDTO
+    @Query() queryEntryParams: BundleParamsEntryDTO,
+    @GetUser() user
   ): Promise<GetAllBundlesResponseDTO[]> {
-    const service = new ExceptionDecorator(
-      new LoggingDecorator(
-        new FindAllBundlesApplicationService(this.bundleRepository),
-        new NativeLogger(this.logger)
-      ),
-      new HttpExceptionHandler()
-    );
 
-    console.log("Page en controller paginacion Query =", paginacion.page)
-    console.log("Limit en controller paginacion Query =", paginacion.perpage)
+
+    const service = new ExceptionDecorator(
+      new AuditingDecorator(
+        new LoggingDecorator(
+          new PerformanceDecorator(
+            new FindAllBundlesApplicationService(this.bundleRepository),
+              new NativeLogger(this.logger)
+          ),
+          new NativeLogger(this.logger)
+      )
+        ,
+        this.auditingRepository,
+        this.idGenerator
+      )
+      ,
+        new HttpExceptionHandler()
+    )
+
+
 
 
     const data: GetAllBundlesServiceEntryDTO = {
-      userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+      userId: user.id,
       ...paginacion,
       ...queryEntryParams,
     };
 
-    console.log("Page en controller data vari =", data.page)
-    console.log("Limit en controller data vari =", data.perpage)
+
 
     const result = await service.execute(data);
 
@@ -230,17 +301,21 @@ export class BundleController {
   }
 
   //"/bundle/:id"
-  @Patch("/:id")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Patch("/update/:id")
     @ApiOkResponse({
-        description: 'Actualiza la imformacion de un combo',
+        description: 'Actualiza la informacion de un combo',
         type: UpdateBundleResponseDTO,
     })
-    async updateProudct(
+    async updateBundle(
+        @Param('id', ParseUUIDPipe) id: string,
         @Body() request: UpdateBundleEntryDTO
     ) {
 
         const data: UpdateBundleServiceEntryDto = {
-            userId: '',
+            userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+            id: id,
             ...request
         }
 
@@ -248,18 +323,23 @@ export class BundleController {
 
         console.log("request: ", request)
 
-        const service =
-            new ExceptionDecorator(
+        const service = new ExceptionDecorator(
+              new AuditingDecorator(
                 new LoggingDecorator(
-                    new PerformanceDecorator(
-                        new UpdateBundleApplicationService (
-                            this.bundleRepository,
-                          eventBus
-                        ),
-                        new NativeLogger(this.logger)
-                    ),
-                    new NativeLogger(this.logger)
-                ),
+                  new PerformanceDecorator(
+                      new UpdateBundleApplicationService (
+                          this.bundleRepository,
+                        eventBus
+                      ),
+                      new NativeLogger(this.logger)
+                  ),
+                  new NativeLogger(this.logger)
+              )
+                ,
+                this.auditingRepository,
+                this.idGenerator
+              )
+              ,
                 new HttpExceptionHandler()
             )
 
@@ -271,4 +351,52 @@ export class BundleController {
 
     }
 
+    @ApiOkResponse({
+      description: 'Elimina un bundle por su ID',
+      type: DeleteBundleResponseDTO,
+  })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Delete('/delete/:id')
+  async deleteBundle(
+      @Param('id', ParseUUIDPipe) id: string,  @GetUser() user
+  ): Promise<DeleteBundleResponseDTO> {
+      const infraEntryDto: DeleteBundleResponseDTO = { id: id };
+      const eventBus = EventBus.getInstance();
+  
+      const serviceEntryDto: DeleteBundleServiceEntryDto = {
+          id: infraEntryDto.id,
+          userId: user.id
+      };
+  
+
+      const service = new ExceptionDecorator(
+        new AuditingDecorator(
+          new LoggingDecorator(
+            new PerformanceDecorator(
+              new DeleteBundleApplicationService(this.bundleRepository, eventBus),
+                new NativeLogger(this.logger)
+            ),
+            new NativeLogger(this.logger)
+        )
+          ,
+          this.auditingRepository,
+          this.idGenerator
+        )
+        ,
+          new HttpExceptionHandler()
+      )
+  
+
+      
+  
+      const result = await service.execute(serviceEntryDto);
+  
+  
+      const infraResponseDto: DeleteBundleResponseDTO = {
+          id: id
+      };
+        return infraResponseDto;
+  }
+  
 }

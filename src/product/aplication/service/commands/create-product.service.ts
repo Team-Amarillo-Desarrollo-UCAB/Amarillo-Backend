@@ -62,12 +62,8 @@ export class CreateProductService implements IApplicationService<CreateProductSe
         // }
 
         // Validar la existencia de las categorías
-        const categoryResult = await this.categorieExistenceService.categoriesExistenceCheck(
-            data.category.map((categoria) => {
-                return categoria.id
-            })
+        const categoryResult = await this.categorieExistenceService.categoriesExistenceCheck(data.category);
 
-        );
 
         if (!categoryResult.isSuccess()) {
             return Result.fail(categoryResult.Error, categoryResult.StatusCode, categoryResult.Message);
@@ -90,12 +86,15 @@ export class CreateProductService implements IApplicationService<CreateProductSe
                 data.measurement,
                 ProductCantidadMedida.create(data.weight)
             ),
+
+         
+            
+            productImages, 
+            ProductStock.create(data.stock),
             ProductPrice.create(
                 ProductAmount.create(data.price),
                 ProductCurrency.create(data.currency)
             ),
-            productImages,
-            ProductStock.create(data.stock),
             categoryResult.Value,
             discountResult.Value ? DiscountID.create(data.discount) : null,
             data.caducityDate ? ProductCaducityDate.create(data.caducityDate) : null,

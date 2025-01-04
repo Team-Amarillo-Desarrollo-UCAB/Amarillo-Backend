@@ -21,6 +21,7 @@ import { DiscountID } from "src/discount/domain/value-objects/discount-id";
 import { ProductCaducityDate } from "./value-objects/productCaducityDate";
 import { ProductWeight } from './value-objects/product-weight';
 import { Category } from '../../category/domain/category.entity';
+import { Moneda } from "./enum/Monedas";
 
 export class Product extends AggregateRoot<ProductId> {
 
@@ -29,8 +30,8 @@ export class Product extends AggregateRoot<ProductId> {
         private name: ProductName,
         private description: ProductDescription,
         private unit: ProductUnit,
-        private price: ProductPrice,
         private stock: ProductStock,
+        private price?: ProductPrice,
         private images?: ProductImage[],
         private categories?: CategoryID[],
         private discount?: DiscountID,
@@ -75,7 +76,7 @@ export class Product extends AggregateRoot<ProductId> {
         return this.price.Amount;
     }
 
-    get Moneda(): string {
+    get Moneda(): Moneda {
         return this.price.Currency
     }
 
@@ -193,7 +194,6 @@ export class Product extends AggregateRoot<ProductId> {
             !this.name ||
             !this.description ||
             !this.unit ||
-            !this.price ||
             !this.images ||
             !this.stock
         )
@@ -205,9 +205,9 @@ export class Product extends AggregateRoot<ProductId> {
         name: ProductName,
         description: ProductDescription,
         unit: ProductUnit,
-        price: ProductPrice,
         images: ProductImage[],
         stock: ProductStock,
+        price?: ProductPrice,
         categories?: CategoryID[],
         discount?: DiscountID,
         caducityDate?: ProductCaducityDate
@@ -217,8 +217,8 @@ export class Product extends AggregateRoot<ProductId> {
             name,
             description,
             unit,
-            price,
             stock,
+            price,
             images,
             categories,
             discount,

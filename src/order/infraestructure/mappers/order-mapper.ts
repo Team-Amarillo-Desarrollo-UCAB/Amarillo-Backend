@@ -111,14 +111,16 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
             if (detalle.producto) {
 
                 let producto = detalle.producto
+                // for (const h of producto.historicos) {
+                //     if (!h.fecha_fin) {
+                //         moneda = h.moneda.simbolo
+                //         precio = h.precio
+                //         break;
+                //     }
+                // }
 
-                for (const h of producto.historicos) {
-                    if (!h.fecha_fin) {
-                        moneda = h.moneda.simbolo
-                        precio = h.precio
-                        break;
-                    }
-                }
+                if (!precio) precio = 5
+                if (!moneda) moneda = 'usd'
 
                 productos.push(
                     OrderProduct.create(

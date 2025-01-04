@@ -1,5 +1,5 @@
-import { IApplicationService } from "src/common/Application/application-services/application-service.interface";
-import { Result } from "src/common/Domain/result-handler/Result";
+import { IApplicationService } from "src/common/application/application-services/application-service.interface";
+import { Result } from "src/common/domain/result-handler/Result";
 import { INotificationAlertRepository } from "../../interface/notification-alert-repository.interface";
 import { DeleteNotificationAlertByIdServiceEntryDto } from "../dto/entry/delete-notification-alert-service.dto";
 

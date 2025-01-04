@@ -4,6 +4,16 @@ import { IEventHandler } from "src/common/application/event-handler/event-handle
 import { Result } from "src/common/domain/result-handler/Result";
 import { UpdateBundleServiceEntryDto } from "../../dto/entry/update-bundle-service-entry.dto";
 import { UpdateBundleServiceResponseDto } from "../../dto/response/update-bundle-service-response.dto";
+import { BundleName } from "src/bundle/domain/value-objects/bundle-name";
+import { BundleDescription } from "src/bundle/domain/value-objects/bundle-description";
+import { BundlePrice } from "src/bundle/domain/value-objects/bundle-price";
+import { BundleWeight } from "src/bundle/domain/value-objects/bundle-weight";
+import { BundleStock } from "src/bundle/domain/value-objects/bundle-stock";
+import { BundleCaducityDate } from "src/bundle/domain/value-objects/bundle-caducityDate";
+import { DiscountID } from "src/discount/domain/value-objects/discount-id";
+import { CategoryID } from "src/category/domain/value-objects/category-id";
+import { ProductId } from "src/product/domain/value-objects/product-id";
+import { isUUID, IsUUID } from 'class-validator';
 
 export class UpdateBundleApplicationService 
   implements IApplicationService<UpdateBundleServiceEntryDto, UpdateBundleServiceResponseDto> {
@@ -33,7 +43,7 @@ export class UpdateBundleApplicationService
       );
     }
 
-    console.log("HERMANO DATA.NAME ES:",data.name)
+    const bundleR = bundleResult.Value
 
      if(data.name){
          const verifyName = await this.bundleRepository.findAllBundles(null, null, null, data.name, null, null, null)
@@ -41,11 +51,96 @@ export class UpdateBundleApplicationService
          if(verifyName.Value.length!==0) {
           console.log("ENTRO AL IF")
           return Result.fail(new Error("Ya existe un combo con ese nombre registrado"),409,"Ya existe un combo con ese nombre registrado")
-         }
+        }
+        bundleR.updateName(BundleName.create(data.name))
           
      }
 
+     if(data.description){
+      bundleR.updateDescription(BundleDescription.create(data.description))
+     }
+
+     let dataPrice = bundleR.price.Price
+
+     if(data.price){
+      dataPrice = data.price
+     }
+
+     let dataCurrency = bundleR.price.Currency
+
+     if(data.currency){
+      dataCurrency=data.currency
+     }
+
+     bundleR.updatePrice(BundlePrice.create(dataPrice,dataCurrency))
+
+     let dataWeight = bundleR.weight.Weight
+
+     if(data.weight){
+       dataWeight = data.weight
+     }
+
+     let dataMeasurement = bundleR.weight.Measurement
+
+     if(data.measurement){
+      dataMeasurement = data.measurement
+     }
+
+     bundleR.updateWeight(BundleWeight.create(dataWeight,dataMeasurement))
+
+     if(data.stock){
+      bundleR.updateStock(BundleStock.create(data.stock))
+     }
+
+     if(data.caducityDate){
+      bundleR.updateCaducityDate(BundleCaducityDate.create(data.caducityDate))
+     }
+
+     if(data.discount){
+      let update = null
+      if(isUUID(data.discount)){
+        update = DiscountID.create(data.discount)
+      }
+      bundleR.updateDiscount(update)
+     }
+
+
+
+     if(data.category){
+
+      let cts = []
+
+      for (const c of data.category){
+       cts.push(CategoryID.create(c))
+      }
+      bundleR.updateCategories(cts)
+     }
+
+     if(data.productId){
+
+      let pds = []
+
+      for (const p of data.productId){
+       pds.push(ProductId.create(p))
+      }
+      bundleR.updateProducts(pds)
+     }
+
+     if(data.images){
+
+      let ims = []
+
+      for (const i of data.productId){
+       ims.push(ProductId.create(i))
+      }
+      bundleR.updateImages(ims)
+     }
+
+
+
     const updateResult = await this.bundleRepository.updateBundle(bundleResult.Value);
+
+    console.log("VALOR DE UPDATE RESULT:",updateResult.Value)
 
     if (!updateResult.isSuccess()) {
       return Result.fail<UpdateBundleServiceResponseDto>(

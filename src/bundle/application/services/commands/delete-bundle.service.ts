@@ -3,7 +3,7 @@ import { IApplicationService } from "src/common/application/application-services
 import { IEventHandler } from "src/common/application/event-handler/event-handler.interface";
 import { Result } from "src/common/domain/result-handler/Result";
 import { DeleteBundleServiceEntryDto } from "../../dto/entry/delete-bundle-service-entry.dto";
-import { DeleteBundleServiceResponseDto } from "../../dto/response/delete-bundle-service-entry.dto";
+import { DeleteBundleServiceResponseDto } from "../../dto/response/delete-bundle-service-response.dto";
 
 export class DeleteBundleApplicationService 
   implements IApplicationService<DeleteBundleServiceEntryDto, DeleteBundleServiceResponseDto> {
@@ -20,11 +20,10 @@ export class DeleteBundleApplicationService
   }
 
   async execute(data: DeleteBundleServiceEntryDto): Promise<Result<DeleteBundleServiceResponseDto>> {
-    // Paso 1: Buscar el bundle en el repositorio
+    
     const bundleResult = await this.bundleRepository.deleteBundle(data.id);
 
     if (!bundleResult.isSuccess()) {
-      // Retorna error si el bundle no existe o no se puede eliminar
       return Result.fail<DeleteBundleServiceResponseDto>(
         bundleResult.Error,
         bundleResult.StatusCode,
@@ -34,12 +33,10 @@ export class DeleteBundleApplicationService
 
     const deletedBundle = bundleResult.Value;
 
-    // Paso 2: Publicar eventos de eliminación si es necesario
     this.eventHandler.publish(deletedBundle.pullEvents());
 
-    // Paso 3: Preparar la respuesta
     const response: DeleteBundleServiceResponseDto = {
-      deletedBundleId: deletedBundle.Id.Value,
+      id: deletedBundle.Id.Value,
     };
 
     return Result.success<DeleteBundleServiceResponseDto>(response, 200);
