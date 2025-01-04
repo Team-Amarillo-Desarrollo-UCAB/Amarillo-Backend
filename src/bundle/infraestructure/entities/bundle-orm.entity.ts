@@ -1,6 +1,7 @@
 import { BundleCurrency } from "src/bundle/domain/enum/bundle-currency-enum";
 import { Measurement } from "src/bundle/domain/enum/measurement-enum";
 import { OrmCategory } from "src/category/infraestructure/entities/orm-category";
+import { Detalle_Orden } from "src/order/infraestructure/entites/detalle_orden.entity";
 import { OrmProduct } from "src/product/infraestructure/entities/product.entity";
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryColumn } from "typeorm";
 
@@ -52,6 +53,9 @@ export class OrmBundle {
 
     @Column('varchar', { nullable: true })
     discount?: string;
+
+    @OneToMany(() => Detalle_Orden, (detalleCarrito) => detalleCarrito.id_bundle)
+    detalleCarrito: Detalle_Orden[];
 
 
     static create(

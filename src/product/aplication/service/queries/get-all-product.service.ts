@@ -23,7 +23,7 @@ export class GetAllProductService implements IApplicationService<GetAllProductSe
         // console.log("Valor de page despues del calculo:",data.page)
         // console.log("Valor de perpage despues del calculo:",data.perpage)
 
-        const products = await this.productRepository.findAllProducts(data.page, data.perpage, data.category, data.name, data.price, data.discount)
+        const products = await this.productRepository.findAllProducts(data.page, data.perpage, data.category, data.name, data.price, data.popular, data.discount)
 
 
 
