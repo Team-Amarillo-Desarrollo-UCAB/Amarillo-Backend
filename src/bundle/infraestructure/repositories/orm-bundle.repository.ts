@@ -49,9 +49,20 @@ export class OrmBundleRepository extends Repository<OrmBundle> implements IBundl
             const queryBuilder = this.createQueryBuilder('bundle');
 
             if (category && category.length > 0) {
-                console.log('Filtrando por categorías:', category);
-                queryBuilder.andWhere('bundle.categories::jsonb @> :categories', { categories: category });
+                const categoriesArray = Array.isArray(category) ? category : [category];
+            
+                const conditions = categoriesArray.map((_, index) => 
+                    `bundle.categories::jsonb @> :category${index}`
+                );
+            
+                const parameters = categoriesArray.reduce((acc, curr, index) => {
+                    acc[`category${index}`] = `["${curr}"]`; 
+                    return acc;
+                }, {});
+            
+                queryBuilder.andWhere(conditions.join(' OR '), parameters);
             }
+            
 
             if (name) {
                 console.log('Filtrando por nombre del bundle:', name);
@@ -78,6 +89,8 @@ export class OrmBundleRepository extends Repository<OrmBundle> implements IBundl
                 queryBuilder.andWhere('bundle.discount = :discount', { discount });
             }
 
+            queryBuilder.andWhere('bundle.stock > 0')
+            queryBuilder.andWhere('bundle."caducityDate" >= CURRENT_DATE');
             queryBuilder.skip(offset).take(limit);
 
             const bundles = await queryBuilder.getMany();
