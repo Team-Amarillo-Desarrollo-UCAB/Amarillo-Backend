@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Type } from "class-transformer";
+import { Transform, Type } from "class-transformer";
 import { IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateNested } from "class-validator";
 import { EnumOrderEstados } from "src/order/domain/enum/order-estados-enum";
 
@@ -34,6 +34,21 @@ export class GetAllOrdersReponseDTO {
     @IsNumber()
     @IsNotEmpty()
     totalAmount: number;
+
+    @ApiProperty({
+        example: 20
+    })
+    @IsNumber()
+    @IsNotEmpty()
+    @IsOptional()
+    sub_total?: number;
+
+    @ApiProperty({
+        example: 20
+    })
+    @IsNumber()
+    @IsNotEmpty()
+    shipping_fee: number;
 
     @ApiProperty({
         example: "USD"

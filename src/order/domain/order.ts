@@ -48,9 +48,6 @@ export class Order extends AggregateRoot<OrderId> {
         if ((productos.length === 0) && (bundles.length === 0))
             throw new InvalidOrder("La orden debe contener al menos un producto o un combo")
 
-        if (fecha_entrega.ReciviedDate.getTime() < fecha_creacion.Date_creation.getTime())
-            throw new InvalidOrder("La fecha de entrega no puede ser menor al dia actual")
-
         const event: OrderCreated = OrderCreated.create(
             id.Id,
             estado.Estado,
@@ -127,10 +124,10 @@ export class Order extends AggregateRoot<OrderId> {
         if (!this.estado.equals(OrderEstado.create(estado))) {
 
             if (estado === EnumOrderEstados.EN_CAMINO)
-                this.changeStateOrderRecivied()
+                this.chnageStateOrderSent()
 
             if (estado === EnumOrderEstados.ENTREGADA)
-                this.chnageStateOrderSent()
+                this.changeStateOrderRecivied()
 
             if (estado === EnumOrderEstados.CANCELED)
                 this.cancelarOrden()
@@ -197,6 +194,14 @@ export class Order extends AggregateRoot<OrderId> {
 
     asignarMetodoPago(payment: OrderPayment): void {
         this.payment = payment
+    }
+
+    modifiedLocationDelivery(direccion: OrderLocationDelivery): void {
+        this
+    }
+
+    modifiedReciviedDate(direccion: OrderReciviedDate): void {
+        this
     }
 
     protected applyEvent(event: DomainEvent): void {

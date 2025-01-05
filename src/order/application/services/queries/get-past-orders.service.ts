@@ -30,6 +30,7 @@ export class GetPastOrdersService implements IApplicationService<GetPastOrdersSe
                 orderCreatedDate: orden.Fecha_creacion.Date_creation,
                 totalAmount: orden.Monto.Total,
                 sub_total: orden.Monto.SubTotal.Value,
+                shipping_fee: orden.Monto.ShippingFee.Value,
                 currency: orden.Monto.Currency,
                 orderDirection: {
                     lat: orden.Direccion.Latitud,

@@ -12,6 +12,8 @@ export interface GetAllOrdersServiceResponseDTO {
 
     sub_total?: number
 
+    shipping_fee: number
+
     currency: string
 
     orderDirection: {
