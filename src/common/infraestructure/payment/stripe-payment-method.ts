@@ -11,6 +11,7 @@ import { EnumPaymentMethod } from 'src/payment-method/domain/enum/PaymentMethod'
 import { OrderPaymentCurrency } from 'src/order/domain/value-object/oder-payment/order-payment-currency';
 import { IPaymentMethodRepository } from 'src/payment-method/domain/repositories/payment-method-repository.interface';
 import { Moneda } from 'src/product/domain/enum/Monedas';
+import { OrderPaymentTotal } from 'src/order/domain/value-object/oder-payment/order-payment-total';
 
 export class StripePaymentMethod implements IPaymentMethod {
 
@@ -35,37 +36,37 @@ export class StripePaymentMethod implements IPaymentMethod {
 
     async execute(orden: Order): Promise<Result<Order>> {
         try {
-
+            const id_payment = await this.idGenerator.generateId()
             const method = await this.paymentMethodRepository.findPaymentMethodById(this.idPayment)
 
             if (!method.isSuccess())
                 return Result.fail<Order>(method.Error, 404, method.Message)
 
-            console.log("monto de la compra: ", orden.Monto.Total)
-
             // Crea un PaymentIntent con el token del frontend;
             const paymentIntent = await this.stripe.paymentIntents.create({
-                amount: orden.Monto.Total * 1000,
-                currency: 'usd',
+                amount: orden.Monto.Total * 100,
+                currency: orden.Moneda,
                 confirm: true,
                 payment_method: this.token,
                 payment_method_types: ['card'],
+                metadata: {
+                    id_orden: orden.Id.Id,
+                    id_pago: id_payment,  // Un identificador personalizado
+                }
             });
 
+            // Loggeamos la respuesta del PaymentIntent en la consola
+            console.log('Pago realizado con éxito:', paymentIntent);
 
             const pago = OrderPayment.create(
-                OrderPaymentId.create(await this.idGenerator.generateId()),
+                OrderPaymentId.create(id_payment),
                 OrderPaymentName.create(EnumPaymentMethod.STRIPE),
-                OrderPaymentCurrency.create(Moneda.USD),
-                orden.Monto
+                OrderPaymentCurrency.create(orden.Moneda),
+                OrderPaymentTotal.create(orden.Monto.Total)
             )
 
             orden.asignarMetodoPago(pago)
 
-            console.log("Pago de la orden: ", orden.Payment)
-
-            console.log("El pago fue procesado")
-            // Si el pago es exitoso, devuelve un estado con el resultado
             return Result.success<Order>(orden, 200)
         } catch (error) {
             console.error('Payment failed:', error);

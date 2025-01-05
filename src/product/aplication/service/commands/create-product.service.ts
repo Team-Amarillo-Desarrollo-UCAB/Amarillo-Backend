@@ -87,9 +87,9 @@ export class CreateProductService implements IApplicationService<CreateProductSe
                 ProductCantidadMedida.create(data.weight)
             ),
 
-         
-            
-            productImages, 
+
+
+            productImages,
             ProductStock.create(data.stock),
             ProductPrice.create(
                 ProductAmount.create(data.price),

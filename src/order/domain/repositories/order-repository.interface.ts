@@ -1,10 +1,12 @@
 import { Result } from "src/common/domain/result-handler/Result";
 import { Order } from "../order";
 import { UserId } from "src/user/domain/value-object/user-id";
+import { OrderReport } from "../entites/order-report";
 
 export interface IOrderRepository {
     saveOrderAggregate(order: Order): Promise<Result<Order>>;
     changeOrderState(order: Order): Promise<Result<Order>>
+    saveReport(order: Order, reporte: OrderReport): Promise<Result<OrderReport>>
     findOrderById(id: string): Promise<Result<Order>>;
     findAllOrdersByUser(page: number, limit: number, id_user: UserId): Promise<Result<Order[]>>
     findAllPastOrdersByUser(id_user: UserId): Promise<Result<Order[]>>

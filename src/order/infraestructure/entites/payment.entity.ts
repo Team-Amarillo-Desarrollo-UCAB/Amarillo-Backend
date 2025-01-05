@@ -19,10 +19,6 @@ export class Payment {
     @Column({type: 'enum', enum: Moneda})
     moneda: Moneda
 
-    @OneToOne(() => OrmOrder,{ lazy: true })
-    @JoinColumn({name: 'ordenId'})
-    orden: OrmOrder
-
     static create(
         id: string,
         monto: number,

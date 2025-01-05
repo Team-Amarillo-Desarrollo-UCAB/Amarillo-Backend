@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from "class-validator";
 import { PaymentMethod } from "src/payment-method/domain/payment-method";
 
 class ProductDto {
@@ -39,6 +39,38 @@ export class CreateOrderStripeEntryDTO {
     @IsString()
     @IsNotEmpty()
     paymentMethod: string;
+
+    @ApiProperty({
+        example: "2025-01-05",
+    })
+    @IsString()
+    @IsNotEmpty()
+    orderReciviedDate: string
+
+    @ApiProperty({
+        example: "Universidad Catolica Andres Bello",
+    })
+    @IsString()
+    @IsNotEmpty()
+    ubicacion: string
+
+    @ApiProperty({
+        example: 40.7128, // Ejemplo de latitud (por ejemplo, para Nueva York)
+    })
+    @IsNumber()
+    @IsNotEmpty()
+    @Min(-90)   // Mínimo valor de latitud
+    @Max(90)    // Máximo valor de latitud
+    latitud: number;
+
+    @ApiProperty({
+        example: -74.0060, // Ejemplo de longitud (por ejemplo, para Nueva York)
+    })
+    @IsNumber()
+    @IsNotEmpty()
+    @Min(-180)  // Mínimo valor de longitud
+    @Max(180)   // Máximo valor de longitud
+    longitud: number;
 
     @ApiProperty({
         description: 'Lista de productos asociados al pago',

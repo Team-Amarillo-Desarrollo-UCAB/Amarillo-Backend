@@ -17,12 +17,20 @@ import { OrderReciviedDate } from "./value-object/order-recivied-date";
 import { InvalidOrderState } from "./domain-exception/invalid-order-state";
 import { OrderRecivied } from "./domain-event/order-recivied-event";
 import { OrderSent } from "./domain-event/order-sent-event";
+import { OrderLocationDelivery } from "./value-object/order-location-delivery";
+import { OrderReport } from "./entites/order-report";
+import { OrderReportCreated } from "./domain-event/order-report-created";
+import { OrderDiscount } from "./value-object/order-discount";
+import { OrderSubTotal } from "./value-object/order-subtotal";
+import { OrderShippingFee } from "./value-object/order-shipping-fee";
 
 export class Order extends AggregateRoot<OrderId> {
 
     private montoTotal: OrderTotal
     private payment: OrderPayment
-    private fecha_entrega: OrderReciviedDate
+    private fecha_entrega?: OrderReciviedDate
+    private ubicacion?: OrderLocationDelivery
+    private reporte?: OrderReport
 
     protected constructor(
         id: OrderId,
@@ -31,27 +39,34 @@ export class Order extends AggregateRoot<OrderId> {
         private comprador: UserId,
         private productos: OrderProduct[],
         private bundles: OrderBundle[],
-        //fecha_entrega: OrderReciviedDate,
+        fecha_entrega?: OrderReciviedDate,
+        ubicacion?: OrderLocationDelivery,
         montoTotal?: OrderTotal,
+        reporte?: OrderReport
     ) {
 
         if ((productos.length === 0) && (bundles.length === 0))
             throw new InvalidOrder("La orden debe contener al menos un producto o un combo")
 
+        if (fecha_entrega.ReciviedDate.getTime() < fecha_creacion.Date_creation.getTime())
+            throw new InvalidOrder("La fecha de entrega no puede ser menor al dia actual")
 
         const event: OrderCreated = OrderCreated.create(
             id.Id,
             estado.Estado,
             fecha_creacion.Date_creation,
-            //fecha_entrega.ReciviedDate,
+            fecha_entrega.ReciviedDate,
             productos,
-            bundles
+            bundles,
+            ubicacion
         )
 
         super(id, event)
 
         montoTotal ? this.montoTotal = montoTotal : this.montoTotal = null
-        //this.fecha_entrega = fecha_entrega
+        fecha_entrega ? this.fecha_entrega = fecha_entrega : null
+        ubicacion ? this.ubicacion = ubicacion : null
+        reporte ? this.reporte = reporte : null
     }
 
     get Estado() {
@@ -88,6 +103,14 @@ export class Order extends AggregateRoot<OrderId> {
 
     get Comprador() {
         return this.comprador
+    }
+
+    get Direccion() {
+        return this.ubicacion
+    }
+
+    get Reporte() {
+        return this.reporte ? this.reporte : null
     }
 
     calcularMontoProductos(): number {
@@ -151,8 +174,25 @@ export class Order extends AggregateRoot<OrderId> {
         )
     }
 
+    assignOrderReport(report: OrderReport): void {
+        const evento = OrderReportCreated.create(
+            this.Id.Id,
+            report.Id.Id,
+            report.Texto().Texto
+        )
+        this.reporte = report
+        this.events.push(evento)
+    }
+
     assignOrderCost(monto: OrderTotal): void {
-        this.onEvent(OrderTotalCalculated.create(this.Id.Id, monto.Total, monto.Currency))
+        this.onEvent(OrderTotalCalculated.create(
+            this.Id.Id,
+            monto.Total,
+            monto.SubTotal.Value,
+            monto.Currency,
+            monto.Discount.Value,
+            monto.ShippingFee.Value
+        ))
     }
 
     asignarMetodoPago(payment: OrderPayment): void {
@@ -173,7 +213,10 @@ export class Order extends AggregateRoot<OrderId> {
                 const orderTotalCalculated = event as OrderTotalCalculated
                 this.montoTotal = OrderTotal.create(
                     orderTotalCalculated.total,
-                    orderTotalCalculated.moneda
+                    orderTotalCalculated.moneda,
+                    OrderDiscount.create(orderTotalCalculated.descuento),
+                    OrderSubTotal.create(orderTotalCalculated.subTotal),
+                    OrderShippingFee.create(orderTotalCalculated.shippingFee)
                 )
                 break;
         }
@@ -197,7 +240,8 @@ export class Order extends AggregateRoot<OrderId> {
         id: OrderId,
         estado: OrderEstado,
         fecha_creacion: OrderCreationDate,
-        //fecha_entrega: OrderReciviedDate,
+        fecha_entrega: OrderReciviedDate,
+        ubicacion: OrderLocationDelivery,
         productos: OrderProduct[],
         bundles: OrderBundle[],
         userId?: UserId,
@@ -211,11 +255,37 @@ export class Order extends AggregateRoot<OrderId> {
             userId,
             productos,
             bundles,
-            //fecha_entrega,
+            fecha_entrega,
+            ubicacion,
             montoTotal ? montoTotal : null
         )
     }
 
+    static createWithReport(
+        id: OrderId,
+        estado: OrderEstado,
+        fecha_creacion: OrderCreationDate,
+        fecha_entrega: OrderReciviedDate,
+        ubicacion: OrderLocationDelivery,
+        productos: OrderProduct[],
+        bundles: OrderBundle[],
+        reporte: OrderReport,
+        userId?: UserId,
+        montoTotal?: OrderTotal
+    ): Order {
 
+        return new Order(
+            id,
+            estado,
+            fecha_creacion,
+            userId,
+            productos,
+            bundles,
+            fecha_entrega,
+            ubicacion,
+            montoTotal ? montoTotal : null,
+            reporte
+        )
+    }
 
 }

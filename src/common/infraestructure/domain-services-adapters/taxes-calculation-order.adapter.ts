@@ -1,6 +1,7 @@
 import axios from "axios";
 import { ITaxesCalculationPort } from "src/common/domain/domain-service/taxes-calculation.port";
 import { Result } from "src/common/domain/result-handler/Result";
+import { OrderSubTotal } from "src/order/domain/value-object/order-subtotal";
 import { OrderTotal } from "src/order/domain/value-object/order-total";
 
 export class TaxesCalculationAdapter implements ITaxesCalculationPort {
@@ -10,7 +11,7 @@ export class TaxesCalculationAdapter implements ITaxesCalculationPort {
         this.ivaApiUrl = "https://api.example.com/vat/venezuela";
     }
 
-    async execute(t: OrderTotal): Promise<Result<number>> {
+    async execute(t: OrderSubTotal): Promise<Result<number>> {
         //     try {
         //         const response = await axios.get<{ ivaPercentage: number }>(this.ivaApiUrl);
         //         if (response.status === 200 && response.data.ivaPercentage) {
@@ -32,7 +33,7 @@ export class TaxesCalculationAdapter implements ITaxesCalculationPort {
         //     }
         // }
 
-        const iva = t.Total * 0.16
+        const iva = t.Value * 0.16
         return Result.success(iva, 200)
     }
 }

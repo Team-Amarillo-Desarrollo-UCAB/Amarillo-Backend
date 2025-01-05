@@ -58,11 +58,11 @@ export class ProductMapper implements IMapper<Product, OrmProduct> {
             domain.Images.map((i) => i.Image),
             domain.Moneda,
             domain.Price,
-            domain.Categories.map(i=>i.Value),
+            domain.Categories.map(i => i.Value),
             ormCaducityDate,
             ormDiscount,
-            
-            
+
+
         )
 
         return product
@@ -94,28 +94,28 @@ export class ProductMapper implements IMapper<Product, OrmProduct> {
 
 
 
-            const product = Product.create(
-                ProductId.create(persistence.id),
-                ProductName.create(persistence.name),
-                ProductDescription.create(persistence.description),
-                ProductUnit.create(
-                    persistence.unidad_medida,
-                    ProductCantidadMedida.create(persistence.cantidad_medida)
-                ),
-                bundleImages,
+        const product = Product.create(
+            ProductId.create(persistence.id),
+            ProductName.create(persistence.name),
+            ProductDescription.create(persistence.description),
+            ProductUnit.create(
+                persistence.unidad_medida,
+                ProductCantidadMedida.create(persistence.cantidad_medida)
+            ),
+            bundleImages,
 
-                ProductStock.create(persistence.cantidad_stock),
-                ProductPrice.create(
-                    ProductAmount.create(persistence.price),
-                    ProductCurrency.create(persistence.currency)
+            ProductStock.create(persistence.cantidad_stock),
+            ProductPrice.create(
+                ProductAmount.create(persistence.price),
+                ProductCurrency.create(persistence.currency)
 
-                ),
-                categories,
-                persistence.discount ? DiscountID.create(persistence.discount) : null,
-                persistence.caducityDate ? ProductCaducityDate.create(persistence.caducityDate) : null,
-            );
-        
-            return product;
+            ),
+            categories,
+            persistence.discount ? DiscountID.create(persistence.discount) : null,
+            persistence.caducityDate ? ProductCaducityDate.create(persistence.caducityDate) : null,
+        );
+
+        return product;
 
 
 

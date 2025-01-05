@@ -4,24 +4,24 @@ import { Estado } from './estado.entity';
 
 @Entity({ name: "Estado_Orden" })
 export class Estado_Orden {
-  
-  @PrimaryColumn({ type: "uuid" , unique: false})
+
+  @PrimaryColumn({ type: "uuid", unique: false })
   id_orden: string
 
-  @PrimaryColumn({ type: "uuid" , unique: false})
+  @PrimaryColumn({ type: "uuid", unique: false })
   id_estado: string
 
-  @PrimaryColumn({ type: 'timestamp' , unique: false})
+  @PrimaryColumn({ type: 'timestamp', unique: false })
   fecha_inicio: Date;
 
-  @Column({ type: 'timestamp' , nullable: true})
+  @Column({ type: 'timestamp', nullable: true })
   fecha_fin: Date
 
   @ManyToOne(() => OrmOrder, (orden) => orden.estados)
   @JoinColumn({ name: 'id_orden' })
   orden: OrmOrder;
 
-  @ManyToOne(() => Estado, (estado) => estado.estados,  {eager: true})
+  @ManyToOne(() => Estado, (estado) => estado.estados, { eager: true })
   @JoinColumn({ name: 'id_estado' })
   estado: Estado;
 

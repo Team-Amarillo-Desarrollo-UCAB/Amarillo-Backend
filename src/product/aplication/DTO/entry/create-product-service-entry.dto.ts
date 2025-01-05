@@ -11,20 +11,20 @@ export interface CreateProductServiceEntryDTO extends ApplicationServiceEntryDto
 
     images?: string[]
 
-    price:number
+    price: number
 
-    currency:Moneda
+    currency: Moneda
 
     weight:number
-    
+
     measurement: UnidadMedida
 
     stock: number
 
     category?: string[]
 
-    caducityDate?:Date
+    caducityDate?: Date
 
-    discount?:string;
-    
+    discount?: string;
+
 }

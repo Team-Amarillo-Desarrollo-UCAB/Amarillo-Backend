@@ -15,39 +15,48 @@ export class GetAllOrdersService implements
 
         const ordenes = await this.orderRepository.findAllOrders(data.page, data.limit)
 
-        if(!ordenes.isSuccess())
-            return Result.fail<GetAllOrdersServiceResponseDTO[]>(ordenes.Error,ordenes.StatusCode,ordenes.Message)
+        if (!ordenes.isSuccess())
+            return Result.fail<GetAllOrdersServiceResponseDTO[]>(ordenes.Error, ordenes.StatusCode, ordenes.Message)
 
         const response: GetAllOrdersServiceResponseDTO[] = []
 
-        for(const orden of ordenes.Value){
+        for (const orden of ordenes.Value) {
 
-            console.log("Orden del dominio: ",orden)
+            console.log("Orden del dominio: ", orden)
 
             response.push({
-                id_orden: orden.Id.Id,
-                estado: orden.Estado.Estado,
-                productos: orden.Productos.map((p) => {
-                    return {
-                        id_producto: p.Id.Id,
-                        nombre_producto: p.Name().Value,
-                        cantidad_producto: p.Cantidad().Value
-                    }
-                }),
-                combos: orden.Bundles.map((c) => {
-                    return {
-                        id_combo: c.Id.Value,
-                        nombre_combo: c.Name().Value,
-                        cantidad_combo: c.Cantidad().Value
-                    }
-                }),
-                monto_total: orden.Monto.Total,
-                fecha_creacion: orden.Fecha_creacion.Date_creation
+                id: orden.Id.Id,
+                orderState: orden.Estado.Estado,
+                orderCreatedDate: orden.Fecha_creacion.Date_creation,
+                totalAmount: orden.Monto.Total,
+                sub_total: orden.Monto.SubTotal.Value,
+                currency: orden.Monto.Currency,
+                orderDirection: {
+                    lat: orden.Direccion.Latitud,
+                    long: orden.Direccion.Longitud
+                },
+                directionName: orden.Direccion.Direccion,
+                products: orden.Productos.map((product) => ({
+                    id: product.Id.Id,
+                    quantity: product.Cantidad().Value
+                })),
+                bundles: orden.Bundles.map((combo) => ({
+                    id: combo.Id.Value,
+                    quantity: combo.Cantidad().Value
+                })),
+                orderReciviedDate: orden.Fecha_entrega ? orden.Fecha_entrega.Date_creation : null,
+                orderReport: orden.Reporte ? orden.Reporte.Texto().Texto : null,
+                orderPayment: orden.Payment ? {
+                    amount: orden.Payment.AmountPayment().Total,
+                    currency: orden.Payment.CurrencyPayment().Currency,
+                    paymentMethod: orden.Payment.NameMethod().Name()
+                } : null,
+                orderDiscount: orden.Monto.Discount.Value
             })
 
         }
 
-        return Result.success<GetAllOrdersServiceResponseDTO[]>(response,200)
+        return Result.success<GetAllOrdersServiceResponseDTO[]>(response, 200)
     }
 
     get name(): string {

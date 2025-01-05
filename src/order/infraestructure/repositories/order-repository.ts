@@ -12,30 +12,37 @@ import { OrderPayment } from "src/order/domain/entites/order-payment";
 import { Payment } from "../entites/payment.entity";
 import { UserId } from "src/user/domain/value-object/user-id";
 import { EnumOrderEstados } from "src/order/domain/enum/order-estados-enum";
+import { OrderReport } from "src/order/domain/entites/order-report";
+import { OrmReport } from "../entites/order-report.entity";
 
 export class OrderRepository extends Repository<OrmOrder> implements IOrderRepository {
 
     private readonly ormOrderMapper: IMapper<Order, OrmOrder>
     private readonly paymentMapper: IMapper<OrderPayment, Payment>
+    private readonly reportMapper: IMapper<OrderReport, OrmReport>
 
     private readonly ormDetalle_ordenRepository: Repository<Detalle_Orden>
     private readonly ormEstadoOrdenRepository: Repository<Estado_Orden>
     private readonly ormEstadoRepository: Repository<Estado>
     private readonly paymentRepository: Repository<Payment>
+    private readonly reportRepository: Repository<OrmReport>
 
     constructor(
         ormOrderMapper: IMapper<Order, OrmOrder>,
         paymentMapper: IMapper<OrderPayment, Payment>,
+        reportMapper: IMapper<OrderReport, OrmReport>,
         dataSource: DataSource
     ) {
         super(OrmOrder, dataSource.createEntityManager());
         this.ormOrderMapper = ormOrderMapper
         this.paymentMapper = paymentMapper
+        this.reportMapper = reportMapper
 
         this.ormDetalle_ordenRepository = dataSource.getRepository(Detalle_Orden)
         this.ormEstadoOrdenRepository = dataSource.getRepository(Estado_Orden)
         this.ormEstadoRepository = dataSource.getRepository(Estado)
         this.paymentRepository = dataSource.getRepository(Payment)
+        this.reportRepository = dataSource.getRepository(OrmReport)
     }
 
     async saveOrderAggregate(order: Order): Promise<Result<Order>> {
@@ -43,17 +50,9 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
         try {
             const orden = await this.ormOrderMapper.fromDomainToPersistence(order)
 
-            const payment = await this.paymentMapper.fromDomainToPersistence(order.Payment)
-
-            await this.paymentRepository.save(payment);
-
-            console.log("Hasta aqui sigue todo bien")
-
-            orden.pago = payment
+            console.log("Orden para salvar: ", orden)
 
             const salvada = await this.save(orden)
-
-            console.log("Orden salvada: ",salvada)
 
             const estado = await this.ormEstadoRepository.findOne({
                 where: { nombre: order.Estado.Estado }
@@ -75,15 +74,53 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
         }
     }
 
-    async changeOrderState(order: Order): Promise<Result<Order>> {
-
-        const queryRunner = this.ormEstadoOrdenRepository.manager.connection.createQueryRunner();
-        await queryRunner.startTransaction();
+    async saveReport(order: Order, reporte: OrderReport): Promise<Result<OrderReport>> {
 
         try {
             const orden = await this.ormOrderMapper.fromDomainToPersistence(order)
+            const report = await this.reportMapper.fromDomainToPersistence(reporte)
 
-            await this.save(orden)
+            orden.id_reporte = report.id
+            orden.reporte = report
+
+            // Busqueda de los detalles de la orden
+            const detalles = await this.ormDetalle_ordenRepository.find({
+                where: {
+                    id_orden: orden.id
+                }
+            })
+
+            // Busqueda de los estados de la orden
+            /*const estados = await this.ormEstadoOrdenRepository.find({
+                where: {
+                    id_orden: orden.id
+                }
+            })*/
+
+            // Verifica que cada estado tenga asignado un id_orden antes de guardarlo
+            /*estados.forEach(async (estado) => {
+                await this.ormEstadoOrdenRepository.save(estado);
+            });*/
+
+            orden.detalles = detalles
+            //orden.estados = estados
+
+            //throw new Error('')
+
+            // Guardar la orden (que también guardará el reporte debido a cascade: true)
+            const savedOrder = await this.save(orden);  // Guardamos la orden, no el reporte directamente
+
+            return Result.success<OrderReport>(reporte, 200)
+
+        } catch (error) {
+            return Result.fail<OrderReport>(new Error(error.message), 500, error.message)
+        }
+
+    }
+
+    async changeOrderState(order: Order): Promise<Result<Order>> {
+
+        try {
 
             const estado = await this.ormEstadoRepository.findOne({
                 where: { nombre: order.Estado.Estado }
@@ -98,17 +135,16 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
 
             const estado_actual = await this.ormEstadoOrdenRepository.findOne({
                 where: {
-                    id_orden: orden.id,
+                    id_orden: order.Id.Id,
                     fecha_fin: null
                 }
             })
 
             estado_actual.fecha_fin = new Date()
 
-            await queryRunner.manager.save(estado_actual);
-            await queryRunner.manager.save(estado_orden);
+            await this.ormEstadoOrdenRepository.save(estado_actual);
+            await this.ormEstadoOrdenRepository.save(estado_orden);
 
-            await queryRunner.commitTransaction();
 
             return Result.success<Order>(order, 200)
         } catch (error) {
@@ -119,8 +155,10 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
     async findOrderById(id: string): Promise<Result<Order>> {
         const order = await this.findOne({
             where: { id: id },
-            relations: ['detalles']
+            relations: ['detalles', 'pago', 'estados', 'reporte']
         });
+
+        console.log("Orden encontrada por Id: ", order)
 
         if (!order)
             return Result.fail<Order>(new Error(`Orden con id ${id} no encontrado`), 404, `Orden con id ${id} no encontrado`)
@@ -159,14 +197,21 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
 
         try {
             const queryBuilder = this.createQueryBuilder('orden')
-                .leftJoinAndSelect('orden.detalles', 'detalles') // Relación con detalles
+                .leftJoinAndSelect('orden.pago', 'pago')
+                .leftJoinAndSelect('orden.reporte', 'reporte')
+                .leftJoinAndSelect('orden.detalles', 'detalle') // Relación con detalles
+                .leftJoinAndSelect('detalle.producto', 'producto') // Relación con Producto
+                .leftJoinAndSelect('detalle.combos', 'combos') // Relación con Combo (si la tienes)
                 .leftJoinAndSelect('orden.estados', 'estados')   // Relación con estados
                 .leftJoinAndSelect('estados.estado', 'estado')  // Relación con la entidad Estado
                 .where('orden.id_user = :id_user', { id_user: id_user.Id }) // Filtrar por usuario
                 .andWhere('estado.nombre IN (:...states)', { states: [EnumOrderEstados.ENTREGADA, EnumOrderEstados.CANCELED] }) // Estados permitidos
+                .andWhere('estados.fecha_fin IS NULL') // Condición para asegurarse de que fecha_fin sea NULL
                 .orderBy('orden.fecha_creacion', 'DESC') // Ordenar por fecha de creación
 
             const find_ordenes = await queryBuilder.getMany();
+
+            console.log("Ordenes encontradas: ", find_ordenes)
 
             const ordenes: Order[] = []
 
@@ -189,20 +234,21 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
     async findAllActiveOrdersByUser(id_user: UserId): Promise<Result<Order[]>> {
         try {
             const queryBuilder = this.createQueryBuilder('orden')
+                .leftJoinAndSelect('orden.pago', 'pago') // Relación con pago
+                .leftJoinAndSelect('orden.reporte', 'reporte')
                 .leftJoinAndSelect('orden.detalles', 'detalle') // Relación con detalles
                 .leftJoinAndSelect('detalle.producto', 'producto') // Relación con Producto
-                .leftJoinAndSelect('producto.historicos', 'historicos')
-                .leftJoinAndSelect('historicos.moneda', 'moneda')
                 .leftJoinAndSelect('detalle.combos', 'combos') // Relación con Combo (si la tienes)
                 .leftJoinAndSelect('orden.estados', 'estados')   // Relación con estados
                 .leftJoinAndSelect('estados.estado', 'estado')  // Relación con la entidad Estado
                 .where('orden.id_user = :id_user', { id_user: id_user.Id }) // Filtrar por usuario
                 .andWhere('estado.nombre NOT IN (:...states)', { states: [EnumOrderEstados.ENTREGADA, EnumOrderEstados.CANCELED] }) // Estados permitidos
+                .andWhere('estados.fecha_fin IS NULL') // Condición para asegurarse de que fecha_fin sea NULL
                 .orderBy('orden.fecha_creacion', 'DESC') // Ordenar por fecha de creación
 
             const find_ordenes = await queryBuilder.getMany();
 
-            console.log("Ordenes encontradas: ",find_ordenes)
+            console.log("Ordenes encontradas: ", find_ordenes)
 
             const ordenes: Order[] = []
 
