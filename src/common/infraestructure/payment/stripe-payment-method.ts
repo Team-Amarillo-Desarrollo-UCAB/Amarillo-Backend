@@ -45,7 +45,7 @@ export class StripePaymentMethod implements IPaymentMethod {
             // Crea un PaymentIntent con el token del frontend;
             const paymentIntent = await this.stripe.paymentIntents.create({
                 amount: orden.Monto.Total * 100,
-                currency: 'usd',
+                currency: orden.Moneda,
                 confirm: true,
                 payment_method: this.token,
                 payment_method_types: ['card'],
@@ -61,7 +61,7 @@ export class StripePaymentMethod implements IPaymentMethod {
             const pago = OrderPayment.create(
                 OrderPaymentId.create(id_payment),
                 OrderPaymentName.create(EnumPaymentMethod.STRIPE),
-                OrderPaymentCurrency.create(Moneda.USD),
+                OrderPaymentCurrency.create(orden.Moneda),
                 OrderPaymentTotal.create(orden.Monto.Total)
             )
 

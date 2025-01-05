@@ -19,6 +19,8 @@ export interface CreateProductServiceEntryDTO extends ApplicationServiceEntryDto
 
     measurement: UnidadMedida
 
+    stock: number
+
     category?: string[]
 
     caducityDate?: Date

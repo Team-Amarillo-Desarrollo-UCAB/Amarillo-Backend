@@ -86,7 +86,11 @@ import { CreateReportService } from "src/order/application/services/command/crea
 import { IShippingFee } from "src/common/domain/domain-service/shipping-fee-calculate.port";
 import { ShippingFeeDistance } from "src/common/infraestructure/domain-services-adapters/shipping-fee-distance.adapter";
 import { OrderLocationDelivery } from '../../domain/value-object/order-location-delivery';
-import Stripe from "stripe";
+import { RefundOrderEntryDTO } from "../DTO/entry/refund-order-entry.dto";
+import { RefundOrderResponseDTO } from "../DTO/response/refund-order-response.dto";
+import { RefundOrderServiceEntryDTO } from "src/order/application/DTO/entry/refund-order-service.entry.dto";
+import { RefundOrderService } from "src/order/application/services/command/refund-order.service";
+import { StripeOrderReembolsoAdapter } from "src/common/infraestructure/domain-services-adapters/order-reembolso.adapter";
 
 @ApiTags("Order")
 @Controller("order")
@@ -642,6 +646,48 @@ export class OrderController {
 
     }
 
+    @Post('refund/stripe/:id')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOkResponse({
+        description: 'Solicita el reembolso de una orden cancelada o entregada',
+        type: RefundOrderResponseDTO,
+    })
+    async refundOrder(
+        @GetUser() user,
+        @Param('id', ParseUUIDPipe) id: string
+    ) {
+
+        const data: RefundOrderServiceEntryDTO = {
+            userId: user.id,
+            id_orden: id
+        }
+
+        const service =
+            new ExceptionDecorator(
+                new LoggingDecorator(
+                    new PerformanceDecorator(
+                        new RefundOrderService(
+                            this.orderRepository,
+                            new StripeOrderReembolsoAdapter()
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new HttpExceptionHandler()
+            )
+
+        const result = await service.execute(data)
+
+        const response: RefundOrderResponseDTO = {
+            ...result.Value
+        }
+
+        return response
+
+    }
+
     @Get('HERE')
     async testHere() {
         const ubicacion = OrderLocationDelivery.create(
@@ -650,7 +696,7 @@ export class OrderController {
             -66.93847,
         )
 
-        const stripe = new Stripe(process.env.STRIPE_API_SECRET)
+        let stripe //= new Stripe(process.env.STRIPE_API_SECRET)
         const paymentIntent = await stripe.paymentIntents.create({
             amount: 10 * 100,  // Monto en centavos (usd * 100)
             currency: 'usd',

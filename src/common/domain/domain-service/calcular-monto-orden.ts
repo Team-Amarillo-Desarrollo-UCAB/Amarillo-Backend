@@ -30,15 +30,20 @@ export class OrderCalculationTotal {
 
         let monto_total = 0
         let descuento_cupon = 0
+        let moneda: Moneda
 
         // Entidad parcial de producto con el descuento
         for (const p of orden.Productos) {
             monto_total += p.Precio().Amount * p.Cantidad().Value
+            //Obtener la moneda dado el currency de la orden
+            if(!moneda) moneda = Moneda[p.Moneda().toUpperCase() as keyof typeof Moneda];
         }
 
         // Entidad parcial de combo con el descuento
         for (const c of orden.Bundles) {
             monto_total += c.Precio().Amount * c.Cantidad().Value
+            //Obtener la moneda dado el currency de la orden
+            if(!moneda) moneda = Moneda[c.Moneda().toUpperCase() as keyof typeof Moneda];
         }
 
         if (cupon) {
@@ -68,7 +73,7 @@ export class OrderCalculationTotal {
 
         orden.assignOrderCost(OrderTotal.create(
             monto_total,
-            Moneda.USD,
+            moneda,
             OrderDiscount.create(descuento_cupon),
             subTotal,
             shipping_fee.Value
