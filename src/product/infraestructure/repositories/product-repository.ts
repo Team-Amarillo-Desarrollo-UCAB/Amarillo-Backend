@@ -109,12 +109,20 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
             const queryBuilder = this.createQueryBuilder('producto');
 
             if (category && category.length > 0) {
-                console.log('Filtrando por categorías:', category);
-                queryBuilder.andWhere(
-                    `producto.categories::jsonb @> :categories`,
-                    { categories: category },
+                const categoriesArray = Array.isArray(category) ? category : [category];
+            
+                const conditions = categoriesArray.map((_, index) => 
+                    `producto.categories::jsonb @> :category${index}`
                 );
+            
+                const parameters = categoriesArray.reduce((acc, curr, index) => {
+                    acc[`category${index}`] = `["${curr}"]`; 
+                    return acc;
+                }, {});
+            
+                queryBuilder.andWhere(conditions.join(' OR '), parameters);
             }
+            
 
             if (name) {
                 console.log('Filtrando por nombre del producto:', name);
@@ -136,11 +144,13 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
                     .orderBy('popularity', 'DESC')
                 }
 
-            if (discount) {
-                console.log('Filtrando por descuento:', discount);
-                queryBuilder.andWhere('producto.discount = :discount', { discount });
-            }
+                if (discount) {
+                    console.log('Filtrando por descuento:', discount);
+                    queryBuilder.andWhere('producto.discount = :discount', { discount });
+                }
 
+            queryBuilder.andWhere('producto.cantidad_stock > 0');
+            queryBuilder.andWhere('producto."caducityDate" >= CURRENT_DATE');    
             queryBuilder.skip(offset).take(perpage);
 
             const products = await queryBuilder.getMany();
