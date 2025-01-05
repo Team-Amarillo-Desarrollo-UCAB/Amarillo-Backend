@@ -10,12 +10,13 @@ import {
   BadRequestException,
   ParseUUIDPipe,
   Patch,
-  Delete
+  Delete,
+  UseGuards
 } from '@nestjs/common';
 import { GetCategoryByIdServiceEntryDTO } from 'src/category/application/dto/entry/get-category-by-id-service-entry';
 //import { GetCategoryByIdServiceResponseDTO } from 'src/category/application/dto/response/get-category-by-id-service-response.dto';
 //import { Result } from 'src/common/domain/result-handler/Result';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { OrmCategoryRepository } from '../repositories/orm-category-repository';
 import { IdGenerator } from 'src/common/application/id-generator/id-generator.interface';
 import { DataSource } from 'typeorm';
@@ -43,12 +44,19 @@ import { UpdateCategoryApplicationService } from 'src/category/application/comma
 import { EventBus } from 'src/common/infraestructure/event-bus/event-bus';
 import { DeleteCategoryServiceEntryDto } from 'src/category/application/dto/entry/delete-category-service-entry.dto';
 import { DeleteCategoryInfraEntryDto } from '../DTO/entry/delete-category-infra-enty.dto';
-import { DeleteCategoryInfraResponseDto } from '../DTO/response/delete-category-infra-response.dto';
 import { DeleteCategoryApplicationService } from 'src/category/application/commands/delete-category.service';
 import { CategoryParamsEntryDTO } from '../DTO/entry/category-params-entry.dto';
 import { ExceptionDecorator } from 'src/common/application/application-services/decorators/exception-decorator/exception.decorator';
 import { HttpExceptionHandler } from 'src/common/infraestructure/exception-handler/http-exception-handler-code';
 import { GetCategoryByNameEntryDTO } from '../DTO/entry/get-category-by-name-entry.dto';
+import { JwtAuthGuard } from 'src/auth/infraestructure/jwt/decorator/jwt-auth.guard';
+import { GetUser } from 'src/auth/infraestructure/jwt/decorator/get-user.param.decorator';
+import { PerformanceDecorator } from 'src/common/application/application-services/decorators/performance-decorator/performance-decorator';
+import { SecurityDecorator } from 'src/common/application/application-services/decorators/security-decorator/security-decorator';
+import { AuditingDecorator } from 'src/common/application/auditing/auditing.decorator';
+import { OrmAccountRepository } from 'src/user/infraestructure/repositories/orm-repositories/orm-account-repository';
+import { OrmAuditingRepository } from 'src/common/infraestructure/auditing/repositories/orm-auditing-repository';
+import { DeleteCategoryInfraResponseDto } from '../DTO/response/delete-category-infra-response.dto';
 
 
 @ApiTags("Category")
@@ -59,6 +67,8 @@ export class CategoryController {
   private readonly logger: Logger = new Logger('CategoryController')
   private readonly idGenerator: IdGenerator<string>
   private readonly fileUploader: IFileUploader
+  private readonly auditingRepository: OrmAuditingRepository;
+  private readonly accountUserRepository: OrmAccountRepository;
 
 
   constructor(
@@ -67,6 +77,8 @@ export class CategoryController {
     this.categoryRepository = new OrmCategoryRepository(new OrmCategoryMapper(), dataSource)
     this.idGenerator = new UuidGenerator();
     this.fileUploader = new CloudinaryFileUploader();
+    this.auditingRepository = new OrmAuditingRepository(dataSource)  
+    this.accountUserRepository = new OrmAccountRepository(dataSource)
   }
 
   /**
@@ -74,20 +86,37 @@ export class CategoryController {
    * @param id - ID de la categoría.
    * @returns - Los datos de la categoría o un error si no se encuentra.
    */
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('one/:id')
   async getCategoryById(
-    @Param('id', ParseUUIDPipe) id: string
+    @Param('id', ParseUUIDPipe) id: string, @GetUser() user
   ) {
     const entry: GetCategoryByIdServiceEntryDTO = {
-      userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+      userId: user.id,
       id: id
     }
 
-    const service =
-      new LoggingDecorator(
-        new GetCategoryByIdService(this.categoryRepository),
-        new NativeLogger(this.logger)
-      )
+  const allowedRoles = ['ADMIN','CLIENT'];
+  
+    const service = new ExceptionDecorator(
+        new AuditingDecorator(
+            new SecurityDecorator(
+                new LoggingDecorator(
+                    new PerformanceDecorator(
+                      new GetCategoryByIdService(this.categoryRepository),
+                      new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                this.accountUserRepository,
+                allowedRoles
+            ),
+            this.auditingRepository,
+            this.idGenerator
+        ),
+        new HttpExceptionHandler()
+    );
 
     const result = await service.execute(entry)
 
@@ -105,26 +134,44 @@ export class CategoryController {
    * @param id - nombre de la categoría.
    * @returns - Los datos de la categoría o un error si no se encuentra.
    */
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth() 
   @Get('one/by/name')
   @ApiOkResponse({
     description: 'Devuelve la informacion de una categoría dado el nombre',
     type: GetCategoryByNameResponseDTO,
   })
   async getCategoryByName(
-    @Body() entry: GetCategoryByNameEntryDTO
+    @Body() entry: GetCategoryByNameEntryDTO, @GetUser() user
   ) {
 
     console.log(entry)
     const data: GetCategoryByNameServiceEntryDTO = {
-      userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+      userId: user.id,
       name: entry.name
     }
 
-    const service =
-      new LoggingDecorator(
-        new GetCategoryByNameService(this.categoryRepository),
-        new NativeLogger(this.logger)
-      )
+    const allowedRoles = ['ADMIN','CLIENT'];
+
+    const service = new ExceptionDecorator(
+      new AuditingDecorator(
+          new SecurityDecorator(
+              new LoggingDecorator(
+                  new PerformanceDecorator(
+                    new GetCategoryByNameService(this.categoryRepository),
+                    new NativeLogger(this.logger)
+                  ),
+                  new NativeLogger(this.logger)
+              ),
+              this.accountUserRepository,
+              allowedRoles
+          ),
+          this.auditingRepository,
+          this.idGenerator
+      ),
+      new HttpExceptionHandler()
+  );
+
 
     const result = await service.execute(data)
 
@@ -140,21 +187,38 @@ export class CategoryController {
    * @param body - Datos necesarios para crear la categoría.
    * @returns - Los datos de la categoría creada o un error en caso de fallo.
    */
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Post('create')
   //@UseInterceptors(FileInterceptor('icon'))
   @ApiOkResponse({
     description: 'Crea una nueva categoría en la base de datos',
     type: CreateCategoryEntryDTO,
   })
-  async createCategory(@Body() entry: CreateCategoryEntryDTO): Promise<string> {
+  async createCategory(@Body() entry: CreateCategoryEntryDTO, @GetUser() user): Promise<string> {
 
-    const data: CreateCategoryServiceEntryDto = { userId: "24117a35-07b0-4890-a70f-a082c948b3d4", ...entry }
+    const data: CreateCategoryServiceEntryDto = { userId: user.id, ...entry }
 
-    const service =
-      new LoggingDecorator(
-        new CreateCategoryApplicationService(this.categoryRepository, this.idGenerator, this.fileUploader),
-        new NativeLogger(this.logger)
-      )
+        const allowedRoles = ['ADMIN'];
+      
+        const service = new ExceptionDecorator(
+            new AuditingDecorator(
+                new SecurityDecorator(
+                    new LoggingDecorator(
+                        new PerformanceDecorator(
+                          new CreateCategoryApplicationService(this.categoryRepository, this.idGenerator, this.fileUploader),
+                          new NativeLogger(this.logger)
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    this.accountUserRepository,
+                    allowedRoles
+                ),
+                this.auditingRepository,
+                this.idGenerator
+            ),
+            new HttpExceptionHandler()
+        );
 
     const result = await service.execute(data)
 
@@ -170,6 +234,8 @@ export class CategoryController {
    * @param limit - Límite de elementos por página (por defecto es 10).
    * @returns - Lista de categorías paginada.
    */
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth() 
   @Get('many')
   @ApiOkResponse({
     description: 'Devuelve la informacion de todas las categorias',
@@ -177,19 +243,37 @@ export class CategoryController {
   })
   async getAllCategories(
     @Query() paginacion: PaginationDto,
-    @Query() queryEntryParams: CategoryParamsEntryDTO
+    @Query() queryEntryParams: CategoryParamsEntryDTO,
+    @GetUser() user
 ) {
-    const service =
-    new ExceptionDecorator(
-    new LoggingDecorator(
-        new FindAllCategoriesApplicationService(this.categoryRepository),
-        new NativeLogger(this.logger)
-    ),
-    new HttpExceptionHandler()
-  )
+
+
+        
+  const allowedRoles = ['ADMIN','CLIENT'];
+    
+        
+  const service = new ExceptionDecorator(
+            new AuditingDecorator(
+                new SecurityDecorator(
+                    new LoggingDecorator(
+                        new PerformanceDecorator(
+                            new FindAllCategoriesApplicationService(this.categoryRepository),
+                            new NativeLogger(this.logger)
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    this.accountUserRepository,
+                    allowedRoles
+                ),
+                this.auditingRepository,
+                this.idGenerator
+            ),
+            new HttpExceptionHandler()
+        );
+  
 
     const data: GetAllCategoriesServiceEntryDTO = {
-        userId: "24117a35-07b0-4890-a70f-a082c948b3d4",//esto eventualmente se va
+        userId: user.id,
         ...paginacion,
         ...queryEntryParams
     }
@@ -212,65 +296,65 @@ export class CategoryController {
    * @param updateEntryDTO - Datos a actualizar en la categoría.
    * @returns - Mensaje de éxito o error si no se puede actualizar.
    */
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()  
   @Patch('/update/:id')
   @ApiOkResponse({
     description: 'Actualiza todas o algunas de las propiedades de la categoría dado su ID',
     type: UpdateCategoryEntryDTO,
   })
   async updateCategory(
-    @Param('id', ParseUUIDPipe) id: string, // Validación de ID como UUID
-    @Body() updateEntryDTO: UpdateCategoryEntryDTO // DTO para recibir datos
+    @Param('id', ParseUUIDPipe) id: string, 
+    @Body() updateEntryDTO: UpdateCategoryEntryDTO, @GetUser() user 
   ): Promise<string> {
-    let image = null; // Obtener la imagen base64 si está presente
+    let image = null; 
     const eventBus = EventBus.getInstance()
 
-    // Si se incluye una imagen, subirla y obtener la URL
+    
     if (updateEntryDTO.icon) {
       try {
-        image = await this.fileUploader.UploadFile(updateEntryDTO.icon); // Subir la imagen
+        image = await this.fileUploader.UploadFile(updateEntryDTO.icon); 
       } catch (error) {
         this.logger.error(`Error subiendo la imagen: ${error.message}`);
-        throw new BadRequestException('Error al subir la imagen.');//
+        throw new BadRequestException('Error al subir la imagen.');
       }
     }
 
-    console.log("Valor de image=", image)
-
-    //suscripcion de los observers del evento de dominio que pudieran escuchar (al que pudieran reaccionar)
-
-    //nombre es una propiedad a modificarse:
-    // if(updateEntryDTO.name){
-    //   eventBus.subscribe('CategoryNameModified',async(event: CategoryNameModified)=>{
-    //     await this.
-    //   })
-    // }
-
-    // Crear la entrada para el servicio de aplicación
     const data = {
-      userId: "24117a35-07b0-4890-a70f-a082c948b3d4", // Usuario genérico, reemplazar según sea necesario
-      id: id, // ID de la categoría
-      name: updateEntryDTO.name, // Nombre (opcional)
-      icon: image // URL de la imagen subida (opcional)
+      userId: user.id, 
+      id: id, 
+      name: updateEntryDTO.name, 
+      icon: image 
     };
 
-    console.log("Valor de data=", data)
+          const allowedRoles = ['ADMIN'];
+      
+          const service = new ExceptionDecorator(
+              new AuditingDecorator(
+                  new SecurityDecorator(
+                      new LoggingDecorator(
+                          new PerformanceDecorator(
+                            new UpdateCategoryApplicationService(this.categoryRepository, eventBus),
+                            new NativeLogger(this.logger)
+                          ),
+                          new NativeLogger(this.logger)
+                      ),
+                      this.accountUserRepository,
+                      allowedRoles
+                  ),
+                  this.auditingRepository,
+                  this.idGenerator
+              ),
+              new HttpExceptionHandler()
+          );
 
-    // Instanciar el servicio de aplicación con el repositorio y event handler
-    const service = new LoggingDecorator(
-      new UpdateCategoryApplicationService(this.categoryRepository, eventBus),
-      new NativeLogger(this.logger)
-    );
-
-    // Ejecutar el servicio de aplicación
     const result = await service.execute(data);
 
-    // Manejar los resultados del servicio
     if (!result.isSuccess()) {
       this.logger.error(`Error actualizando categoría: ${result.Error.message}`);
       throw result.Error;
     }
 
-    // Mensaje de éxito
     return "Categoría actualizada correctamente";
   }
 
@@ -278,41 +362,50 @@ export class CategoryController {
     description: 'Elimina una categoría por su ID',
     type: DeleteCategoryInfraResponseDto,
   })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Delete('/delete/:id')
   async deleteCategory(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', ParseUUIDPipe) id: string, @GetUser() user
   ): Promise<DeleteCategoryInfraResponseDto> {
-    // Paso 1: Crear el DTO de infraestructura de entrada
     const infraEntryDto: DeleteCategoryInfraEntryDto = { categoryId: id };
     const eventBus = EventBus.getInstance()
 
-    // Paso 2: Transformar a un DTO de entrada de aplicación
     const serviceEntryDto: DeleteCategoryServiceEntryDto = {
       id: infraEntryDto.categoryId,
-      userId: "24117a35-07b0-4890-a70f-a082c948b3d4"
+      userId: user.id
     };
 
-    const service = new LoggingDecorator(
-      new DeleteCategoryApplicationService(this.categoryRepository, eventBus),
-      new NativeLogger(this.logger)
-    );
 
-    // Paso 3: Ejecutar el servicio de aplicación
+       const allowedRoles = ['ADMIN'];
+    
+        const service = new ExceptionDecorator(
+            new AuditingDecorator(
+                new SecurityDecorator(
+                    new LoggingDecorator(
+                        new PerformanceDecorator(
+                          new DeleteCategoryApplicationService(this.categoryRepository, eventBus),
+                          new NativeLogger(this.logger)
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    this.accountUserRepository,
+                    allowedRoles
+                ),
+                this.auditingRepository,
+                this.idGenerator
+            ),
+            new HttpExceptionHandler()
+        );
+    
+
     const result = await service.execute(serviceEntryDto);
 
-    if (!result.isSuccess()) {
-      // Manejar el error en caso de fallo
-      this.logger.error(`Error eliminando categoría: ${result.Error.message}`);
-      throw result.Error;
-    }
 
-    // Paso 4: Transformar la respuesta del servicio en un DTO de infraestructura
     const infraResponseDto: DeleteCategoryInfraResponseDto = {
-      deletedId: result.Value.deletedCategoryId,
-      message: 'Categoría eliminada exitosamente.',
+      ...result.Value
     };
 
-    // Paso 5: Retornar el DTO de infraestructura
     return infraResponseDto;
   }
 

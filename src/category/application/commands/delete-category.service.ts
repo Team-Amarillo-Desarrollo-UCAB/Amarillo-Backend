@@ -39,7 +39,7 @@ export class DeleteCategoryApplicationService
 
     // Paso 3: Preparar la respuesta
     const response: DeleteCategoryServiceResponseDto = {
-      deletedCategoryId: deletedCategory.Id.Value,
+      id: deletedCategory.Id.Value,
     };
 
     return Result.success<DeleteCategoryServiceResponseDto>(response, 200);
