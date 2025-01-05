@@ -15,13 +15,13 @@ export class GetAllCouponService implements IApplicationService<GetAllCuponServi
 
     async execute(data: GetAllCuponServiceEntryDTO): Promise<Result<GetAllCuponServiceResponseDTO[]>> {
 
-        data.page = (data.page * data.perPage) - data.perPage;
+        data.page = (data.page * data.perpage) - data.perpage;
 
         console.log(data.page)
 
-        const coupons = await this.cuponRepository.findAllCoupons(data.page, data.perPage)
+        const coupons = await this.cuponRepository.findAllCoupons(data.page, data.perpage)
 
-        if (!coupons.isSuccess)
+        if (!coupons.isSuccess())
             throw new Error("Method not implemented.")
 
         const response: GetAllCuponServiceResponseDTO[] = []
