@@ -1,4 +1,4 @@
 export interface DeleteCategoryServiceResponseDto {
-    deletedCategoryId: string; // ID de la categoría eliminada
+    id: string; // ID de la categoría eliminada
   }
   

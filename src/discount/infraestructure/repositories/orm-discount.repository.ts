@@ -47,23 +47,51 @@ export class OrmDiscountRepository
 }
 
 
-  async findAllDiscounts(page: number, limit: number): Promise<Result<Discount[]>> {
-    const discounts = await this.find({
-      skip: page,
-      take: limit
-    })
+    async findAllDiscounts(page: number, limit: number): Promise<Result<Discount[]>> {
+      if (page < 1) {
+          page = 1;
+      }
+      if (limit < 1) {
+          limit = 10;
+      }
 
-    if (!discounts)
-      return Result.fail<Discount[]>(new Error(`Descuentos no almacenados`), 404, `Descuentos no almacenados`)
+      const offset = (page - 1) * limit;
+      console.log('Offset calculado:', offset);
 
-    const resultado = await Promise.all(
-      discounts.map(async (discount) => {
-        return await this.ormDiscountMapper.fromPersistenceToDomain(discount); // Retorna el Product
-      })
-    );
+      try {
+          const totalCount = await this.createQueryBuilder('discount').getCount();
 
-    return Result.success<Discount[]>(resultado, 202)
-  }
+          if (offset >= totalCount) {
+              return Result.success<Discount[]>([], 200);
+          }
+
+          const queryBuilder = this.createQueryBuilder('discount');
+          queryBuilder.andWhere('discount.deadline >= CURRENT_DATE');
+          queryBuilder.skip(offset).take(limit);
+
+          const discounts = await queryBuilder.getMany();
+
+          if (!discounts || discounts.length === 0) {
+              return Result.success<Discount[]>([], 200);
+          }
+
+          const domainDiscounts = await Promise.all(
+              discounts.map((discount) =>
+                  this.ormDiscountMapper.fromPersistenceToDomain(discount)
+              )
+          );
+
+          return Result.success<Discount[]>(domainDiscounts, 200);
+      } catch (error) {
+          console.error('Error en findAllDiscounts:', error);
+          return Result.fail<Discount[]>(
+              new Error('Error al buscar descuentos'),
+              500,
+              'Error interno del servidor'
+          );
+      }
+    }
+
 
 
   async addDiscount(discount: Discount): Promise<Result<Discount>> {
