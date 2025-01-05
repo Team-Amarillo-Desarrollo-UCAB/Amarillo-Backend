@@ -33,7 +33,7 @@ export class TaxesCalculationAdapter implements ITaxesCalculationPort {
         //     }
         // }
 
-        const iva = t.Value * 0.16
+        const iva = parseFloat((t.Value * 0.16).toFixed(2))
         return Result.success(iva, 200)
     }
 }

@@ -3,6 +3,7 @@ import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from "typeorm";
 import { OrmOrder } from "./order.entity";
 import { EnumPaymentMethod } from "src/payment-method/domain/enum/PaymentMethod";
 import { Moneda } from "src/product/domain/enum/Monedas";
+import { OrmPaymentMethod } from "src/payment-method/infraestructure/entities/payment-method.entity";
 
 @Entity({ name: "pago" })
 export class Payment {
@@ -16,8 +17,15 @@ export class Payment {
     @Column({ type: 'enum', enum: EnumPaymentMethod })
     metodo: EnumPaymentMethod
 
-    @Column({type: 'enum', enum: Moneda})
+    @Column({ type: 'enum', enum: Moneda })
     moneda: Moneda
+
+    /*@Column({ name: 'id_metodo', type: "uuid", unique: false, nullable: true })
+    id_metodo: string
+
+    @OneToOne(() => OrmPaymentMethod, { eager: true })
+    @JoinColumn({ name: 'id_metodo' })
+    metodo_pago: OrmPaymentMethod*/
 
     static create(
         id: string,

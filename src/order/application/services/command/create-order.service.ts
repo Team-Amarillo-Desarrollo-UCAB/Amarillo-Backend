@@ -182,7 +182,7 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
 
         let orden = Order.create(
             OrderId.create(id_orden),
-            OrderEstado.create(EnumOrderEstados.CREATED),
+            OrderEstado.create(EnumOrderEstados.CREADA),
             OrderCreationDate.create(new Date()),
             OrderReciviedDate.create(new Date(data.orderReciviedDate)),
             OrderLocationDelivery.create(

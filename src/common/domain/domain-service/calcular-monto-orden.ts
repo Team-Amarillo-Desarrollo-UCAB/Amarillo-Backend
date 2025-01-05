@@ -34,16 +34,17 @@ export class OrderCalculationTotal {
 
         // Entidad parcial de producto con el descuento
         for (const p of orden.Productos) {
-            monto_total += p.Precio().Amount * p.Cantidad().Value
+            monto_total += parseFloat((p.Precio().Amount * p.Cantidad().Value).toFixed(2))
             //Obtener la moneda dado el currency de la orden
-            if(!moneda) moneda = Moneda[p.Moneda().toUpperCase() as keyof typeof Moneda];
+            if (!moneda) moneda = Moneda[p.Moneda().toUpperCase() as keyof typeof Moneda];
+            console.log(monto_total)
         }
 
         // Entidad parcial de combo con el descuento
         for (const c of orden.Bundles) {
-            monto_total += c.Precio().Amount * c.Cantidad().Value
+            monto_total += parseFloat((c.Precio().Amount * c.Cantidad().Value).toFixed(2))
             //Obtener la moneda dado el currency de la orden
-            if(!moneda) moneda = Moneda[c.Moneda().toUpperCase() as keyof typeof Moneda];
+            if (!moneda) moneda = Moneda[c.Moneda().toUpperCase() as keyof typeof Moneda];
         }
 
         if (cupon) {
@@ -64,15 +65,21 @@ export class OrderCalculationTotal {
         if (!impuesto.isSuccess())
             return Result.fail<Order>(impuesto.Error, impuesto.StatusCode, impuesto.Message)
 
-        let shipping_fee = await this.shippingFee.execute(orden.Direccion)
-        if(!shipping_fee)
-            return Result.fail<Order>(shipping_fee.Error,shipping_fee.StatusCode,shipping_fee.Message)
+        console.log(impuesto.Value)
 
-        monto_total -= shipping_fee.Value.Value
-        monto_total -= impuesto.Value
+        let shipping_fee = await this.shippingFee.execute(orden.Direccion)
+        if (!shipping_fee)
+            return Result.fail<Order>(shipping_fee.Error, shipping_fee.StatusCode, shipping_fee.Message)
+
+        let s = subTotal.add(impuesto.Value)
+        console.log('sub total: ',s.Value)
+
+        monto_total += shipping_fee.Value.Value
+        monto_total += impuesto.Value
+
 
         orden.assignOrderCost(OrderTotal.create(
-            monto_total,
+            parseFloat(monto_total.toFixed(2)),
             moneda,
             OrderDiscount.create(descuento_cupon),
             subTotal,

@@ -12,6 +12,8 @@ export class GetOrderByIdResponseServiceDTO {
 
     sub_total?: number
 
+    shipping_fee: number
+
     currency: string
 
     orderDirection: {

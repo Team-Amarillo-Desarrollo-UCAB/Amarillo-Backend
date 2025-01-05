@@ -3,30 +3,26 @@ import { IPaymentMethod } from "src/common/domain/domain-service/determinar-meto
 import { Result } from "src/common/domain/result-handler/Result";
 import { OrderPayment } from "src/order/domain/entites/order-payment";
 import { Order } from "src/order/domain/order";
+import { OrderPaymentCurrency } from "src/order/domain/value-object/oder-payment/order-payment-currency";
 import { OrderPaymentId } from "src/order/domain/value-object/oder-payment/order-payment-id";
 import { OrderPaymentName } from "src/order/domain/value-object/oder-payment/order-payment-name";
-import { EnumPaymentMethod } from "src/payment-method/domain/enum/PaymentMethod";
-import { OrderPaymentCurrency } from '../../../order/domain/value-object/oder-payment/order-payment-currency';
 import { OrderPaymentTotal } from "src/order/domain/value-object/oder-payment/order-payment-total";
+import { EnumPaymentMethod } from "src/payment-method/domain/enum/PaymentMethod";
 import { IPaymentMethodRepository } from "src/payment-method/domain/repositories/payment-method-repository.interface";
-import { PaymentMethodName } from "src/payment-method/domain/value-objects/payment-method-name";
 
-export class PaypalPaymentMethod implements IPaymentMethod {
+export class CashPaymentMethod implements IPaymentMethod {
 
-    private readonly email_paypal: string
     private readonly idGenerator: IdGenerator<string>
     private readonly paymentMethodRepository: IPaymentMethodRepository
     private readonly idPayment: string
 
     constructor(
-        email: string,
         idGenerator: IdGenerator<string>,
         paymentMethodRepository: IPaymentMethodRepository,
         idPayment: string
     ) {
-        this.email_paypal = email
-        this.idPayment = idPayment
         this.idGenerator = idGenerator
+        this.idPayment = idPayment
         this.paymentMethodRepository = paymentMethodRepository
     }
 
@@ -37,18 +33,9 @@ export class PaypalPaymentMethod implements IPaymentMethod {
         if (!method.isSuccess())
             return Result.fail<Order>(method.Error, 404, method.Message)
 
-        if(!method.Value.NameMethod().equals(PaymentMethodName.create(EnumPaymentMethod.PAYPAL)))
-            return Result.fail<Order>(new Error('El id no corresponde al metodo de pago'), 404, 'El id no corresponde al metodo de pago')
-
-        const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-        if (!regex.test(this.email_paypal)) {
-            return Result.fail<Order>(new Error("Email del paypalno es valido"), 404, "Email del paypalno es valido")
-        }
-
         const pago = OrderPayment.create(
             OrderPaymentId.create(await this.idGenerator.generateId()),
-            OrderPaymentName.create(EnumPaymentMethod.PAYPAL),
+            OrderPaymentName.create(EnumPaymentMethod.EFECTIVO),
             OrderPaymentCurrency.create(orden.Moneda),
             OrderPaymentTotal.create(orden.Monto.Total)
         )
