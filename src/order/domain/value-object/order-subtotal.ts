@@ -20,6 +20,14 @@ export class OrderSubTotal implements IValueObject<OrderSubTotal> {
         return this.subTotal
     }
 
+    add(subTotal: number){
+        return new OrderSubTotal(parseFloat((this.subTotal + subTotal).toFixed(2)))
+    }
+
+    substract(subTotal: number){
+        return new OrderSubTotal(this.subTotal - subTotal)
+    }
+
     equals(valueObject: OrderSubTotal): boolean {
         return this.subTotal === valueObject.Value
     }

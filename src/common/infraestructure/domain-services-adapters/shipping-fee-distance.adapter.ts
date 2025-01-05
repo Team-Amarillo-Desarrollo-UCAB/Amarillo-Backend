@@ -28,18 +28,21 @@ export class ShippingFeeDistance implements IShippingFee {
                 return Result.fail<OrderShippingFee>(new Error('Fallo en la ruta'), 500, "Fallo en la ruta")
 
             const distancia = Math.floor(respuesta.summary.length / 1000) // Transformacion de la distancia a km
+            console.log("Distancia obtenida: ",distancia)
             const rango = Math.floor(distancia / 5) * 5;
 
             let shipping_fee: OrderShippingFee
-            if (rango === 0) { // 0-5Km 0.30$
-                shipping_fee = OrderShippingFee.create(parseFloat((distancia * 0.30).toFixed(2)))
-            } else if (rango === 5) { // 5-10Km 0.25$
-                shipping_fee = OrderShippingFee.create(parseFloat((distancia * 0.25).toFixed(2)))
-            } else if (rango === 10) { // 10-15Km 0.15$
+            if (rango === 0) { // 0-5Km 0.15$
                 shipping_fee = OrderShippingFee.create(parseFloat((distancia * 0.15).toFixed(2)))
+            } else if (rango === 5) { // 5-10Km 0.10$
+                shipping_fee = OrderShippingFee.create(parseFloat((distancia * 0.10).toFixed(2)))
+            } else if (rango === 10) { // 10-15Km 0.07$
+                shipping_fee = OrderShippingFee.create(parseFloat((distancia * 0.07).toFixed(2)))
             } else {
                 shipping_fee = OrderShippingFee.create(parseFloat((distancia * 0.05).toFixed(2))) // Mas de 15Km
             }
+
+            console.log("Shipping fee: ",shipping_fee)
 
             if(!shipping_fee)
                 return Result.fail<OrderShippingFee>(new InvalidOrderShippingFee('Rango de distancia invalida'),500,'Rango de distancia invalida')

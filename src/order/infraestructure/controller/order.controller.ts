@@ -287,7 +287,9 @@ export class OrderController {
                             new OrderCalculationTotal(
                                 new PaypalPaymentMethod(
                                     request.email,
-                                    this.idGenerator
+                                    this.idGenerator,
+                                    this.paymentMethodRepository,
+                                    request.idPayment
                                 ),
                                 this.taxes,
                                 new ShippingFeeDistance()
@@ -438,17 +440,20 @@ export class OrderController {
     }
 
     @Get('many')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @ApiOkResponse({
         description: 'Devuelve la informacion de todas las ordenes',
         type: GetAllOrdersReponseDTO,
         isArray: true
     })
     async getAllOrders(
-        @Query() pagination: PaginationDto
+        @Query() pagination: PaginationDto,
+        @GetUser() user
     ) {
 
         const data: GetAllOrdersServiceEntryDTO = {
-            userId: '',
+            userId: user.id,
             page: pagination.page,
             limit: pagination.perpage
         }
@@ -477,7 +482,7 @@ export class OrderController {
 
     }
 
-    @Get('many/past/:id')
+    @Get('many/past')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOkResponse({
@@ -486,12 +491,11 @@ export class OrderController {
         isArray: true
     })
     async getPastOrdersByUser(
-        @GetUser() user,
-        @Param('id', ParseUUIDPipe) id: string
+        @GetUser() user
     ) {
 
         const data: GetPastOrdersServiceEntryDTO = {
-            userId: id
+            userId: user.id
         }
 
         const service =
@@ -518,7 +522,7 @@ export class OrderController {
 
     }
 
-    @Get('many/active/:id')
+    @Get('many/active')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOkResponse({
@@ -527,14 +531,11 @@ export class OrderController {
         isArray: true
     })
     async getActiveOrdersByUser(
-        @GetUser() user,
-        @Param('id', ParseUUIDPipe) id: string,
+        @GetUser() user
     ) {
 
-        console.log(id)
-
         const data: GetActiveOrdersServiceEntryDTO = {
-            userId: id
+            userId: user.id
         }
 
         const service =

@@ -27,40 +27,40 @@ export class FindAllBundlesApplicationService
 
     const bundlesResult = await this.bundleRepository.findAllBundles(data.page, data.perpage, data.category, data.name, data.price, data.popular, data.discount);
 
-    
+
     //EN EL REPO ME TRAE DISCOUNT CON VALOR RANDOM
-    
+
 
     if (!bundlesResult.isSuccess()) {
       // Devolver un fallo si algo sale mal en el repositorio
-      return Result.fail(new Error("ERROR al hallar"),500,"ERROR al hallar");
+      return Result.fail(new Error("ERROR al hallar"), 500, "ERROR al hallar");
     }
 
     const response: GetAllBundlesServiceResponseDTO[] = []
 
-        bundlesResult.Value.map(async(bundle) => response.push({
-        //en endpoint comun no se define la colección de productos y/o categorías en el response... 
-        id:bundle.Id.Value,
-        name: bundle.name.Value,
-        description: bundle.description.Value,
-        images: bundle.images.map(i => i.Value),
-        price: bundle.price.Price,
-        currency:bundle.price.Currency,
-        weight: bundle.weight.Weight,
-        measurement:bundle.weight.Measurement,
-        stock:bundle.stock.Value,
-        category: bundle.categories.map(i=>i.Value),
-        productId:bundle.products.map(i=>i.Id),
-        caducityDate: bundle.caducityDate && bundle.caducityDate.Value 
-        ? bundle.caducityDate.Value 
+    bundlesResult.Value.map(async (bundle) => response.push({
+      //en endpoint comun no se define la colección de productos y/o categorías en el response... 
+      id: bundle.Id.Value,
+      name: bundle.name.Value,
+      description: bundle.description.Value,
+      images: bundle.images.map(i => i.Value),
+      price: bundle.price.Price,
+      currency: bundle.price.Currency,
+      weight: bundle.weight.Weight,
+      measurement: bundle.weight.Measurement,
+      stock: bundle.stock.Value,
+      category: bundle.categories.map(i => i.Value),
+      productId: bundle.products.map(i => i.Id),
+      caducityDate: bundle.caducityDate && bundle.caducityDate.Value
+        ? bundle.caducityDate.Value
         : new Date('2029-01-01'),
-        discount: bundle.Discount && bundle.Discount.Value 
-        ? bundle.Discount.Value 
+      discount: bundle.Discount && bundle.Discount.Value
+        ? bundle.Discount.Value
         : "",
 
     }));
 
-    
+    console.log("Respuesta del servicio: ", response)
 
     return Result.success(response, 202);
   }

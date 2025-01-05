@@ -20,16 +20,14 @@ export class GetAllOrdersService implements
 
         const response: GetAllOrdersServiceResponseDTO[] = []
 
-        for (const orden of ordenes.Value) {
-
-            console.log("Orden del dominio: ", orden)
-
-            response.push({
+        if (ordenes.Value.length > 0) {
+            ordenes.Value.map((orden) => response.push({
                 id: orden.Id.Id,
                 orderState: orden.Estado.Estado,
                 orderCreatedDate: orden.Fecha_creacion.Date_creation,
                 totalAmount: orden.Monto.Total,
                 sub_total: orden.Monto.SubTotal.Value,
+                shipping_fee: orden.Monto.ShippingFee.Value,
                 currency: orden.Monto.Currency,
                 orderDirection: {
                     lat: orden.Direccion.Latitud,
@@ -52,10 +50,8 @@ export class GetAllOrdersService implements
                     paymentMethod: orden.Payment.NameMethod().Name()
                 } : null,
                 orderDiscount: orden.Monto.Discount.Value
-            })
-
+            }))
         }
-
         return Result.success<GetAllOrdersServiceResponseDTO[]>(response, 200)
     }
 

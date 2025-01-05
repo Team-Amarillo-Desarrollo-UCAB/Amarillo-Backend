@@ -126,12 +126,16 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
                 where: { nombre: order.Estado.Estado }
             });
 
-            const estado_orden = Estado_Orden.create(
+            let fecha_cambio = new Date()
+
+
+            const nuevo_estado = Estado_Orden.create(
                 order.Id.Id,
                 estado.id,
-                order.Fecha_creacion.Date_creation,
+                fecha_cambio,
                 null
             )
+
 
             const estado_actual = await this.ormEstadoOrdenRepository.findOne({
                 where: {
@@ -140,10 +144,10 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
                 }
             })
 
-            estado_actual.fecha_fin = new Date()
+            estado_actual.fecha_fin = fecha_cambio
 
             await this.ormEstadoOrdenRepository.save(estado_actual);
-            await this.ormEstadoOrdenRepository.save(estado_orden);
+            await this.ormEstadoOrdenRepository.save(nuevo_estado);
 
 
             return Result.success<Order>(order, 200)
@@ -269,26 +273,38 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
 
 
     async findAllOrders(page: number, limit: number): Promise<Result<Order[]>> {
-        const ordenes = await this.find({
-            skip: page,
-            take: limit,
-            relations: ['detalles']
-        })
 
-        if (!ordenes)
-            return Result.fail<Order[]>(new Error(`Ordenes no almacenadas`), 404, `Ordenes no almacenadas`)
+        try {
 
-        const result: Order[] = []
+            const queryBuilder = this.createQueryBuilder('orden')
+                .leftJoinAndSelect('orden.pago', 'pago') // Relación con pago
+                .leftJoinAndSelect('orden.reporte', 'reporte')
+                .leftJoinAndSelect('orden.detalles', 'detalle') // Relación con detalles
+                .leftJoinAndSelect('detalle.producto', 'producto') // Relación con Producto
+                .leftJoinAndSelect('detalle.combos', 'combos') // Relación con Combo (si la tienes)
+                .leftJoinAndSelect('orden.estados', 'estados')   // Relación con estados
+                .leftJoinAndSelect('estados.estado', 'estado')  // Relación con la entidad Estado
+                .where('estados.fecha_fin IS NULL') // Condición para asegurarse de que fecha_fin sea NULL
+                .orderBy('orden.fecha_creacion', 'DESC') // Ordenar por fecha de creación
 
-        for (const orden of ordenes) {
+            const ordenes = await queryBuilder.getMany();
 
-            result.push(
-                await this.ormOrderMapper.fromPersistenceToDomain(orden)
-            )
+            const result: Order[] = []
 
+            for (const orden of ordenes) {
+                result.push(
+                    await this.ormOrderMapper.fromPersistenceToDomain(orden)
+                )
+
+            }
+
+            return Result.success<Order[]>(result, 202)
+
+        } catch (error) {
+            return Result.fail<Order[]>(new Error(error.message), 500, error.message)
         }
 
-        return Result.success<Order[]>(result, 202)
+
     }
 
 }

@@ -35,6 +35,21 @@ export class GetOrderByIdReponseDTO {
     totalAmount: number;
 
     @ApiProperty({
+        example: 20
+    })
+    @IsNumber()
+    @IsNotEmpty()
+    @IsOptional()
+    sub_total?: number;
+
+    @ApiProperty({
+        example: 20
+    })
+    @IsNumber()
+    @IsNotEmpty()
+    shipping_fee: number;
+
+    @ApiProperty({
         example: "USD"
     })
     @IsString()
