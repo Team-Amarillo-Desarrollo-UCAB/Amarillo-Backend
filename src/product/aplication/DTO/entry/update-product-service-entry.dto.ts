@@ -2,7 +2,7 @@ import { ApplicationServiceEntryDto } from "src/common/application/application-s
 
 export interface UpdateProductServiceEntryDTO extends ApplicationServiceEntryDto {
 
-    id_producto: string
+    id: string
     name?: string
     description?: string
     images?: string[]

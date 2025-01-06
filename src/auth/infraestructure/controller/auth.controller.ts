@@ -107,20 +107,20 @@ export class AuthController {
 
 
         const signUpApplicationService =
-            //new ExceptionDecorator( 
-            new LoggingDecorator(
-                //         new PerformanceDecorator(    
-                new SignUpUserApplicationService(
-                    this.eventBus,
-                    this.userRepository,
-                    this.uuidGenerator,
-                    this.fileUploader
-                ),
+            new ExceptionDecorator( 
+                new LoggingDecorator(
+                    new PerformanceDecorator(    
+                        new SignUpUserApplicationService(
+                            this.eventBus,
+                            this.userRepository,
+                            this.uuidGenerator,
+                            this.fileUploader
+                        ),
+                    new NativeLogger(this.logger)
+                     ),
                 new NativeLogger(this.logger)
-                //     ),
-                //     new NativeLogger(this.logger)
-                // ),
-                // new HttpExceptionHandler()
+                 ),
+            new HttpExceptionHandler()
             )
         const resultService = (await signUpApplicationService.execute({
             userId: 'none',
@@ -129,7 +129,7 @@ export class AuthController {
             phone: data.phone,
             image: data.image,
             password: plainToHash,
-            role: data.type //CAMBIAR
+            type: data.type 
         }));
 
         return { id: resultService.Value.id }
@@ -145,20 +145,20 @@ export class AuthController {
         this.cleanSecretCodes()
         const data = { userId: 'none', ...getCodeUpdateDto, }
 
-        const service = //new ExceptionDecorator( 
+        const service = new ExceptionDecorator( 
             new LoggingDecorator(
-                //  new PerformanceDecorator(
+                  new PerformanceDecorator(
                 new GetCodeUpdatePasswordUserInfraService(
                     this.ormAccountRepository,
                     getCodeUpdateDto.email,
                     new SecretCodeGenerator(),
                 ),
                 new NativeLogger(this.logger)
-                // ),
-                // new NativeLogger(this.logger)
-            )
-        // new HttpExceptionHandler()
-        //)
+                ),
+                new NativeLogger(this.logger)
+            ),
+        new HttpExceptionHandler()
+        )
         const result = await service.execute(data)
         this.secretCodes = this.secretCodes.filter(e => e.email != result.Value.email)
         this.secretCodes.push(result.Value)
@@ -176,24 +176,20 @@ export class AuthController {
         const result = this.signCode(updatePasswordDto.code, updatePasswordDto.email)
         if (!result) throw new BadRequestException('invalid secret code')
         const data = { userId: 'none', ...updatePasswordDto }
-        const service = //new ExceptionDecorator( 
+        const service = new ExceptionDecorator( 
             new LoggingDecorator(
-                //new PerformanceDecorator(
+                new PerformanceDecorator(
                 new ChangePasswordUserInfraService(
                     this.ormAccountRepository,
                     this.encryptor
                 ),
                 new NativeLogger(this.logger)
-                //   ),
-                //new NativeLogger(this.logger)
-            )
-        // new HttpExceptionHandler()
-        //)
+                  ),
+                new NativeLogger(this.logger)
+            ),
+        new HttpExceptionHandler()
+        )
         const result2 = await service.execute(data)
-        // return { 
-        //     previous_password: result2.Value,
-        //     new_password: result2.Value.code
-        //  } 
     }
 
     @Post('code/validate')
@@ -279,7 +275,8 @@ export class AuthController {
             email: user.email,
             name: user.name,
             phone: user.phone,
-            image: user.image
+            image: user.image,
+            type: user.type
         }
     }
 
