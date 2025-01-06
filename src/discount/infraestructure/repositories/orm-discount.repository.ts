@@ -56,18 +56,29 @@ export class OrmDiscountRepository
       }
 
       const offset = (page - 1) * limit;
-      console.log('Offset calculado:', offset);
 
       try {
-          const totalCount = await this.createQueryBuilder('discount').getCount();
+          const totalCount = await this.createQueryBuilder('discount')
+              .leftJoin('producto', 'p', 'CAST(p.discount AS uuid) = discount.id')
+              .leftJoin('bundle', 'b', 'CAST(b.discount AS uuid) = discount.id')
+              .getCount();
 
           if (offset >= totalCount) {
               return Result.success<Discount[]>([], 200);
           }
 
           const queryBuilder = this.createQueryBuilder('discount');
-          queryBuilder.andWhere('discount.deadline >= CURRENT_DATE');
-          queryBuilder.skip(offset).take(limit);
+          queryBuilder
+              .leftJoin('producto', 'p', 'CAST(p.discount AS uuid) = discount.id')
+              .leftJoin('bundle', 'b', 'CAST(b.discount AS uuid) = discount.id')
+              .andWhere('discount.deadline::DATE >= CURRENT_DATE')
+              .andWhere('(p.discount IS NOT NULL OR b.discount IS NOT NULL)')
+              .skip(offset)
+              .take(limit);
+
+              const sqlQuery = queryBuilder.getQuery();
+              console.log('Generated SQL query:', sqlQuery);
+              
 
           const discounts = await queryBuilder.getMany();
 
@@ -91,6 +102,7 @@ export class OrmDiscountRepository
           );
       }
     }
+
 
 
 
