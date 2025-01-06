@@ -47,23 +47,63 @@ export class OrmDiscountRepository
 }
 
 
-  async findAllDiscounts(page: number, limit: number): Promise<Result<Discount[]>> {
-    const discounts = await this.find({
-      skip: page,
-      take: limit
-    })
+    async findAllDiscounts(page: number, limit: number): Promise<Result<Discount[]>> {
+      if (page < 1) {
+          page = 1;
+      }
+      if (limit < 1) {
+          limit = 10;
+      }
 
-    if (!discounts)
-      return Result.fail<Discount[]>(new Error(`Descuentos no almacenados`), 404, `Descuentos no almacenados`)
+      const offset = (page - 1) * limit;
 
-    const resultado = await Promise.all(
-      discounts.map(async (discount) => {
-        return await this.ormDiscountMapper.fromPersistenceToDomain(discount); // Retorna el Product
-      })
-    );
+      try {
+          const totalCount = await this.createQueryBuilder('discount')
+              .leftJoin('producto', 'p', 'CAST(p.discount AS uuid) = discount.id')
+              .leftJoin('bundle', 'b', 'CAST(b.discount AS uuid) = discount.id')
+              .getCount();
 
-    return Result.success<Discount[]>(resultado, 202)
-  }
+          if (offset >= totalCount) {
+              return Result.success<Discount[]>([], 200);
+          }
+
+          const queryBuilder = this.createQueryBuilder('discount');
+          queryBuilder
+              .leftJoin('producto', 'p', 'CAST(p.discount AS uuid) = discount.id')
+              .leftJoin('bundle', 'b', 'CAST(b.discount AS uuid) = discount.id')
+              .andWhere('discount.deadline::DATE >= CURRENT_DATE')
+              .andWhere('(p.discount IS NOT NULL OR b.discount IS NOT NULL)')
+              .skip(offset)
+              .take(limit);
+
+              const sqlQuery = queryBuilder.getQuery();
+              console.log('Generated SQL query:', sqlQuery);
+              
+
+          const discounts = await queryBuilder.getMany();
+
+          if (!discounts || discounts.length === 0) {
+              return Result.success<Discount[]>([], 200);
+          }
+
+          const domainDiscounts = await Promise.all(
+              discounts.map((discount) =>
+                  this.ormDiscountMapper.fromPersistenceToDomain(discount)
+              )
+          );
+
+          return Result.success<Discount[]>(domainDiscounts, 200);
+      } catch (error) {
+          console.error('Error en findAllDiscounts:', error);
+          return Result.fail<Discount[]>(
+              new Error('Error al buscar descuentos'),
+              500,
+              'Error interno del servidor'
+          );
+      }
+    }
+
+
 
 
   async addDiscount(discount: Discount): Promise<Result<Discount>> {

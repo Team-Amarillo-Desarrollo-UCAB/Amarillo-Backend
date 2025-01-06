@@ -13,7 +13,6 @@ import { BundleCaducityDate } from "src/bundle/domain/value-objects/bundle-caduc
 import { DiscountID } from "src/discount/domain/value-objects/discount-id";
 import { CategoryID } from "src/category/domain/value-objects/category-id";
 import { ProductId } from "src/product/domain/value-objects/product-id";
-import { isUUID, IsUUID } from 'class-validator';
 
 export class UpdateBundleApplicationService 
   implements IApplicationService<UpdateBundleServiceEntryDto, UpdateBundleServiceResponseDto> {
@@ -97,16 +96,16 @@ export class UpdateBundleApplicationService
      }
 
      if(data.discount){
-      let update = null
-      if(isUUID(data.discount)){
-        update = DiscountID.create(data.discount)
-      }
-      bundleR.updateDiscount(update)
+      //PENDIENTE VALIDAR SI DESCUENTO EXISTE
+      bundleR.updateDiscount(DiscountID.create(data.discount))
      }
 
 
 
      if(data.category){
+
+      //PENDIENTE VALIDAR SI CAT EXISTE
+ 
 
       let cts = []
 
@@ -117,6 +116,8 @@ export class UpdateBundleApplicationService
      }
 
      if(data.productId){
+
+      //PENDIENTE VALIDAR SI PRODS EXISTE
 
       let pds = []
 

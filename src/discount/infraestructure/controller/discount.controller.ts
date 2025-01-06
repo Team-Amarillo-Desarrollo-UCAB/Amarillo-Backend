@@ -10,7 +10,6 @@ import {
   Logger,
   Inject,
   ParseUUIDPipe,
-  BadRequestException,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
@@ -34,10 +33,6 @@ import { GetAllDiscountService } from 'src/discount/application/services/queries
 import { GetAllDiscountServiceEntryDTO } from 'src/discount/application/dto/entry/get-all-discount-service.dto';
 import { EventBus } from 'src/common/infraestructure/event-bus/event-bus';
 import { ExceptionDecorator } from 'src/common/application/application-services/decorators/exception-decorator/exception.decorator';
-import { UpdateBundleServiceEntryDto } from 'src/bundle/application/dto/entry/update-bundle-service-entry.dto';
-import { CreateBundleApplicationService } from 'src/bundle/application/services/commands/create-bundle.service';
-import { UpdateBundleEntryDTO } from 'src/bundle/infraestructure/dto/entry/update-bundle-entry.dto';
-import { UpdateBundleResponseDTO } from 'src/bundle/infraestructure/dto/response/update-bundle-response.dto';
 import { PerformanceDecorator } from 'src/common/application/application-services/decorators/performance-decorator/performance-decorator';
 import { SecurityDecorator } from 'src/common/application/application-services/decorators/security-decorator/security-decorator';
 import { AuditingDecorator } from 'src/common/application/auditing/auditing.decorator';
@@ -80,16 +75,36 @@ export class DiscountController {
    * @param id - ID del descuento.
    * @returns - Datos del descuento o error si no se encuentra.
    */
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('one/:id')
-  async getDiscountById(@Param('id', ParseUUIDPipe) id: string) {
+  async getDiscountById(@Param('id', ParseUUIDPipe) id: string, @GetUser() user) {
 
     const entry: GetDiscountByIdServiceEntryDto = {
-      userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+      userId: user.id,
       id_discount: id
     }
-    const service = new LoggingDecorator(
-      new GetDiscountByIdService(this.discountRepository),
-      new NativeLogger(this.logger),
+
+
+    const allowedRoles = ['ADMIN','CLIENT'];
+  
+    const service = new ExceptionDecorator(
+        new AuditingDecorator(
+            new SecurityDecorator(
+                new LoggingDecorator(
+                    new PerformanceDecorator(
+                      new GetDiscountByIdService(this.discountRepository),
+                      new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                this.accountUserRepository,
+                allowedRoles
+            ),
+            this.auditingRepository,
+            this.idGenerator
+        ),
+        new HttpExceptionHandler()
     );
 
     const result = await service.execute(entry);
@@ -105,18 +120,36 @@ export class DiscountController {
    * @param entry - Datos necesarios para crear el descuento.
    * @returns - Mensaje de éxito o error.
    */
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Post('create')
   @ApiOkResponse({
     description: 'Crea un nuevo descuento en la base de datos.',
     type: CreateDiscountEntryDTO,
   })
-  async createDiscount(@Body() entry: CreateDiscountEntryDTO) {
+  async createDiscount(@Body() entry: CreateDiscountEntryDTO, @GetUser() user) {
 
-    const data: CreateDiscountServiceEntryDto = { userId: "24117a35-07b0-4890-a70f-a082c948b3d4", ...entry }
+    const data: CreateDiscountServiceEntryDto = { userId: user.id, ...entry }
 
-    const service = new LoggingDecorator(
-      new CreateDiscountApplicationService(this.discountRepository, this.idGenerator, this.fileUploader),
-      new NativeLogger(this.logger),
+    const allowedRoles = ['ADMIN'];
+  
+    const service = new ExceptionDecorator(
+        new AuditingDecorator(
+            new SecurityDecorator(
+                new LoggingDecorator(
+                    new PerformanceDecorator(
+                        new CreateDiscountApplicationService(this.discountRepository, this.idGenerator, this.fileUploader),
+                        new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                this.accountUserRepository,
+                allowedRoles
+            ),
+            this.auditingRepository,
+            this.idGenerator
+        ),
+        new HttpExceptionHandler()
     );
 
     const result = await service.execute(data);
@@ -137,11 +170,28 @@ export class DiscountController {
   async getAllDiscounts(
     @Query() paginacion: PaginationDto, @GetUser() user
   ) {
-    const service =
-      new LoggingDecorator(
-        new GetAllDiscountService(this.discountRepository),
-        new NativeLogger(this.logger)
-      )
+
+
+      const allowedRoles = ['ADMIN','CLIENT'];
+  
+      const service = new ExceptionDecorator(
+          new AuditingDecorator(
+              new SecurityDecorator(
+                  new LoggingDecorator(
+                      new PerformanceDecorator(
+                          new GetAllDiscountService(this.discountRepository),
+                          new NativeLogger(this.logger)
+                      ),
+                      new NativeLogger(this.logger)
+                  ),
+                  this.accountUserRepository,
+                  allowedRoles
+              ),
+              this.auditingRepository,
+              this.idGenerator
+          ),
+          new HttpExceptionHandler()
+      );
 
     const data: GetAllDiscountServiceEntryDTO = {
       userId: user.id,
@@ -209,7 +259,7 @@ export class DiscountController {
       return response;
   }
 
-  @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 @Delete('/delete/:id')
 async deleteDiscount(

@@ -39,6 +39,9 @@ export class OrmProduct {
     // @OneToMany(() => HistoricoPrecio, (historico) => historico.producto,{eager: true})
     // historicos: HistoricoPrecio[];
 
+    @OneToMany(() => Detalle_Orden, (detalleCarrito) => detalleCarrito.id_producto)
+    detalleCarrito: Detalle_Orden[];
+
     @Column('numeric', { nullable: true })
     price?: number;
 

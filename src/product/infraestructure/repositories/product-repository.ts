@@ -86,6 +86,7 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
         category?: string[],
         name?: string,
         price?: number,
+        popular?:string,
         discount?: string
     ): Promise<Result<Product[]>> {
         if (page < 1) {
@@ -108,12 +109,20 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
             const queryBuilder = this.createQueryBuilder('producto');
 
             if (category && category.length > 0) {
-                console.log('Filtrando por categorías:', category);
-                queryBuilder.andWhere(
-                    `producto.categories::jsonb @> :categories`,
-                    { categories: category },
+                const categoriesArray = Array.isArray(category) ? category : [category];
+            
+                const conditions = categoriesArray.map((_, index) => 
+                    `producto.categories::jsonb @> :category${index}`
                 );
+            
+                const parameters = categoriesArray.reduce((acc, curr, index) => {
+                    acc[`category${index}`] = `["${curr}"]`; 
+                    return acc;
+                }, {});
+            
+                queryBuilder.andWhere(conditions.join(' OR '), parameters);
             }
+            
 
             if (name) {
                 console.log('Filtrando por nombre del producto:', name);
@@ -125,11 +134,23 @@ export class OrmProductRepository extends Repository<OrmProduct> implements IPro
                 queryBuilder.andWhere('producto.price = :price', { price });
             }
 
-            if (discount) {
-                console.log('Filtrando por descuento:', discount);
-                queryBuilder.andWhere('producto.discount = :discount', { discount });
-            }
+            if (popular && popular.trim() !== '') {
+                console.log('Filtrando por popularidad:', popular);
+                queryBuilder
+                    .leftJoin('Detalle_carrito', 'dc', 'dc.id_producto = producto.id')
+                    .where('dc.id_producto IS NOT NULL')
+                    .groupBy('producto.id')
+                    .addSelect('COUNT(dc.id)', 'popularity')
+                    .orderBy('popularity', 'DESC')
+                }
 
+                if (discount) {
+                    console.log('Filtrando por descuento:', discount);
+                    queryBuilder.andWhere('producto.discount = :discount', { discount });
+                }
+
+            queryBuilder.andWhere('producto.cantidad_stock > 0');
+            queryBuilder.andWhere('producto."caducityDate" >= CURRENT_DATE');    
             queryBuilder.skip(offset).take(perpage);
 
             const products = await queryBuilder.getMany();

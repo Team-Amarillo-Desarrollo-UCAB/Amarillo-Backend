@@ -16,6 +16,8 @@ import { ProductsExistenceService } from './bundle/application/services/queries/
 import { DiscountExistenceService } from './common/application/application-services/common-services/discount-existence-check.service';
 import { PaymentMethodController } from './payment-method/infraestructure/controller/payment-method.controller';
 import { DiscountController } from './discount/infraestructure/controller/discount.controller';
+import { NotificationController } from './notification/infraestructure/controller/notification.controller';
+
 
 @Module({
   imports: [
@@ -45,7 +47,8 @@ import { DiscountController } from './discount/infraestructure/controller/discou
     CuponController,
     BundleController,
     DiscountController,
-    PaymentMethodController
+    PaymentMethodController,
+    NotificationController
   ],
   providers: [
     Logger,

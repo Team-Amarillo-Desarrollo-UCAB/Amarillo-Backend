@@ -18,6 +18,11 @@ export class ProductParamsEntryDTO {
     @IsPositive()
     @ApiProperty({ required: false})
     price?: number;
+
+    @IsOptional()
+    @IsString()
+    @ApiProperty({ required: false})
+    popular?: string;
     
     @IsOptional()
     @IsString()
