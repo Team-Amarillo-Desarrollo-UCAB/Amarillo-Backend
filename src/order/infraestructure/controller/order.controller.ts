@@ -492,11 +492,14 @@ export class OrderController {
         isArray: true
     })
     async getPastOrdersByUser(
+        @Query() pagination: PaginationDto,
         @GetUser() user
     ) {
 
         const data: GetPastOrdersServiceEntryDTO = {
-            userId: user.id
+            userId: user.id,
+            page: pagination.page,
+            perPage: pagination.perpage
         }
 
         const service =
@@ -532,11 +535,14 @@ export class OrderController {
         isArray: true
     })
     async getActiveOrdersByUser(
+        @Query() pagination: PaginationDto,
         @GetUser() user
     ) {
 
         const data: GetActiveOrdersServiceEntryDTO = {
-            userId: user.id
+            userId: user.id,
+            page: pagination.page,
+            perPage: pagination.perpage
         }
 
         const service =

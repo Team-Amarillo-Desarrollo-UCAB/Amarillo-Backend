@@ -227,8 +227,19 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
             orderCreatedDate: result.Value.Fecha_creacion.Date_creation,
             totalAmount: result.Value.Monto.Total,
             currency: result.Value.Moneda,
+            orderDirection: {
+                lat: result.Value.Direccion.Latitud,
+                long: result.Value.Direccion.Longitud
+            },
             products: detalle_productos,
             bundles: detalle_combos,
+            orderReciviedDate: result.Value.Fecha_entrega ? result.Value.Fecha_entrega.Date_creation : null,
+            orderReport: null,
+            orderPayment: {
+                amount: result.Value.Payment.AmountPayment().Total,
+                currency: result.Value.Payment.CurrencyPayment().Currency,
+                paymentMethod: result.Value.Payment.NameMethod().Name()
+            }
         }
 
         await this.eventHandler.publish(orden.pullEvents())

@@ -197,7 +197,7 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
         }
     }
 
-    async findAllPastOrdersByUser(id_user: UserId): Promise<Result<Order[]>> {
+    async findAllPastOrdersByUser(page: number, limit: number, id_user: UserId): Promise<Result<Order[]>> {
 
         try {
             const queryBuilder = this.createQueryBuilder('orden')
@@ -212,6 +212,8 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
                 .andWhere('estado.nombre IN (:...states)', { states: [EnumOrderEstados.ENTREGADA, EnumOrderEstados.CANCELED] }) // Estados permitidos
                 .andWhere('estados.fecha_fin IS NULL') // Condición para asegurarse de que fecha_fin sea NULL
                 .orderBy('orden.fecha_creacion', 'DESC') // Ordenar por fecha de creación
+                .skip(page)
+                .take(limit)
 
             const find_ordenes = await queryBuilder.getMany();
 
@@ -235,7 +237,7 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
 
     }
 
-    async findAllActiveOrdersByUser(id_user: UserId): Promise<Result<Order[]>> {
+    async findAllActiveOrdersByUser(page: number, limit: number, id_user: UserId): Promise<Result<Order[]>> {
         try {
             const queryBuilder = this.createQueryBuilder('orden')
                 .leftJoinAndSelect('orden.pago', 'pago') // Relación con pago
@@ -249,6 +251,8 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
                 .andWhere('estado.nombre NOT IN (:...states)', { states: [EnumOrderEstados.ENTREGADA, EnumOrderEstados.CANCELED] }) // Estados permitidos
                 .andWhere('estados.fecha_fin IS NULL') // Condición para asegurarse de que fecha_fin sea NULL
                 .orderBy('orden.fecha_creacion', 'DESC') // Ordenar por fecha de creación
+                .skip(page)
+                .take(limit)
 
             const find_ordenes = await queryBuilder.getMany();
 

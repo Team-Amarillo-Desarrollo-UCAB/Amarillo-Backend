@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { Type } from "class-transformer"
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validator"
+import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator"
 import { EnumOrderEstados } from "src/order/domain/enum/order-estados-enum"
 import { Moneda } from "src/product/domain/enum/Monedas"
 
@@ -40,6 +40,22 @@ export class CreateOrderResponseDTO {
     currency: string
 
     @ApiProperty({
+        description: 'Dirección de la orden (latitud y longitud)',
+        type: Object,
+        properties: {
+            lat: { type: 'number', example: 40.7128 },
+            long: { type: 'number', example: -74.0060 },
+        },
+    })
+    @ValidateNested()
+    @Type(() => Object)
+    @IsNotEmpty()
+    orderDirection: {
+        lat: number;
+        long: number;
+    };
+
+    @ApiProperty({
         description: 'Lista de productos asociados a la orden',
         required: true,
     })
@@ -75,6 +91,12 @@ export class CreateOrderResponseDTO {
 
     orderReciviedDate?: Date
 
+    @ApiProperty({
+        example: 'La orden no fue correcta'
+    })
+    @IsString()
+    @IsNotEmpty()
+    @IsOptional()
     orderReport?: string
 
     @ApiProperty({
