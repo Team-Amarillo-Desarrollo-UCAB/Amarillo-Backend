@@ -10,44 +10,44 @@ export class UpdateProductEntryDTO {
     })
     @IsString()
     @IsNotEmpty()
-    id_producto: string
+    id: string
 
     @ApiProperty({
         example: 'Cheese Tris'
     })
     @IsString()
-    nombre: string
+    name: string
 
     @ApiProperty({
         example: 'El mejor queso del mundo'
     })
     @IsString()
-    descripcion: string
+    description: string
 
     @ApiProperty({
         example: "gm"
     })
     @IsEnum(UnidadMedida)
-    unidad_medida: UnidadMedida
+    measurement: UnidadMedida
 
     @ApiProperty({
         example: 200
     })
     @IsNumber()
-    cantidad_medida: number
+    weight: number
 
     @ApiProperty({
         example: 2
     })
     @IsNumber()
     @Min(1)
-    precio: number
+    price: number
 
     @ApiProperty({
         example: "$"
     })
     @IsEnum(Moneda)
-    moneda: Moneda
+    currency: Moneda
 
     @ApiProperty({
         example: 500

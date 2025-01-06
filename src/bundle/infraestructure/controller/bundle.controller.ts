@@ -192,7 +192,7 @@ export class BundleController {
   ): Promise<GetAllBundlesResponseDTO> {
     const entry: GetBundleByIdServiceEntryDTO = {
       userId: user.id,
-      id_bundle: id,
+      id: id,
     };
 
 
@@ -293,7 +293,7 @@ export class BundleController {
       stock: bundle.stock,
       caducityDate: bundle.caducityDate,
       category: bundle.category,
-      productId: bundle.productId,
+      products: bundle.productId,
       discount: bundle.discount
     }));
 

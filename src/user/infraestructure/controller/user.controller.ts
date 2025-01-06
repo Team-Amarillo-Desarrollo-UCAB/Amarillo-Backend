@@ -1,4 +1,4 @@
-import { Controller, Inject, Param, Post } from "@nestjs/common";
+import { Controller, Get, Inject, Param, ParseUUIDPipe, Post } from "@nestjs/common";
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { DataSource } from "typeorm";
 
@@ -34,6 +34,7 @@ import { ExceptionDecorator } from "src/common/application/application-services/
 import { PerformanceDecorator } from "src/common/application/application-services/decorators/performance-decorator/performance-decorator";
 import { AddCuponUserService } from "src/user/application/service/command/add-cupon-user.service";
 import { HttpExceptionHandler } from "src/common/infraestructure/exception-handler/http-exception-handler-code";
+import { CurrentUserSwaggerResponseDto } from "src/auth/infraestructure/DTO/response/current-user-swagger-response.dto";
 
 
 //UserMapper
@@ -78,40 +79,36 @@ export class UserController {
 
     const userUpdateDto: UpdateUserProfileServiceEntryDto = { userId: user.id, ...updateEntryDTO }
     const updateUserProfileService =
-      //   new ExceptionDecorator(
+         new ExceptionDecorator(
       new LoggingDecorator(
-        //       new PerformanceDecorator(
+               new PerformanceDecorator(
         new UpdateUserProfileAplicationService(
           this.userRepository, eventBus
         ),
         new NativeLogger(this.logger),
-        //   ),
-        //   new NativeLogger(this.logger),
-        // ), new HttpExceptionHandler()
+          ),
+          new NativeLogger(this.logger),
+        ), new HttpExceptionHandler()
       );
 
     const resultUpdate = (await updateUserProfileService.execute(userUpdateDto))
 
     const updateUserProfileInfraService =
-      //   new AuditingDecorator(
-      //     new ExceptionDecorator(
-      //       new LoggingDecorator(
-      //         new PerformanceDecorator(
+          new ExceptionDecorator(
+            new LoggingDecorator(
+              new PerformanceDecorator(
       new UpdateUserProfileInfraService(
         this.ormAccountRepository,
         this.idGenerator,
         this.encryptor,
         this.fileUploader
+      ),
+              new NativeLogger(this.logger),
+            ),
+            new NativeLogger(this.logger),
+          ),
+          new HttpExceptionHandler(),
       );
-    //           new NativeLogger(this.logger),
-    //         ),
-    //         new NativeLogger(this.logger),
-    //       ),
-    //       new HttpExceptionHandler(),
-    //     ),
-    //     this.auditingRepository,
-    //     this.idGenerator
-    //   );
 
     if (updateEntryDTO.password || updateEntryDTO.image) {
       const userInfraUpdateDto: UpdateUserProfileInfraServiceEntryDto = {
@@ -127,37 +124,52 @@ export class UserController {
     return { Id: resultUpdate.Value.userId }
   }
 
-  @Post('add/cupon/:code')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOkResponse({
-    description:
-      'Agregar un cupon a la lista de cupones de un usuario',
-    type: UpdateUserProfileSwaggerResponseDto,
-  })
-  async addCupon(@GetUser() user, @Param('code') code: string) {
-    const data: AddCuponUserServiceEntryDto = {
-      userId: user.id,
-      code: code
-    }
+  // @Post('add/cupon/:code')
+  // @UseGuards(JwtAuthGuard)
+  // @ApiBearerAuth()
+  // @ApiOkResponse({
+  //   description:
+  //     'Agregar un cupon a la lista de cupones de un usuario',
+  //   type: UpdateUserProfileSwaggerResponseDto,
+  // })
+  // async addCupon(@GetUser() user, @Param('code') code: string) {
+  //   const data: AddCuponUserServiceEntryDto = {
+  //     userId: user.id,
+  //     code: code
+  //   }
 
-    const service =
-      new ExceptionDecorator(
-        new PerformanceDecorator(
-          new LoggingDecorator(
-            new AddCuponUserService(
-              this.userRepository,
-              this.cuponRepository
-            ),
-            new NativeLogger(this.logger)
-          ),
-          new NativeLogger(this.logger)
-        ),
-        new HttpExceptionHandler()
-      )
+  //   const service =
+  //     new ExceptionDecorator(
+  //       new PerformanceDecorator(
+  //         new LoggingDecorator(
+  //           new AddCuponUserService(
+  //             this.userRepository,
+  //             this.cuponRepository
+  //           ),
+  //           new NativeLogger(this.logger)
+  //         ),
+  //         new NativeLogger(this.logger)
+  //       ),
+  //       new HttpExceptionHandler()
+  //     )
 
-    const response = await service.execute(data)
+  //   const response = await service.execute(data)
 
-    return response
-  }
+  //   return response
+  // }
+
+      @Get('/:id')
+      @UseGuards(JwtAuthGuard)
+      @ApiOkResponse({ description: 'Obtener usuario por id', type: CurrentUserSwaggerResponseDto })
+      @ApiBearerAuth()
+      async currentUser(@GetUser() user, @Param('id', ParseUUIDPipe) id: string) {
+          return {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              phone: user.phone,
+              image: user.image,
+              type: user.type
+          }
+      }
 }

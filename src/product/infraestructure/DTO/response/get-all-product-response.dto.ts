@@ -3,28 +3,28 @@ import { IsArray, IsDate, IsNumber, IsOptional, IsPositive, IsString, IsUUID } f
 export class GetAllProductsResponseDTO{
 
     @IsUUID()
-    id_product: string
+    id: string
 
     @IsString()
-    nombre: string
+    name: string
 
     @IsNumber()
-    precio: number
+    price: number
 
     @IsString()
-    moneda: string
+    currency: string
     
     @IsNumber()
     stock: number
     
     @IsString()
-    unidad_medida: string
+    measurement: string
 
     @IsNumber()
-    cantidad_medida: number
+    weight: number
 
     @IsString()
-    descripcion: string
+    description: string
 
     @IsArray()
     @IsString({ each: true })
