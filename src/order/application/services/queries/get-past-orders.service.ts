@@ -51,7 +51,8 @@ export class GetPastOrdersService implements IApplicationService<GetPastOrdersSe
                     currency: orden.Payment.CurrencyPayment().Currency,
                     paymentMethod: orden.Payment.NameMethod().Name()
                 } : null,
-                orderDiscount: orden.Monto.Discount.Value
+                orderDiscount: orden.Monto.Discount.Value,
+                instructions: orden.Instruction ? orden.Instruction.Value : null
             })
 
         }

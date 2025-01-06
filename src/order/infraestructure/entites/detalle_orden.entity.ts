@@ -21,6 +21,9 @@ export class Detalle_Orden {
     @Column({ type: "uuid", nullable: true })
     id_bundle: string
 
+    @Column({ type: 'numeric', nullable: true })
+    precio: number;
+
     @ManyToOne(() => OrmOrder, (orden) => orden.detalles, {nullable: true} )
     @JoinColumn({ name: 'id_orden' })
     orden: OrmOrder; // Relación con la entidad Orden

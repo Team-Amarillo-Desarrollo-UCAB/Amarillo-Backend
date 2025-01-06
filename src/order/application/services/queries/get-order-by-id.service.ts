@@ -52,7 +52,8 @@ export class GetOrderByIdService implements IApplicationService
                 currency: orden.Payment.CurrencyPayment().Currency,
                 paymentMethod: orden.Payment.NameMethod().Name()
             } : null,
-            orderDiscount: orden.Monto.Discount.Value
+            orderDiscount: orden.Monto.Discount.Value,
+            instructions: orden.Instruction ? orden.Instruction.Value : null
         }
 
         return Result.success(response, 202)

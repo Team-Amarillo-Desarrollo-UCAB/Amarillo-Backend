@@ -286,6 +286,8 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
                 .leftJoinAndSelect('estados.estado', 'estado')  // Relación con la entidad Estado
                 .where('estados.fecha_fin IS NULL') // Condición para asegurarse de que fecha_fin sea NULL
                 .orderBy('orden.fecha_creacion', 'DESC') // Ordenar por fecha de creación
+                .skip(page)
+                .take(limit)
 
             const ordenes = await queryBuilder.getMany();
 

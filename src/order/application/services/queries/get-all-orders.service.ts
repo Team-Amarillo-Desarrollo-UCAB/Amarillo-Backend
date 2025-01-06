@@ -13,7 +13,10 @@ export class GetAllOrdersService implements
 
     async execute(data: GetAllOrdersServiceEntryDTO): Promise<Result<GetAllOrdersServiceResponseDTO[]>> {
 
-        const ordenes = await this.orderRepository.findAllOrders(data.page, data.limit)
+        let page = ((data.page - 1) * data.limit)
+        let perPage = data.limit
+
+        const ordenes = await this.orderRepository.findAllOrders(page, perPage)
 
         if (!ordenes.isSuccess())
             return Result.fail<GetAllOrdersServiceResponseDTO[]>(ordenes.Error, ordenes.StatusCode, ordenes.Message)
@@ -49,7 +52,8 @@ export class GetAllOrdersService implements
                     currency: orden.Payment.CurrencyPayment().Currency,
                     paymentMethod: orden.Payment.NameMethod().Name()
                 } : null,
-                orderDiscount: orden.Monto.Discount.Value
+                orderDiscount: orden.Monto.Discount.Value,
+                instructions: orden.Instruction ? orden.Instruction.Value : null
             }))
         }
         return Result.success<GetAllOrdersServiceResponseDTO[]>(response, 200)

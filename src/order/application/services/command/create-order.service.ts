@@ -35,6 +35,7 @@ import { OrderReciviedDate } from "src/order/domain/value-object/order-recivied-
 import { OrderLocationDelivery } from "src/order/domain/value-object/order-location-delivery";
 import { OrderDiscount } from "src/order/domain/value-object/order-discount";
 import { OrderSubTotal } from "src/order/domain/value-object/order-subtotal";
+import { OrderInstructions } from "src/order/domain/value-object/order-instructions";
 
 export class CreateOrderService implements IApplicationService<CreateOrderEntryServiceDTO, CreateOrderResponseServiceDTO> {
 
@@ -192,7 +193,8 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
             ),
             productos,
             combos,
-            UserId.create(data.userId)
+            UserId.create(data.userId),
+            data.instructions ? OrderInstructions.create(data.instructions) : null
         )
 
         let cupon: Cupon

@@ -22,4 +22,6 @@ export interface CreateOrderEntryServiceDTO extends ApplicationServiceEntryDto {
 
     cupon_code?: string
 
+    instructions?: string
+
 }
