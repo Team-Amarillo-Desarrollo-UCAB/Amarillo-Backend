@@ -39,7 +39,7 @@ export class GetAllBundlesResponseDTO {
 
     @IsArray()
     @IsString({ each: true })
-    productId: string[];
+    products: string[];
 
     @IsString()
     @IsOptional()

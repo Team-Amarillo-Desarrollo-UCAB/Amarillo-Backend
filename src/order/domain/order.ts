@@ -23,6 +23,7 @@ import { OrderReportCreated } from "./domain-event/order-report-created";
 import { OrderDiscount } from "./value-object/order-discount";
 import { OrderSubTotal } from "./value-object/order-subtotal";
 import { OrderShippingFee } from "./value-object/order-shipping-fee";
+import { OrderInstructions } from "./value-object/order-instructions";
 
 export class Order extends AggregateRoot<OrderId> {
 
@@ -39,6 +40,7 @@ export class Order extends AggregateRoot<OrderId> {
         private comprador: UserId,
         private productos: OrderProduct[],
         private bundles: OrderBundle[],
+        private instruccion?: OrderInstructions,
         fecha_entrega?: OrderReciviedDate,
         ubicacion?: OrderLocationDelivery,
         montoTotal?: OrderTotal,
@@ -110,6 +112,10 @@ export class Order extends AggregateRoot<OrderId> {
         return this.reporte ? this.reporte : null
     }
 
+    get Instruction() {
+        return this.instruccion ? this.instruccion : null
+    }
+
     calcularMontoProductos(): number {
         let monto_productos = 0
         for (const p of this.productos) {
@@ -158,7 +164,7 @@ export class Order extends AggregateRoot<OrderId> {
         )
     }
 
-    cancelarOrden() {
+    private cancelarOrden() {
         if (this.estado.equals(OrderEstado.create(EnumOrderEstados.EN_CAMINO)))
             throw new InvalidOrderState('La orden no se puede cancelar debido a que esta en camino')
 
@@ -250,6 +256,7 @@ export class Order extends AggregateRoot<OrderId> {
         productos: OrderProduct[],
         bundles: OrderBundle[],
         userId?: UserId,
+        instruccion?: OrderInstructions,
         montoTotal?: OrderTotal
     ): Order {
 
@@ -260,6 +267,7 @@ export class Order extends AggregateRoot<OrderId> {
             userId,
             productos,
             bundles,
+            instruccion,
             fecha_entrega,
             ubicacion,
             montoTotal ? montoTotal : null
@@ -276,6 +284,7 @@ export class Order extends AggregateRoot<OrderId> {
         bundles: OrderBundle[],
         reporte: OrderReport,
         userId?: UserId,
+        instruccion?: OrderInstructions,
         montoTotal?: OrderTotal
     ): Order {
 
@@ -286,6 +295,7 @@ export class Order extends AggregateRoot<OrderId> {
             userId,
             productos,
             bundles,
+            instruccion,
             fecha_entrega,
             ubicacion,
             montoTotal ? montoTotal : null,

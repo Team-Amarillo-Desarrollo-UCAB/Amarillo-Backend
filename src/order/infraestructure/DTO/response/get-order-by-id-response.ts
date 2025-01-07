@@ -161,4 +161,13 @@ export class GetOrderByIdReponseDTO {
     @IsNotEmpty()
     @IsOptional()
     orderDiscount?: number;
+
+    @ApiProperty({
+        description: 'Instrucciones de la orden',
+        example: "Entregar por la puerta roja de la esquina"
+    })
+    @IsString()
+    @IsNotEmpty()
+    @IsOptional()
+    instructions?: string
 }

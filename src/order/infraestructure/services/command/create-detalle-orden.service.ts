@@ -41,6 +41,7 @@ export class CreateDetalleService implements IApplicationService
             const detalle_productos = Detalle_Orden.create(
                 await this.idGenerator.generateId(),
                 d.cantidad,
+                null,
                 data.id_orden,
                 producto.Value.Id.Id,
                 null,
@@ -63,6 +64,7 @@ export class CreateDetalleService implements IApplicationService
             const detalle_combos = Detalle_Orden.create(
                 await this.idGenerator.generateId(),
                 d.cantidad,
+                null,
                 data.id_orden,
                 null,
                 d.id_combo,

@@ -9,7 +9,7 @@ export interface IOrderRepository {
     saveReport(order: Order, reporte: OrderReport): Promise<Result<OrderReport>>
     findOrderById(id: string): Promise<Result<Order>>;
     findAllOrdersByUser(page: number, limit: number, id_user: UserId): Promise<Result<Order[]>>
-    findAllPastOrdersByUser(id_user: UserId): Promise<Result<Order[]>>
-    findAllActiveOrdersByUser(id_user: UserId): Promise<Result<Order[]>>
+    findAllPastOrdersByUser(page: number, limit: number, id_user: UserId): Promise<Result<Order[]>>
+    findAllActiveOrdersByUser(page: number, limit: number, id_user: UserId): Promise<Result<Order[]>>
     findAllOrders(page: number, limit: number): Promise<Result<Order[]>>
 }

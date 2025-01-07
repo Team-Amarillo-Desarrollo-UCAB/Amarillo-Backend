@@ -63,7 +63,7 @@ export class CreateProductEntryDTO {
     @IsOptional()
     @IsArray()
     @IsString({ each: true })
-    category: string[];
+    categories: string[];
 
     @ApiProperty({
         example: 'UUID'

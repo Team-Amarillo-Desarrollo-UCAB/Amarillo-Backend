@@ -45,4 +45,6 @@ export interface GetAllOrdersServiceResponseDTO {
 
     orderDiscount?: number
 
+    instructions?: string
+
 }

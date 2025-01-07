@@ -20,7 +20,7 @@ export class UpdateProductService implements IApplicationService
             ? this.productRepository.verifyNameProduct(data.name)
             : null
 
-        const product = await this.productRepository.findProductById(data.id_producto)
+        const product = await this.productRepository.findProductById(data.id)
         if (!product.isSuccess()) return Result.fail<UpdateProductServiceResponseDTO>(product.Error, product.StatusCode, product.Message)
         const productResult = product.Value
         productResult.pullEvents()

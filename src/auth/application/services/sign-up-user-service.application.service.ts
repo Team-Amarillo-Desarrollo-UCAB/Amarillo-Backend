@@ -51,7 +51,7 @@ export class SignUpUserApplicationService implements IApplicationService<SignUpE
             UserPhone.create(signUpDto.phone),
             UserEmail.create(signUpDto.email),
             UserImage.create(image_url),
-            UserRole.create(signUpDto.role)
+            UserRole.create(signUpDto.type)
         )
 
         const userResult = await this.userRepository.saveUserAggregate(create)

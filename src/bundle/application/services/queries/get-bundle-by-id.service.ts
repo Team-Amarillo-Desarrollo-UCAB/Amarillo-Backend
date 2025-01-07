@@ -13,7 +13,7 @@ export class GetBundleByIdService implements IApplicationService<GetBundleByIdSe
     }
     
     async execute(data: GetBundleByIdServiceEntryDTO): Promise<Result<GetBundleByIdServiceResponseDTO>> {
-        const bundle = await this.bundleRepository.findBundleById(data.id_bundle);
+        const bundle = await this.bundleRepository.findBundleById(data.id);
 
         if (!bundle.isSuccess()) {
             return Result.fail(new Error("Bundle no encontrado"), 404, "Bundle no encontrado");
@@ -30,7 +30,7 @@ export class GetBundleByIdService implements IApplicationService<GetBundleByIdSe
             measurement:bundle.Value.weight.Measurement,
             stock:bundle.Value.stock.Value,
             category:bundle.Value.categories.map(i => i.Value),
-            productId:bundle.Value.products.map(i => i.Id),
+            products:bundle.Value.products.map(i => i.Id),
             caducityDate: bundle.Value.caducityDate && bundle.Value.caducityDate.Value 
         ? bundle.Value.caducityDate.Value 
         : new Date('2029-01-01'),

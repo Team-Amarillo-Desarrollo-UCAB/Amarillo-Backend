@@ -12,6 +12,11 @@ export interface CreateOrderResponseServiceDTO {
 
     currency: string
 
+    orderDirection: {
+        lat: number,
+        long: number
+    }
+
     products: {
         id: string
         quantity: number
@@ -41,5 +46,7 @@ export interface CreateOrderResponseServiceDTO {
         currency: string,
         paymentMethod: string
     }
+
+    orderDiscount?: number
 
 }

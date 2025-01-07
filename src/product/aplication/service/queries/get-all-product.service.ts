@@ -39,14 +39,14 @@ export class GetAllProductService implements IApplicationService<GetAllProductSe
             await Promise.all(
                 products.Value.map(async (producto) => {
                     response.push({
-                        id_product: producto.Id?.Id || null,
-                        nombre: producto.Name || "",
-                        precio: producto.Price || 0,
-                        moneda: producto.Moneda || "",
+                        id: producto.Id?.Id || null,
+                        name: producto.Name || "",
+                        price: producto.Price || 0,
+                        currency: producto.Moneda || "",
                         stock: producto.Stock || 0,
-                        unidad_medida: producto.Unit || "",
-                        cantidad_medida: producto.CantidadMedida || 0,
-                        descripcion: producto.Description || "",
+                        measurement: producto.Unit || "",
+                        weight: producto.CantidadMedida || 0,
+                        description: producto.Description || "",
                         images: producto.Images ? producto.Images.map(i => i.Image) : [],
                         caducityDate: producto.ProductCaducityDate ? producto.ProductCaducityDate.Value : new Date('2029-01-01'),
                         category: producto.Categories ? producto.Categories.map(i => i.Value) : [],
