@@ -3,6 +3,8 @@ import { GetAllOrdersServiceEntryDTO } from "../../DTO/entry/get-all-orders-entr
 import { GetAllOrdersServiceResponseDTO } from "../../DTO/response/get-all-orders-service-service.dto";
 import { Result } from "src/common/domain/result-handler/Result";
 import { IOrderRepository } from "src/order/domain/repositories/order-repository.interface";
+import { OrderEstado } from "src/order/domain/value-object/order-estado";
+import { UserId } from "src/user/domain/value-object/user-id";
 
 export class GetAllOrdersService implements
     IApplicationService<GetAllOrdersServiceEntryDTO, GetAllOrdersServiceResponseDTO[]> {
@@ -16,7 +18,11 @@ export class GetAllOrdersService implements
         let page = ((data.page - 1) * data.limit)
         let perPage = data.limit
 
-        const ordenes = await this.orderRepository.findAllOrders(page, perPage)
+        const userId = UserId.create(data.userId)
+
+        const estados: OrderEstado[] = data.status.map((estado) => {return OrderEstado.create(estado)})
+
+        const ordenes = await this.orderRepository.findAllOrders(page, perPage,estados)
 
         if (!ordenes.isSuccess())
             return Result.fail<GetAllOrdersServiceResponseDTO[]>(ordenes.Error, ordenes.StatusCode, ordenes.Message)
