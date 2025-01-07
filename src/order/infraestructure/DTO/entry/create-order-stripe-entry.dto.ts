@@ -98,4 +98,13 @@ export class CreateOrderStripeEntryDTO {
     @IsNotEmpty()
     @IsOptional()
     cupon_code?: string
+
+    @ApiProperty({
+        description: 'Instrucciones de la orden',
+        example: "Entregar por la puerta roja de la esquina"
+    })
+    @IsString()
+    @IsNotEmpty()
+    @IsOptional()
+    instructions?: string
 }

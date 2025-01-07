@@ -35,6 +35,7 @@ import { OrderReciviedDate } from "src/order/domain/value-object/order-recivied-
 import { OrderLocationDelivery } from "src/order/domain/value-object/order-location-delivery";
 import { OrderDiscount } from "src/order/domain/value-object/order-discount";
 import { OrderSubTotal } from "src/order/domain/value-object/order-subtotal";
+import { OrderInstructions } from "src/order/domain/value-object/order-instructions";
 
 export class CreateOrderService implements IApplicationService<CreateOrderEntryServiceDTO, CreateOrderResponseServiceDTO> {
 
@@ -192,7 +193,8 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
             ),
             productos,
             combos,
-            UserId.create(data.userId)
+            UserId.create(data.userId),
+            data.instructions ? OrderInstructions.create(data.instructions) : null
         )
 
         let cupon: Cupon
@@ -225,8 +227,20 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
             orderCreatedDate: result.Value.Fecha_creacion.Date_creation,
             totalAmount: result.Value.Monto.Total,
             currency: result.Value.Moneda,
+            orderDirection: {
+                lat: result.Value.Direccion.Latitud,
+                long: result.Value.Direccion.Longitud
+            },
             products: detalle_productos,
             bundles: detalle_combos,
+            orderReciviedDate: result.Value.Fecha_entrega ? result.Value.Fecha_entrega.Date_creation : null,
+            orderReport: null,
+            orderPayment: {
+                amount: result.Value.Payment.AmountPayment().Total,
+                currency: result.Value.Payment.CurrencyPayment().Currency,
+                paymentMethod: result.Value.Payment.NameMethod().Name()
+            },
+            orderDiscount: result.Value.Monto.Discount.Value
         }
 
         await this.eventHandler.publish(orden.pullEvents())

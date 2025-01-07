@@ -8,6 +8,7 @@ import {
     Logger,
     Param,
     ParseUUIDPipe,
+    Patch,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Post,
     Query,
@@ -254,11 +255,13 @@ export class OrderController {
                 id_orden: event.id,
                 detalle_productos: event.productos.map((detalle) => ({
                     id_producto: detalle.Id.Id,
-                    cantidad: detalle.Cantidad().Value
+                    cantidad: detalle.Cantidad().Value,
+                    //precio: detalle.Precio().Amount
                 })),
                 detalle_combos: event.bundles.map((detalle) => ({
                     id_combo: detalle.Id.Value,
-                    cantidad: detalle.Cantidad().Value
+                    cantidad: detalle.Cantidad().Value,
+                    //precio: detalle.Precio().Amount
                 })),
             }
 
@@ -381,11 +384,13 @@ export class OrderController {
                 id_orden: event.id,
                 detalle_productos: event.productos.map((detalle) => ({
                     id_producto: detalle.Id.Id,
-                    cantidad: detalle.Cantidad().Value
+                    cantidad: detalle.Cantidad().Value,
+                    //precio: detalle.Precio().Amount
                 })),
                 detalle_combos: event.bundles.map((detalle) => ({
                     id_combo: detalle.Id.Value,
-                    cantidad: detalle.Cantidad().Value
+                    cantidad: detalle.Cantidad().Value,
+                    //precio: detalle.Precio().Amount
                 })),
             }
 
@@ -491,11 +496,14 @@ export class OrderController {
         isArray: true
     })
     async getPastOrdersByUser(
+        @Query() pagination: PaginationDto,
         @GetUser() user
     ) {
 
         const data: GetPastOrdersServiceEntryDTO = {
-            userId: user.id
+            userId: user.id,
+            page: pagination.page,
+            perPage: pagination.perpage
         }
 
         const service =
@@ -531,11 +539,14 @@ export class OrderController {
         isArray: true
     })
     async getActiveOrdersByUser(
+        @Query() pagination: PaginationDto,
         @GetUser() user
     ) {
 
         const data: GetActiveOrdersServiceEntryDTO = {
-            userId: user.id
+            userId: user.id,
+            page: pagination.page,
+            perPage: pagination.perpage
         }
 
         const service =
@@ -604,7 +615,7 @@ export class OrderController {
 
     }
 
-    @Post('report')
+    @Patch('report')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOkResponse({
@@ -687,52 +698,6 @@ export class OrderController {
 
         return response
 
-    }
-
-    @Get('HERE')
-    async testHere() {
-        const ubicacion = OrderLocationDelivery.create(
-            "ojsafa",
-            10.521805,
-            -66.93847,
-        )
-
-        let stripe //= new Stripe(process.env.STRIPE_API_SECRET)
-        const paymentIntent = await stripe.paymentIntents.create({
-            amount: 10 * 100,  // Monto en centavos (usd * 100)
-            currency: 'usd',
-            confirm: true,
-            payment_method: "pm_card_visa",
-            payment_method_types: ['card'],
-            metadata: {
-                id_pago: '550e8400-e29b-41d4-a716-446655440000',  // Un identificador personalizado
-            }
-        });
-
-        // Primero, obtenemos los PaymentIntents
-        const paymentIntents = await stripe.paymentIntents.list({
-            limit: 100,  // Puedes ajustar el límite según tus necesidades o usar paginación
-        });
-
-        // Luego, filtramos los resultados usando el campo de metadata
-        const filteredPaymentIntents = paymentIntents.data.filter((paymentIntent) => {
-            return paymentIntent.metadata.id_pago === '550e8400-e29b-41d4-a716-446655440000';  // ID personalizado que buscaste
-        });
-
-        if (filteredPaymentIntents.length > 0) {
-            const paymentIntent = filteredPaymentIntents[0];  // Tomamos el primer resultado encontrado
-            console.log('PaymentIntent encontrado:', paymentIntent);
-
-            // Realizamos el reembolso con el PaymentIntent encontrado
-            const reembolso = await stripe.refunds.create({
-                payment_intent: paymentIntent.id
-            });
-            console.log('Reembolso procesado:', reembolso);
-        } else {
-            console.log('No se encontró el PaymentIntent con ese ID de pago.');
-        }
-
-        //this.shippingFee.execute(ubicacion,undefined)
     }
 
 }

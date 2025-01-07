@@ -15,7 +15,10 @@ export class GetPastOrdersService implements IApplicationService<GetPastOrdersSe
 
     async execute(data: GetPastOrdersServiceEntryDTO): Promise<Result<GetAllOrdersServiceResponseDTO[]>> {
 
-        const find_orders = await this.orderRepository.findAllPastOrdersByUser(UserId.create(data.userId))
+        let page = ((data.page - 1) * data.perPage)
+        let perPage = data.perPage
+
+        const find_orders = await this.orderRepository.findAllPastOrdersByUser(page,perPage,UserId.create(data.userId))
 
         if (!find_orders.isSuccess())
             return Result.fail(find_orders.Error, find_orders.StatusCode, find_orders.Message)
@@ -51,7 +54,8 @@ export class GetPastOrdersService implements IApplicationService<GetPastOrdersSe
                     currency: orden.Payment.CurrencyPayment().Currency,
                     paymentMethod: orden.Payment.NameMethod().Name()
                 } : null,
-                orderDiscount: orden.Monto.Discount.Value
+                orderDiscount: orden.Monto.Discount.Value,
+                instructions: orden.Instruction ? orden.Instruction.Value : null
             })
 
         }

@@ -15,7 +15,7 @@ export class UpdateCategoryEntryDTO {
     })
     @IsString()
     @IsOptional()
-    icon?: string;
+    image?: string;
 
 
 }

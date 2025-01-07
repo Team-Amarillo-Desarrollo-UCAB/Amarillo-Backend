@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { Type } from "class-transformer"
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validator"
+import { IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateNested } from "class-validator"
 import { EnumOrderEstados } from "src/order/domain/enum/order-estados-enum"
 import { Moneda } from "src/product/domain/enum/Monedas"
 
@@ -21,6 +21,11 @@ export class CreateOrderResponseDTO {
     @IsNotEmpty()
     orderState: string
 
+    @ApiProperty({
+        example: '"2025-01-06"'
+    })
+    @IsDate()
+    @IsNotEmpty()
     orderCreatedDate: Date
 
     @ApiProperty({
@@ -38,6 +43,22 @@ export class CreateOrderResponseDTO {
     @IsEnum(Moneda)
     @IsNotEmpty()
     currency: string
+
+    @ApiProperty({
+        description: 'Dirección de la orden (latitud y longitud)',
+        type: Object,
+        properties: {
+            lat: { type: 'number', example: 40.7128 },
+            long: { type: 'number', example: -74.0060 },
+        },
+    })
+    @ValidateNested()
+    @Type(() => Object)
+    @IsNotEmpty()
+    orderDirection: {
+        lat: number;
+        long: number;
+    };
 
     @ApiProperty({
         description: 'Lista de productos asociados a la orden',
@@ -73,8 +94,20 @@ export class CreateOrderResponseDTO {
         images: string[]
     }[]
 
+    @ApiProperty({
+        example: '"2025-01-06T20:59:55.174Z"'
+    })
+    @IsDate()
+    @IsNotEmpty()
+    @IsOptional()
     orderReciviedDate?: Date
 
+    @ApiProperty({
+        example: 'La orden no fue correcta'
+    })
+    @IsString()
+    @IsNotEmpty()
+    @IsOptional()
     orderReport?: string
 
     @ApiProperty({
@@ -89,5 +122,14 @@ export class CreateOrderResponseDTO {
         currency: string,
         paymentMethod: string
     }
+
+    @ApiProperty({
+        example: "9",
+        description: "Desuento total en la compra"
+    })
+    @IsNumber()
+    @Min(0)
+    @IsNotEmpty()
+    orderDiscount?: number
 
 }
