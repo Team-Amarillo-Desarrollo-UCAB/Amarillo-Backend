@@ -40,7 +40,7 @@ export class BundleMapper implements IMapper<Bundle, OrmBundle> {
             domain.weight.Measurement,
             domain.stock.Value,
             domain.categories.map(i=>i.Value),
-            domain.categories.map(i=>i.Value),
+            domain.products.map(i=>i.Id),
             ormCaducityDate,
             ormDiscount
         );

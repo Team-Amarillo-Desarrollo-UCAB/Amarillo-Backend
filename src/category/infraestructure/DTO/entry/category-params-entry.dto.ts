@@ -6,7 +6,7 @@ export class CategoryParamsEntryDTO {
     @IsOptional()
     @IsString()
     @ApiProperty({ required: false})
-    categoryName?: string;  // Filtrar por nombre
+    name?: string;  // Filtrar por nombre
     
     @IsOptional()
     @IsString()

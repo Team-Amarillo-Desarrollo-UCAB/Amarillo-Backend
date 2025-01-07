@@ -4,7 +4,7 @@ import { Product } from "src/product/domain/product";
 import { IProductRepository } from "src/product/domain/repositories/product-repository.interface";
 import { HistoricoPrecio } from "src/product/infraestructure/entities/historico-precio.entity";
 
-export class ProductRepostioryMock implements IProductRepository {
+export class ProductRepositoryMock implements IProductRepository {
 
     private readonly productos: Product[] = []
     private readonly historico_precio: HistoricoPrecio[] = []

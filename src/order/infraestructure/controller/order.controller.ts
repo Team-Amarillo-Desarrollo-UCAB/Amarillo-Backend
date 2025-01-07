@@ -17,6 +17,7 @@ import {
 import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { DataSource } from "typeorm";
 
+
 import { LoggingDecorator } from "src/common/application/application-services/decorators/logging-decorator/logging.decorator";
 import { NativeLogger } from "src/common/infraestructure/logger/logger";
 import { IdGenerator } from "src/common/application/id-generator/id-generator.interface";
@@ -92,6 +93,7 @@ import { RefundOrderResponseDTO } from "../DTO/response/refund-order-response.dt
 import { RefundOrderServiceEntryDTO } from "src/order/application/DTO/entry/refund-order-service.entry.dto";
 import { RefundOrderService } from "src/order/application/services/command/refund-order.service";
 import { StripeOrderReembolsoAdapter } from "src/common/infraestructure/domain-services-adapters/order-reembolso.adapter";
+import { GetAllOrdersEntryDTO } from "../DTO/entry/get-all-orders-entry.dto";
 
 @ApiTags("Order")
 @Controller("order")
@@ -230,7 +232,7 @@ export class OrderController {
         }, 'Decrementar el stock')
 
         // Persistencia de la base de datos para los detalles de una orden
-        await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
+        /*await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
             const service =
                 new ExceptionDecorator(
                     new LoggingDecorator(
@@ -266,7 +268,7 @@ export class OrderController {
             }
 
             await service.execute(data)
-        }, 'Crear detalle orden service');
+        }, 'Crear detalle orden service');*/
 
         const data: CreateOrderEntryServiceDTO = {
             userId: user.id,
@@ -453,14 +455,20 @@ export class OrderController {
         isArray: true
     })
     async getAllOrders(
+        @Query() request: GetAllOrdersEntryDTO,
         @Query() pagination: PaginationDto,
         @GetUser() user
     ) {
 
+        if (!Array.isArray(request.status)) {
+            request.status = [request.status];
+        }
+
         const data: GetAllOrdersServiceEntryDTO = {
             userId: user.id,
             page: pagination.page,
-            limit: pagination.perpage
+            limit: pagination.perpage,
+            status: request.status
         }
 
         const service =
@@ -699,5 +707,10 @@ export class OrderController {
         return response
 
     }
+
+    // @Post('Test')
+    // async testPayPal() {
+    //     payPal
+    // }
 
 }
