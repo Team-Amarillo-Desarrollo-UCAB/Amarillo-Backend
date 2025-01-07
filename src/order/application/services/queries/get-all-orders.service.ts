@@ -22,7 +22,7 @@ export class GetAllOrdersService implements
 
         const estados: OrderEstado[] = data.status.map((estado) => {return OrderEstado.create(estado)})
 
-        const ordenes = await this.orderRepository.findAllOrders(page, perPage,estados)
+        const ordenes = await this.orderRepository.findAllOrdersByUser(page, perPage,userId,estados)
 
         if (!ordenes.isSuccess())
             return Result.fail<GetAllOrdersServiceResponseDTO[]>(ordenes.Error, ordenes.StatusCode, ordenes.Message)
