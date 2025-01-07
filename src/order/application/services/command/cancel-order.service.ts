@@ -27,7 +27,7 @@ export class CancelOrderService implements IApplicationService<CancelOrderServic
 
         const orden = find_order.Value
 
-        orden.cancelarOrden()
+        //orden.cancelarOrden()
 
         const save = await this.orderRepository.changeOrderState(orden)
 

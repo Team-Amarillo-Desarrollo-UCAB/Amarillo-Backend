@@ -1,20 +1,20 @@
 export interface GetAllProductServiceResponseDTO{
 
-    id_product: string
+    id: string
 
-    nombre: string
+    name: string
 
-    precio: number
+    price: number
 
-    moneda: string
+    currency: string
     
     stock: number
 
-    unidad_medida: string
+    measurement: string
 
-    cantidad_medida: number
+    weight: number
 
-    descripcion: string
+    description: string
 
     images?: string[]
 

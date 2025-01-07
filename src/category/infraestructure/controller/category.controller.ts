@@ -311,9 +311,9 @@ export class CategoryController {
     const eventBus = EventBus.getInstance()
 
     
-    if (updateEntryDTO.icon) {
+    if (updateEntryDTO.image) {
       try {
-        image = await this.fileUploader.UploadFile(updateEntryDTO.icon); 
+        image = await this.fileUploader.UploadFile(updateEntryDTO.image); 
       } catch (error) {
         this.logger.error(`Error subiendo la imagen: ${error.message}`);
         throw new BadRequestException('Error al subir la imagen.');

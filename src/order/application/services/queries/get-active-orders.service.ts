@@ -15,7 +15,10 @@ export class GetActiveOrdersService implements IApplicationService<GetActiveOrde
 
     async execute(data: GetActiveOrdersServiceEntryDTO): Promise<Result<GetAllOrdersServiceResponseDTO[]>> {
 
-        const find_orders = await this.orderRepository.findAllActiveOrdersByUser(UserId.create(data.userId))
+        let page = ((data.page - 1) * data.perPage)
+        let perPage = data.perPage
+
+        const find_orders = await this.orderRepository.findAllActiveOrdersByUser(page,perPage,UserId.create(data.userId))
 
         if (!find_orders.isSuccess())
             return Result.fail(find_orders.Error, find_orders.StatusCode, find_orders.Message)
@@ -53,7 +56,8 @@ export class GetActiveOrdersService implements IApplicationService<GetActiveOrde
                     currency: orden.Payment.CurrencyPayment().Currency,
                     paymentMethod: orden.Payment.NameMethod().Name()
                 } : null,
-                orderDiscount: orden.Monto.Discount.Value
+                orderDiscount: orden.Monto.Discount.Value,
+                instructions: orden.Instruction ? orden.Instruction.Value : null
             })
 
         }

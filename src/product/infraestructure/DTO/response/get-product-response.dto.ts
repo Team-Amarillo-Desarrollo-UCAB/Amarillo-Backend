@@ -1,35 +1,23 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { IsNumber, Min, IsOptional, IsArray, IsString, IsDate } from "class-validator";
+import { Moneda } from "src/product/domain/enum/Monedas";
+import { UnidadMedida } from "src/product/domain/enum/UnidadMedida";
 
 export class GetProductResponseDTO{
     @ApiProperty({
         example: 'Cheese Tris'
     })
-    nombre: string
-
-    @ApiProperty({
-        example: 'El mejor queso del mundo'
-    })
-    descripcion: string
-
-    @ApiProperty({
-        example: "gm"
-    })
-    unidad_medida: string
-
-    @ApiProperty({
-        example: 200
-    })
-    cantidad_medida: number
+    name: string
 
     @ApiProperty({
         example: 2
     })
-    precio: number
+    price: number
 
     @ApiProperty({
         example: "$"
     })
-    moneda: string
+    currency: string
 
     @ApiProperty({
         example: 500
@@ -37,12 +25,50 @@ export class GetProductResponseDTO{
     stock: number
 
     @ApiProperty({
-        example: "AGOTADO"
+        example: "gm"
     })
-    status?: string
+    measurement: string
+
+    @ApiProperty({
+        example: 200
+    })
+    weight: number
+
+    @ApiProperty({
+        example: 'El mejor queso del mundo'
+    })
+    description: string
 
     @ApiProperty({
         example: "https://res.cloudinary.com/dxttqmyxu/image/upload/v1731483047/kkizccq7zv9j37jg0hi3.png"
     })
-    image?: string
+    images: string[]
+
+    @ApiProperty({
+        example: '"caducityDate": "2024-12-31T23:59:59.000Z"'
+    })
+    @IsDate()
+    @IsOptional()
+    caducityDate?: Date
+
+    @ApiProperty({
+        example: 'id de las categorias',
+    })
+    @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
+    categories?: string[];
+
+    @ApiProperty({
+        example: 'UUID'
+    })
+    @IsString()
+    @IsOptional()
+    discount?: string;
+
+    @ApiProperty({
+        example: "AGOTADO"
+    })
+    status?: string
+
 }

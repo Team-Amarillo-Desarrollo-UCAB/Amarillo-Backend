@@ -36,6 +36,7 @@ import { OrderReportText } from "src/order/domain/value-object/order-report/orde
 import { OrderDiscount } from "src/order/domain/value-object/order-discount";
 import { OrderSubTotal } from "src/order/domain/value-object/order-subtotal";
 import { OrderShippingFee } from "src/order/domain/value-object/order-shipping-fee";
+import { OrderInstructions } from "src/order/domain/value-object/order-instructions";
 
 export class OrderMapper implements IMapper<Order, OrmOrder> {
 
@@ -60,6 +61,7 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
                     Detalle_Orden.create(
                         await this.idGenerator.generateId(),
                         producto.Cantidad().Value,
+                        producto.Precio().Amount,
                         domain.Id.Id,
                         producto.Id.Id,
                         null
@@ -76,6 +78,7 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
                     Detalle_Orden.create(
                         await this.idGenerator.generateId(),
                         combo.Cantidad().Value,
+                        combo.Precio().Amount,
                         domain.Id.Id,
                         null,
                         combo.Id.Value
@@ -96,6 +99,7 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
             domain.Monto.Discount.Value,
             domain.Monto.ShippingFee.Value,
             domain.Comprador.Id,
+            domain.Instruction ? domain.Instruction.Value : null,
             ormDetalles,
             undefined,
             await this.paymentMapper.fromDomainToPersistence(domain.Payment)
@@ -118,8 +122,6 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
         let productos: OrderProduct[] = []
         let combos: OrderBundle[] = []
         let currency: Moneda
-        let moneda: string = null
-        let precio: number = null
 
         for (const detalle of persistence.detalles) {
 
@@ -184,6 +186,7 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
                     OrderReportText.create(persistence.reporte.texto)
                 ),
                 persistence.id_user ? UserId.create(persistence.id_user) : null,
+                persistence.instruccion ? OrderInstructions.create(persistence.instruccion) : null,
                 OrderTotal.create(
                     persistence.monto_total,
                     persistence.pago.moneda,
@@ -212,6 +215,7 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
             productos,
             combos,
             persistence.id_user ? UserId.create(persistence.id_user) : null,
+            persistence.instruccion ? OrderInstructions.create(persistence.instruccion) : null,
             OrderTotal.create(
                 persistence.monto_total,
                 persistence.pago.moneda,

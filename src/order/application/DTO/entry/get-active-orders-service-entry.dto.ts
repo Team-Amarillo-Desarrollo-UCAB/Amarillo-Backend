@@ -3,5 +3,6 @@ import { ApplicationServiceEntryDto } from "src/common/application/application-s
 export interface GetActiveOrdersServiceEntryDTO extends ApplicationServiceEntryDto {
 
     //user_id: string
-
+    page: number
+    perPage: number
 }

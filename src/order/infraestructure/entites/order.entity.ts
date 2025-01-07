@@ -38,10 +38,13 @@ export class OrmOrder {
     @Column({ type: "numeric", nullable: true })
     shipping_fee: number
 
+    @Column({ type: "varchar", nullable: true })
+    instruccion: string
+
     @Column({ name: 'id_user', type: "uuid", unique: false, nullable: true })
     id_user: string
 
-    @OneToMany(() => Detalle_Orden, (detalle) => detalle.orden, { eager: true })
+    @OneToMany(() => Detalle_Orden, (detalle) => detalle.orden, { eager: true, cascade: true })
     detalles: Detalle_Orden[];
 
     @OneToMany(() => Estado_Orden, (estado_orden) => estado_orden.orden, { eager: true })
@@ -69,6 +72,7 @@ export class OrmOrder {
         subTotal: number,
         descuento: number,
         shipping_fee: number,
+        instruccion?: string,
         detalles?: Detalle_Orden[],
         estados?: Estado_Orden[],
         pago?: Payment,
@@ -104,6 +108,7 @@ export class OrmOrder {
         descuento: number,
         shipping_fee: number,
         id_user: string,
+        instruccion?: string,
         detalles?: Detalle_Orden[],
         estados?: Estado_Orden[],
         pago?: Payment,
@@ -121,6 +126,7 @@ export class OrmOrder {
         orden.descuento = descuento
         orden.shipping_fee = shipping_fee
         orden.id_user = id_user
+        orden.instruccion = instruccion
         orden.detalles = detalles
         orden.estados = estados
         orden.pago = pago
