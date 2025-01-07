@@ -98,7 +98,7 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "rootDir": ".",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
@@ -111,7 +111,7 @@
   },
   "main": ".eslintrc.js",
   "directories": {
-    "test": "test"
+    "test": "jest --runInBand -r tsconfig-paths/register"
   },
   "keywords": []
 }

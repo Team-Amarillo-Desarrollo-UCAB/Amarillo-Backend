@@ -708,9 +708,9 @@ export class OrderController {
 
     }
 
-    @Post('Test')
-    async testPayPal() {
-        payPal
-    }
+    // @Post('Test')
+    // async testPayPal() {
+    //     payPal
+    // }
 
 }
