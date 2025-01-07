@@ -41,6 +41,7 @@ export class Detalle_Orden {
     static create(
         id: string,
         cantidad: number,
+        precio?: number,
         id_orden?: string,
         id_producto?: string,
         id_bundle?: string,
@@ -51,6 +52,7 @@ export class Detalle_Orden {
         const detalle = new Detalle_Orden()
         detalle.id = id
         detalle.cantidad = cantidad
+        detalle.precio = precio
         detalle.id_orden = id_orden
         detalle.id_producto = id_producto
         detalle.id_bundle = id_bundle

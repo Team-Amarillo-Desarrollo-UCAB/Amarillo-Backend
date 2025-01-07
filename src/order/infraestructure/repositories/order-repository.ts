@@ -50,8 +50,6 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
         try {
             const orden = await this.ormOrderMapper.fromDomainToPersistence(order)
 
-            console.log("Orden para salvar: ", orden)
-
             const salvada = await this.save(orden)
 
             const estado = await this.ormEstadoRepository.findOne({

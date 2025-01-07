@@ -44,7 +44,7 @@ export class OrmOrder {
     @Column({ name: 'id_user', type: "uuid", unique: false, nullable: true })
     id_user: string
 
-    @OneToMany(() => Detalle_Orden, (detalle) => detalle.orden, { eager: true })
+    @OneToMany(() => Detalle_Orden, (detalle) => detalle.orden, { eager: true, cascade: true })
     detalles: Detalle_Orden[];
 
     @OneToMany(() => Estado_Orden, (estado_orden) => estado_orden.orden, { eager: true })

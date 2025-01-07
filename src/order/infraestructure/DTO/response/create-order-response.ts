@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { Type } from "class-transformer"
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator"
+import { IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateNested } from "class-validator"
 import { EnumOrderEstados } from "src/order/domain/enum/order-estados-enum"
 import { Moneda } from "src/product/domain/enum/Monedas"
 
@@ -21,6 +21,11 @@ export class CreateOrderResponseDTO {
     @IsNotEmpty()
     orderState: string
 
+    @ApiProperty({
+        example: '"2025-01-06"'
+    })
+    @IsDate()
+    @IsNotEmpty()
     orderCreatedDate: Date
 
     @ApiProperty({
@@ -89,6 +94,12 @@ export class CreateOrderResponseDTO {
         images: string[]
     }[]
 
+    @ApiProperty({
+        example: '"2025-01-06T20:59:55.174Z"'
+    })
+    @IsDate()
+    @IsNotEmpty()
+    @IsOptional()
     orderReciviedDate?: Date
 
     @ApiProperty({
@@ -111,5 +122,14 @@ export class CreateOrderResponseDTO {
         currency: string,
         paymentMethod: string
     }
+
+    @ApiProperty({
+        example: "9",
+        description: "Desuento total en la compra"
+    })
+    @IsNumber()
+    @Min(0)
+    @IsNotEmpty()
+    orderDiscount?: number
 
 }

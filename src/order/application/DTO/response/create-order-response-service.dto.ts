@@ -47,4 +47,6 @@ export interface CreateOrderResponseServiceDTO {
         paymentMethod: string
     }
 
+    orderDiscount?: number
+
 }

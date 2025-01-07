@@ -61,6 +61,7 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
                     Detalle_Orden.create(
                         await this.idGenerator.generateId(),
                         producto.Cantidad().Value,
+                        producto.Precio().Amount,
                         domain.Id.Id,
                         producto.Id.Id,
                         null
@@ -77,6 +78,7 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
                     Detalle_Orden.create(
                         await this.idGenerator.generateId(),
                         combo.Cantidad().Value,
+                        combo.Precio().Amount,
                         domain.Id.Id,
                         null,
                         combo.Id.Value

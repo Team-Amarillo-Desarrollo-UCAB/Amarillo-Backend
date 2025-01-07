@@ -239,7 +239,8 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
                 amount: result.Value.Payment.AmountPayment().Total,
                 currency: result.Value.Payment.CurrencyPayment().Currency,
                 paymentMethod: result.Value.Payment.NameMethod().Name()
-            }
+            },
+            orderDiscount: result.Value.Monto.Discount.Value
         }
 
         await this.eventHandler.publish(orden.pullEvents())

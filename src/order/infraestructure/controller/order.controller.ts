@@ -255,11 +255,13 @@ export class OrderController {
                 id_orden: event.id,
                 detalle_productos: event.productos.map((detalle) => ({
                     id_producto: detalle.Id.Id,
-                    cantidad: detalle.Cantidad().Value
+                    cantidad: detalle.Cantidad().Value,
+                    //precio: detalle.Precio().Amount
                 })),
                 detalle_combos: event.bundles.map((detalle) => ({
                     id_combo: detalle.Id.Value,
-                    cantidad: detalle.Cantidad().Value
+                    cantidad: detalle.Cantidad().Value,
+                    //precio: detalle.Precio().Amount
                 })),
             }
 
@@ -382,11 +384,13 @@ export class OrderController {
                 id_orden: event.id,
                 detalle_productos: event.productos.map((detalle) => ({
                     id_producto: detalle.Id.Id,
-                    cantidad: detalle.Cantidad().Value
+                    cantidad: detalle.Cantidad().Value,
+                    //precio: detalle.Precio().Amount
                 })),
                 detalle_combos: event.bundles.map((detalle) => ({
                     id_combo: detalle.Id.Value,
-                    cantidad: detalle.Cantidad().Value
+                    cantidad: detalle.Cantidad().Value,
+                    //precio: detalle.Precio().Amount
                 })),
             }
 
