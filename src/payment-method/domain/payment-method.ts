@@ -25,7 +25,7 @@ export class PaymentMethod extends AggregateRoot<PaymentMethodId> {
         return this.nombre
     }
 
-    Status(){
+    Status(): PaymentMethodState{
         return this.status
     }
 

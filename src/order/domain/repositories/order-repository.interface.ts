@@ -7,6 +7,7 @@ import { OrderEstado } from "../value-object/order-estado";
 export interface IOrderRepository {
     saveOrderAggregate(order: Order): Promise<Result<Order>>;
     changeOrderState(order: Order): Promise<Result<Order>>
+    updateOrder(order: Order): Promise<Result<Order>>
     saveReport(order: Order, reporte: OrderReport): Promise<Result<OrderReport>>
     findOrderById(id: string): Promise<Result<Order>>;
     findAllOrdersByUser(page: number, limit: number, id_user: UserId, status: OrderEstado[]): Promise<Result<Order[]>>

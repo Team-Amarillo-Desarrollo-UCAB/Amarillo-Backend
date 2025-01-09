@@ -1,8 +1,7 @@
 import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface";
-import { OrderId } from "../value-object/order-id";
 import { EnumOrderEstados } from "../enum/order-estados-enum";
 
-export class OrderSent extends DomainEvent {
+export class OrderStateChanged extends DomainEvent {
 
     protected constructor(
         public id: string,
@@ -12,7 +11,7 @@ export class OrderSent extends DomainEvent {
     }
 
     static create(id: string, estado: EnumOrderEstados){
-        return new OrderSent(id,estado)
+        return new OrderStateChanged(id,estado)
     }
 
 }

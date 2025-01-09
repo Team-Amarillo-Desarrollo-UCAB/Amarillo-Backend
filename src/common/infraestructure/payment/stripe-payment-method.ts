@@ -12,6 +12,7 @@ import { OrderPaymentCurrency } from 'src/order/domain/value-object/oder-payment
 import { IPaymentMethodRepository } from 'src/payment-method/domain/repositories/payment-method-repository.interface';
 import { Moneda } from 'src/product/domain/enum/Monedas';
 import { OrderPaymentTotal } from 'src/order/domain/value-object/oder-payment/order-payment-total';
+import { PaymentMethodId } from 'src/payment-method/domain/value-objects/payment-method-id';
 
 export class StripePaymentMethod implements IPaymentMethod {
 
@@ -22,13 +23,13 @@ export class StripePaymentMethod implements IPaymentMethod {
     private token: string
 
     constructor(
-        id: string,
+        token: string,
         idGenerator: IdGenerator<string>,
         paymentMethodRepository: IPaymentMethodRepository,
         idPayment: string
     ) {
         this.stripe = new Stripe(process.env.STRIPE_API_SECRET);
-        this.token = id
+        this.token = token
         this.idGenerator = idGenerator
         this.paymentMethodRepository = paymentMethodRepository
         this.idPayment = idPayment
@@ -62,7 +63,8 @@ export class StripePaymentMethod implements IPaymentMethod {
                 OrderPaymentId.create(id_payment),
                 OrderPaymentName.create(EnumPaymentMethod.STRIPE),
                 OrderPaymentCurrency.create(orden.Moneda),
-                OrderPaymentTotal.create(orden.Monto.Total)
+                OrderPaymentTotal.create(orden.Monto.Total),
+                PaymentMethodId.create(method.Value.Id.Id),
             )
 
             orden.asignarMetodoPago(pago)
