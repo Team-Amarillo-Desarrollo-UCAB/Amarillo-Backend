@@ -10,6 +10,9 @@ import { OrderPaymentCurrency } from '../../../order/domain/value-object/oder-pa
 import { OrderPaymentTotal } from "src/order/domain/value-object/oder-payment/order-payment-total";
 import { IPaymentMethodRepository } from "src/payment-method/domain/repositories/payment-method-repository.interface";
 import { PaymentMethodName } from "src/payment-method/domain/value-objects/payment-method-name";
+import { PaymentMethodId } from "src/payment-method/domain/value-objects/payment-method-id";
+import { PaymentMethodState } from "src/payment-method/domain/value-objects/payment-method-state";
+import { InvalidPaymentMethod } from "src/payment-method/domain/domain-exception/invalid-payment-method";
 
 export class PaypalPaymentMethod implements IPaymentMethod {
 
@@ -37,8 +40,11 @@ export class PaypalPaymentMethod implements IPaymentMethod {
         if (!method.isSuccess())
             return Result.fail<Order>(method.Error, 404, method.Message)
 
-        if(!method.Value.NameMethod().equals(PaymentMethodName.create(EnumPaymentMethod.PAYPAL)))
+        if (!method.Value.NameMethod().equals(PaymentMethodName.create(EnumPaymentMethod.PAYPAL)))
             return Result.fail<Order>(new Error('El id no corresponde al metodo de pago'), 404, 'El id no corresponde al metodo de pago')
+
+        if (method.Value.Status().equals(PaymentMethodState.create(false)))
+            return Result.fail<Order>(new InvalidPaymentMethod('El metodo de pago esta desabilitado'), 500, 'El metodo de pago esta desabilitado')
 
         const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -50,7 +56,8 @@ export class PaypalPaymentMethod implements IPaymentMethod {
             OrderPaymentId.create(await this.idGenerator.generateId()),
             OrderPaymentName.create(EnumPaymentMethod.PAYPAL),
             OrderPaymentCurrency.create(orden.Moneda),
-            OrderPaymentTotal.create(orden.Monto.Total)
+            OrderPaymentTotal.create(orden.Monto.Total),
+            PaymentMethodId.create(method.Value.Id.Id),
         )
 
         orden.asignarMetodoPago(pago)

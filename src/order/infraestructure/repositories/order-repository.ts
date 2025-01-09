@@ -73,6 +73,28 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
         }
     }
 
+    async updateOrder(order: Order): Promise<Result<Order>> {
+
+        try {
+
+            const update = await await this.update({ id: order.Id.Id }, {
+                ubicacion: order.Direccion.Direccion,  // O cualquier otra propiedad que quieras modificar
+                latitud: order.Direccion.Latitud,
+                longitud: order.Direccion.Longitud,
+                fecha_entrega: order.Fecha_entrega.ReciviedDate
+            });
+
+            if (update.affected === 0)
+                return Result.fail(new Error('Orden no actualizada'), 404, 'Orden no actualizada')
+
+            return Result.success(order, 200)
+
+        } catch (error) {
+            return Result.fail<Order>(new Error(error.message), 500, error.message)
+        }
+
+    }
+
     async saveReport(order: Order, reporte: OrderReport): Promise<Result<OrderReport>> {
 
         try {

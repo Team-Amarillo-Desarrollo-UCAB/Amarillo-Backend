@@ -4,6 +4,7 @@ import { OrderPaymentName } from "../value-object/oder-payment/order-payment-nam
 import { OrderPaymentCurrency } from "../value-object/oder-payment/order-payment-currency";
 import { OrderTotal } from "../value-object/order-total";
 import { OrderPaymentTotal } from "../value-object/oder-payment/order-payment-total";
+import { PaymentMethodId } from "src/payment-method/domain/value-objects/payment-method-id";
 
 export class OrderPayment extends Entity<OrderPaymentId> {
 
@@ -11,7 +12,8 @@ export class OrderPayment extends Entity<OrderPaymentId> {
         id: OrderPaymentId,
         private readonly name: OrderPaymentName,
         private readonly currency: OrderPaymentCurrency,
-        private readonly amount: OrderPaymentTotal
+        private readonly amount: OrderPaymentTotal,
+        private readonly paymentMethod?: PaymentMethodId,
     ) {
         super(id)
     }
@@ -28,13 +30,18 @@ export class OrderPayment extends Entity<OrderPaymentId> {
         return this.currency
     }
 
+    PaymentMethodId(){
+        return this.paymentMethod
+    }
+
     static create(
         id: OrderPaymentId,
         name: OrderPaymentName,
         currency: OrderPaymentCurrency,
-        amount: OrderPaymentTotal
+        amount: OrderPaymentTotal,
+        paymentMethod?: PaymentMethodId,
     ): OrderPayment{
-        return new OrderPayment(id,name,currency,amount)
+        return new OrderPayment(id,name,currency,amount,paymentMethod)
     }
 
 }

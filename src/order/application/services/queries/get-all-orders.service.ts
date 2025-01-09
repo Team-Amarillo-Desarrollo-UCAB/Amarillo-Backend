@@ -20,9 +20,9 @@ export class GetAllOrdersService implements
 
         const userId = UserId.create(data.userId)
 
-        const estados: OrderEstado[] = data.status.map((estado) => {return OrderEstado.create(estado)})
+        const estados: OrderEstado[] = data.status.map((estado) => { return OrderEstado.create(estado) })
 
-        const ordenes = await this.orderRepository.findAllOrdersByUser(page, perPage,userId,estados)
+        const ordenes = await this.orderRepository.findAllOrdersByUser(page, perPage, userId, estados)
 
         if (!ordenes.isSuccess())
             return Result.fail<GetAllOrdersServiceResponseDTO[]>(ordenes.Error, ordenes.StatusCode, ordenes.Message)
@@ -34,31 +34,31 @@ export class GetAllOrdersService implements
                 id: orden.Id.Id,
                 orderState: orden.Estado.Estado,
                 orderCreatedDate: orden.Fecha_creacion.Date_creation,
-                totalAmount: orden.Monto.Total,
-                sub_total: orden.Monto.SubTotal.Value,
-                shipping_fee: orden.Monto.ShippingFee.Value,
+                totalAmount: parseFloat(orden.Monto.Total.toString()),
+                sub_total: parseFloat(orden.Monto.SubTotal.Value.toString()),
+                shipping_fee: parseFloat(orden.Monto.ShippingFee.Value.toString()),
                 currency: orden.Monto.Currency,
                 orderDirection: {
-                    lat: orden.Direccion.Latitud,
-                    long: orden.Direccion.Longitud
+                    lat: parseFloat(orden.Direccion.Latitud.toString()),
+                    long: parseFloat(orden.Direccion.Longitud.toString())
                 },
-                directionName: orden.Direccion.Direccion,
+                directionName: orden.Direccion ? orden.Direccion.Direccion : null,
                 products: orden.Productos.map((product) => ({
                     id: product.Id.Id,
-                    quantity: product.Cantidad().Value
+                    quantity: parseFloat(product.Cantidad().Value.toString())
                 })),
                 bundles: orden.Bundles.map((combo) => ({
                     id: combo.Id.Value,
-                    quantity: combo.Cantidad().Value
+                    quantity: parseFloat(combo.Cantidad().Value.toString())
                 })),
-                orderReciviedDate: orden.Fecha_entrega ? orden.Fecha_entrega.Date_creation : null,
+                orderReciviedDate: orden.Fecha_entrega ? orden.Fecha_entrega.ReciviedDate : null,
                 orderReport: orden.Reporte ? orden.Reporte.Texto().Texto : null,
                 orderPayment: orden.Payment ? {
-                    amount: orden.Payment.AmountPayment().Total,
+                    amount: parseFloat(orden.Payment.AmountPayment().Total.toString()),
                     currency: orden.Payment.CurrencyPayment().Currency,
                     paymentMethod: orden.Payment.NameMethod().Name()
                 } : null,
-                orderDiscount: orden.Monto.Discount.Value,
+                orderDiscount: parseFloat(orden.Monto.Discount.Value.toString()),
                 instructions: orden.Instruction ? orden.Instruction.Value : null
             }))
         }

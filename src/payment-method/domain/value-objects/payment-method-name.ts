@@ -9,7 +9,7 @@ export class PaymentMethodName implements IValueObject<PaymentMethodName> {
         this.name = name
     }
 
-    Value(){
+    Value(): EnumPaymentMethod{
         return this.name
     }
 

@@ -1,11 +1,12 @@
 import { IValueObject } from "src/common/domain/value-object/value-object.interface";
+import { InvalidProductPriceAmount } from "../../domain-exception/invalid-product-amount";
 
 export class ProductAmount implements IValueObject<ProductAmount>{
     private readonly amount: number
 
     protected constructor(amount: number){
         if(amount <= 0)
-            throw new Error('El monto debe ser mayor a cero')
+            throw new InvalidProductPriceAmount('El monto debe ser mayor a cero')
         this.amount = amount
     }
 
