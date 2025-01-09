@@ -24,12 +24,12 @@ export class GetBundleByIdService implements IApplicationService<GetBundleByIdSe
             name: bundle.Value.name.Value,
             description: bundle.Value.description.Value,
             images: bundle.Value.images.map(i => i.Value),
-            price: bundle.Value.price.Price,
+            price: Number(bundle.Value.price.Price),
             currency:bundle.Value.price.Currency,
-            weight:bundle.Value.weight.Weight,
+            weight:Number(bundle.Value.weight.Weight),
             measurement:bundle.Value.weight.Measurement,
             stock:bundle.Value.stock.Value,
-            category:bundle.Value.categories.map(i => i.Value),
+            categories:bundle.Value.categories.map(i => i.Value),
             products:bundle.Value.products.map(i => i.Id),
             caducityDate: bundle.Value.caducityDate && bundle.Value.caducityDate.Value 
         ? bundle.Value.caducityDate.Value 

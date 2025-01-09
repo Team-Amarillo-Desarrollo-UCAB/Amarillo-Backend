@@ -32,7 +32,7 @@ export class GetAllCouponService implements IApplicationService<GetAllCuponServi
                     id_cupon: coupon.Id.Id(),
                     code: coupon.Code(),
                     expiration_date: coupon.ExpirationDate(),
-                    amount: coupon.Amount()
+                    amount: Number(coupon.Amount())
                 })
             }
         )

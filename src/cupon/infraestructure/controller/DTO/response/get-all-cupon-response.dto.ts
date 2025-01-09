@@ -12,6 +12,6 @@ export class GetAllCouponsResponseDTO{
     expiration_date: Date
 
     @IsNumber()
-    amount: string
+    amount: number
 
 }

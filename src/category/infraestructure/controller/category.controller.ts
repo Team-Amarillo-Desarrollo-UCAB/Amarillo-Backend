@@ -283,9 +283,11 @@ export class CategoryController {
     if (!result.isSuccess())
       return result.Error
 
-    const response: GetAllCategoriesResponseDTO[] = {
-      ...result.Value,
-    }
+    const response: GetAllCategoriesResponseDTO[] = result.Value.map((category) => ({
+      id:category.id,
+      name:category.name,
+      image: category.image
+    }));
 
     return response
   }

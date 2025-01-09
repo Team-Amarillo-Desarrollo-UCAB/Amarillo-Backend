@@ -36,14 +36,14 @@ export class GetAllDiscountsResponseDTO{
         description: 'Fecha de inicio del descuento'
       })
       @IsDate()
-      startDate: Date;
+       initDate: Date;
     
       @ApiProperty({
         example: '2024-12-31T23:59:59.999Z',
         description: 'Fecha límite del descuento'
       })
       @IsDate()
-      deadline: Date;
+      expireDate: Date;
       
       @ApiProperty({
         example: "https://res.cloudinary.com/dxttqmyxu/image/upload/v1731483047/kkizccq7zv9j37jg0hi3.png"

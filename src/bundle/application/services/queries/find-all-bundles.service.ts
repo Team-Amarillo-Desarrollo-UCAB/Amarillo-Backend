@@ -44,9 +44,9 @@ export class FindAllBundlesApplicationService
       name: bundle.name.Value,
       description: bundle.description.Value,
       images: bundle.images.map(i => i.Value),
-      price: bundle.price.Price,
+      price: Number(bundle.price.Price),
       currency: bundle.price.Currency,
-      weight: bundle.weight.Weight,
+      weight: Number(bundle.weight.Weight),
       measurement: bundle.weight.Measurement,
       stock: bundle.stock.Value,
       category: bundle.categories.map(i => i.Value),
@@ -58,7 +58,10 @@ export class FindAllBundlesApplicationService
         ? bundle.Discount.Value
         : "",
 
-    }));
+    })
+    );
+
+    
 
     console.log("Respuesta del servicio: ", response)
 

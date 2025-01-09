@@ -20,12 +20,13 @@ export class GetProductByIdService implements IApplicationService<GetProductById
             return Result.fail(new Error("Producto no encontrado"), 404, "Producto no encontrado")
 
         const response: GetProductByIdServiceResponseDTO = {
+            id: producto.Value.Id.Id,
             name: producto.Value.Name,
-            price: producto.Value.Price,
+            price: Number(producto.Value.Price),
             currency: producto.Value.Moneda,
-            stock: producto.Value.Stock,
+            stock: Number(producto.Value.Stock),
             measurement: producto.Value.Unit,
-            weight: producto.Value.CantidadMedida,
+            weight: Number(producto.Value.CantidadMedida),
             description: producto.Value.Description,
             images: producto.Value.Images ? producto.Value.Images.map(i => i.Image): [],
             caducityDate: producto.Value.ProductCaducityDate ? producto.Value.ProductCaducityDate.Value : new Date('2029-01-01'),
