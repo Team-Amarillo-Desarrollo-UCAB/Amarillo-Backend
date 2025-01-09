@@ -3,8 +3,8 @@ import { IFileUploader } from "src/common/Application/file-uploader/file-uploade
 
 export class FileUploaderMock implements IFileUploader {
 
-    UploadFile(base64: string): Promise<string> {
-        throw new Error("Method not implemented.");
+    async UploadFile(base64: string): Promise<string> {
+        return  '_mocked_url.com' 
     }
 
 }

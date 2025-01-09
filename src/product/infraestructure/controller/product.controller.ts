@@ -65,6 +65,11 @@ import { OrmDiscountRepository } from 'src/discount/infraestructure/repositories
 import { OrmDiscountMapper } from 'src/discount/infraestructure/mappers/discount.mapper';
 import { ProductParamsEntryDTO } from '../DTO/entry/product-params-entry.dto';
 import { JwtAuthGuard } from 'src/auth/infraestructure/jwt/decorator/jwt-auth.guard';
+import { GetAllCategoriesResponseDTO } from '../../../category/infraestructure/DTO/response/get-all-categories-response.dto';
+import { OrmAuditingRepository } from 'src/common/infraestructure/auditing/repositories/orm-auditing-repository';
+import { OrmAccountRepository } from 'src/user/infraestructure/repositories/orm-repositories/orm-account-repository';
+import { SecurityDecorator } from 'src/common/application/application-services/decorators/security-decorator/security-decorator';
+import { AuditingDecorator } from 'src/common/application/auditing/auditing.decorator';
 
 @ApiTags("Product")
 @Controller("product")
@@ -80,6 +85,8 @@ export class ProductController {
     private readonly imageTransformer: ImageTransformer
     private readonly eventBus = RabbitEventBus.getInstance();
     private readonly categoryMapper: OrmCategoryMapper
+    private readonly auditingRepository: OrmAuditingRepository;
+    private readonly accountUserRepository: OrmAccountRepository;
 
     constructor(
         @Inject('DataSource') private readonly dataSource: DataSource,
@@ -96,6 +103,8 @@ export class ProductController {
                 ), dataSource
             )
         this.idGenerator = new UuidGenerator();
+        this.auditingRepository = new OrmAuditingRepository(dataSource)  
+        this.accountUserRepository = new OrmAccountRepository(dataSource) 
         this.monedaRepository = new MonedaRepository(dataSource)
         this.imageTransformer = new ImageTransformer();
         this.fileUploader = new CloudinaryFileUploader(),
@@ -117,26 +126,43 @@ export class ProductController {
     ): Promise<string> {
 
         const data: CreateProductServiceEntryDTO = {
-            userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+            userId: user.id,
             ...entry
         }
 
-        const service =
-            new ExceptionDecorator(
-                new LoggingDecorator(
-                    new CreateProductService(
-                        this.productRepository,
-                        new OrmCategoryRepository(new OrmCategoryMapper, this.dataSource),
-                        this.fileUploader,
-                        this.idGenerator,
-                        this.eventBus,
-                        this.categoriesExistenceService,
-                        this.discountExistenceService
-                    ),
-                    new NativeLogger(this.logger)
-                ),
-                new HttpExceptionHandler()
-            )
+        const allowedRoles = ['ADMIN']
+        
+        const service = new ExceptionDecorator(
+            new AuditingDecorator(
+                new SecurityDecorator(
+                    new LoggingDecorator(
+                        new PerformanceDecorator(
+                            new CreateProductService(
+                                this.productRepository,
+                                new OrmCategoryRepository(new OrmCategoryMapper, this.dataSource),
+                                this.fileUploader,
+                                this.idGenerator,
+                                this.eventBus,
+                                this.categoriesExistenceService,
+                                this.discountExistenceService
+                            ),
+                            new NativeLogger(this.logger)
+                        ),
+                        new NativeLogger(this.logger)
+                    )
+                    ,
+                    this.accountUserRepository,
+                    allowedRoles
+                
+                    )
+                    ,
+                    this.auditingRepository,
+                    this.idGenerator
+                    )
+                        
+                ,
+                    new HttpExceptionHandler()
+                )
 
         const result = await service.execute(data)
 
@@ -173,18 +199,30 @@ export class ProductController {
         @Param('id', ParseUUIDPipe) id: string
     ) {
         const entry: GetProductByIdServiceEntryDTO = {
-            userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+            userId: user.id,
             id_product: id
         }
 
-        const service =
-            new ExceptionDecorator(
-                new LoggingDecorator(
-                    new GetProductByIdService(this.productRepository),
-                    new NativeLogger(this.logger)
-                ),
-                new HttpExceptionHandler()
-            )
+        const allowedRoles = ['ADMIN','CLIENT'];
+                  
+        const service = new ExceptionDecorator(
+            new AuditingDecorator(
+                new SecurityDecorator(
+                        new LoggingDecorator(
+                                new PerformanceDecorator(
+                                    new GetProductByIdService(this.productRepository),
+                                    new NativeLogger(this.logger)
+                                ),
+                                new NativeLogger(this.logger)
+                            ),
+                            this.accountUserRepository,
+                            allowedRoles
+                        ),
+                        this.auditingRepository,
+                        this.idGenerator
+                    ),
+                    new HttpExceptionHandler()
+        );
 
         const result = await service.execute(entry)
 
@@ -209,17 +247,27 @@ export class ProductController {
         @Query() paginacion: PaginationDto,
         @Query() queryEntryParams: ProductParamsEntryDTO,
     ) {
-        const service =
-            new ExceptionDecorator(
-                new PerformanceDecorator(
+
+        const allowedRoles = ['ADMIN','CLIENT'];
+                  
+        const service = new ExceptionDecorator(
+            new AuditingDecorator(
+                new SecurityDecorator(
                     new LoggingDecorator(
-                        new GetAllProductService(this.productRepository),
+                        new PerformanceDecorator(
+                            new GetAllProductService(this.productRepository),
+                            new NativeLogger(this.logger)
+                        ),
                         new NativeLogger(this.logger)
                     ),
-                    new NativeLogger(this.logger)
+                    this.accountUserRepository,
+                    allowedRoles
                 ),
-                new HttpExceptionHandler()
-            )
+                this.auditingRepository,
+                this.idGenerator
+            ),
+            new HttpExceptionHandler()
+        );
         const data: GetAllProductServiceEntryDTO = {
             userId: user.id,
             ...paginacion,
@@ -231,9 +279,20 @@ export class ProductController {
         if (!result.isSuccess())
             return result.Error
 
-        const response: GetAllProductsResponseDTO[] = {
-            ...result.Value,
-        }
+        const response: GetAllProductsResponseDTO[] = result.Value.map((product) => ({
+            id: product.id,
+            name: product.name,
+            price: product.price,//
+            currency: product.currency,//
+            stock: product.stock,//
+            measurement: product.measurement,//
+            weight: product.weight,//
+            description: product.description,//
+            images: product.images, //
+            caducityDate: product.caducityDate,//
+            categories: product.category,//
+            discount: product.discount//
+          }));
 
         return response
     }
@@ -280,24 +339,33 @@ export class ProductController {
     ) {
 
         const data: DeleteProductServiceEntryDTO = {
-            userId: "",
+            userId: user.id,
             id_product: id
         }
 
-        // TODO: Agregar el decorador de seguridad
-        const service =
-            new ExceptionDecorator(
-                new LoggingDecorator(
-                    new PerformanceDecorator(
+
+        const allowedRoles = ['ADMIN'];
+          
+        const service = new ExceptionDecorator(
+            new AuditingDecorator(
+                new SecurityDecorator(
+                    new LoggingDecorator(
+                        new PerformanceDecorator(
                         new DeleteProductService(
                             this.productRepository
                         ),
+                            new NativeLogger(this.logger)
+                        ),
                         new NativeLogger(this.logger)
                     ),
-                    new NativeLogger(this.logger)
+                    this.accountUserRepository,
+                    allowedRoles
                 ),
-                new HttpExceptionHandler()
-            )
+                this.auditingRepository,
+                this.idGenerator
+            ),
+            new HttpExceptionHandler()
+        );
 
         await service.execute(data)
 
@@ -316,25 +384,35 @@ export class ProductController {
     ) {
 
         const data: UpdateProductServiceEntryDTO = {
-            userId: '',
+            userId: user.id,
             ...request
         }
 
         console.log("request: ", request)
 
-        const service =
-            new ExceptionDecorator(
-                new LoggingDecorator(
-                    new PerformanceDecorator(
-                        new UpdateProductService(
+
+        const allowedRoles = ['ADMIN'];
+          
+        const service = new ExceptionDecorator(
+            new AuditingDecorator(
+                new SecurityDecorator(
+                    new LoggingDecorator(
+                        new PerformanceDecorator(
+                            new UpdateProductService(
                             this.productRepository
+                            ),
+                            new NativeLogger(this.logger)
                         ),
                         new NativeLogger(this.logger)
                     ),
-                    new NativeLogger(this.logger)
+                    this.accountUserRepository,
+                    allowedRoles
                 ),
-                new HttpExceptionHandler()
-            )
+                this.auditingRepository,
+                this.idGenerator
+            ),
+            new HttpExceptionHandler()
+        );
 
         const resuslt = await service.execute(data)
 

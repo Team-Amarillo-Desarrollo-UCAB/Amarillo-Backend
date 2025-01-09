@@ -22,7 +22,7 @@ export class GetCuponByIdService implements IApplicationService<GetCuponByIdServ
         const response: GetCuponByIdServiceResponseDTO = {
             cuponId: cupon.Value.Id.Id(),
             code: cupon.Value.Code(),
-            amount: cupon.Value.Amount(),
+            amount: Number(cupon.Value.Amount()),
             expiration_date: cupon.Value.ExpirationDate(),
             creation_date: cupon.Value.CreationDate()
         }

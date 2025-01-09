@@ -8,7 +8,7 @@ export interface GetBundleByIdServiceResponseDTO{
     weight: number
     measurement: string //(kg,gr,mg,ml,lt,cm3)
     stock: number
-    category: string[
+    categories: string[
     // {
     // id: string
     // }
