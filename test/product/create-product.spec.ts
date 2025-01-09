@@ -139,4 +139,172 @@ describe('Create product', () => {
                 
     })
 
+    it('should fail if Discount does not exist', async () => {
+        const user = await UserObjectMother.createNormalUser();
+        const userRepositoryMock = new UserMockRepository();
+        userRepositoryMock.saveUserAggregate(user);
+
+        const c1 = await CategoryObjectMother.createNormalCategory('C1');
+        const c2 = await CategoryObjectMother.createNormalCategory('C2');
+
+        const discount = await DiscountObjectMother.createNormalDiscount('descuento prueba producto')
+
+        const discountRepositoryMock = new DiscountMockRepository();
+
+        discountRepositoryMock.createDiscount(discount)
+
+        const notPersistedDiscount = await DiscountObjectMother.createNormalDiscount('descuento no persistido')
+
+
+        const categoryRepositoryMock = new CategoryMockRepository();
+        categoryRepositoryMock.createCategory(c1);
+        categoryRepositoryMock.createCategory(c2);
+
+        const categories: Category[] = [];
+        categories.push(c1);
+        categories.push(c2);
+
+        const entry: CreateProductServiceEntryDTO = {
+            userId: user.Id.Id,
+            name: "Producto test",
+            description: "desripction of the product",
+            images: ["image1", "image2"],
+            price: 15,
+            currency: Moneda.USD,
+            weight: 1,
+            measurement: UnidadMedida.KG,
+            stock: 5,
+            category: categories.map(i => i.Id.Value),
+            caducityDate: new Date(2026, 0, 1),
+            discount: notPersistedDiscount.Id.Value,
+        };
+
+        const service = new CreateProductService(
+            new ProductRepositoryMock(),
+            categoryRepositoryMock,
+            new FileUploaderMock(),
+            new UuidGeneratorMock(),
+            new EventHandlerMock(),
+            new CategoriesExistenceService(categoryRepositoryMock),
+            new DiscountExistenceService(discountRepositoryMock)
+        );
+
+        const result = await service.execute(entry);
+
+        expect(result.isSuccess()).toBeFalsy();
+    });
+
+    it('should fail if caducityDate is in the past', async () => {
+        const user = await UserObjectMother.createNormalUser();
+        const userRepositoryMock = new UserMockRepository();
+        userRepositoryMock.saveUserAggregate(user);
+
+        const c1 = await CategoryObjectMother.createNormalCategory('C1');
+        const c2 = await CategoryObjectMother.createNormalCategory('C2');
+
+        const discount = await DiscountObjectMother.createNormalDiscount('descuento prueba producto');
+
+        const categoryRepositoryMock = new CategoryMockRepository();
+        categoryRepositoryMock.createCategory(c1);
+        categoryRepositoryMock.createCategory(c2);
+
+        const categories: Category[] = [];
+        categories.push(c1);
+        categories.push(c2);
+
+        const discountRepositoryMock = new DiscountMockRepository();
+        discountRepositoryMock.createDiscount(discount);
+
+        const entry: CreateProductServiceEntryDTO = {
+            userId: user.Id.Id,
+            name: "Producto test",
+            description: "desripction of the product",
+            images: ["image1", "image2"],
+            price: 15,
+            currency: Moneda.USD,
+            weight: 1,
+            measurement: UnidadMedida.KG,
+            stock: 5,
+            category: categories.map(i => i.Id.Value),
+            caducityDate: new Date(2020, 0, 1),
+            discount: discount.ID.Value,
+        };
+
+        const service = new CreateProductService(
+            new ProductRepositoryMock(),
+            categoryRepositoryMock,
+            new FileUploaderMock(),
+            new UuidGeneratorMock(),
+            new EventHandlerMock(),
+            new CategoriesExistenceService(categoryRepositoryMock),
+            new DiscountExistenceService(discountRepositoryMock)
+        );
+
+        
+         await expect(service.execute(entry)).rejects.toThrowError(
+            "La fecha de caducidad no puede ser una fecha pasada."
+        );
+
+        // const result = await service.execute(entry);
+
+
+        // expect(result.isSuccess()).toBeFalsy();
+    });
+
+    it('should fail if a required field (name) is empty', async () => {
+        const user = await UserObjectMother.createNormalUser();
+        const userRepositoryMock = new UserMockRepository();
+        userRepositoryMock.saveUserAggregate(user);
+
+        const c1 = await CategoryObjectMother.createNormalCategory('C1');
+        const c2 = await CategoryObjectMother.createNormalCategory('C2');
+
+        const discount = await DiscountObjectMother.createNormalDiscount('descuento prueba producto');
+
+        const categoryRepositoryMock = new CategoryMockRepository();
+        categoryRepositoryMock.createCategory(c1);
+        categoryRepositoryMock.createCategory(c2);
+
+        const categories: Category[] = [];
+        categories.push(c1);
+        categories.push(c2);
+
+        const discountRepositoryMock = new DiscountMockRepository();
+        discountRepositoryMock.createDiscount(discount);
+
+        const entry: CreateProductServiceEntryDTO = {
+            userId: user.Id.Id,
+            name: "",
+            description: "desripction of the product",
+            images: ["image1", "image2"],
+            price: 15,
+            currency: Moneda.USD,
+            weight: 1,
+            measurement: UnidadMedida.KG,
+            stock: 5,
+            category: categories.map(i => i.Id.Value),
+            caducityDate: new Date(2026, 0, 1),
+            discount: discount.ID.Value,
+        };
+
+        const service = new CreateProductService(
+            new ProductRepositoryMock(),
+            categoryRepositoryMock,
+            new FileUploaderMock(),
+            new UuidGeneratorMock(),
+            new EventHandlerMock(),
+            new CategoriesExistenceService(categoryRepositoryMock),
+            new DiscountExistenceService(discountRepositoryMock)
+        );
+
+        // const result = await service.execute(entry);
+
+        // expect(result.isSuccess()).toBeFalsy();
+
+        await expect(service.execute(entry)).rejects.toThrowError(
+            'El nombre del producto no puede ser vacío'
+        );
+    });
+
+
 })

@@ -4,6 +4,10 @@ import { Moneda } from "src/product/domain/enum/Monedas";
 import { UnidadMedida } from "src/product/domain/enum/UnidadMedida";
 
 export class GetProductResponseDTO{
+
+    @IsString()
+    id: string;
+    
     @ApiProperty({
         example: 'Cheese Tris'
     })

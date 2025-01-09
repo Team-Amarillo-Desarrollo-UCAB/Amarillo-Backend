@@ -31,6 +31,10 @@ import { JwtAuthGuard } from "src/auth/infraestructure/jwt/decorator/jwt-auth.gu
 import { GetUser } from "src/auth/infraestructure/jwt/decorator/get-user.param.decorator"
 import { GetCuponByUserServiceEntryDTO } from "src/cupon/application/DTO/entry/get-cupon-by-user-service-entry.dto"
 import { isNumber } from "class-validator"
+import { OrmAuditingRepository } from "src/common/infraestructure/auditing/repositories/orm-auditing-repository"
+import { OrmAccountRepository } from "src/user/infraestructure/repositories/orm-repositories/orm-account-repository"
+import { SecurityDecorator } from "src/common/application/application-services/decorators/security-decorator/security-decorator"
+import { AuditingDecorator } from "src/common/application/auditing/auditing.decorator"
 
 @ApiTags("Cupon")
 @Controller('cupon')
@@ -40,43 +44,65 @@ export class CuponController {
 
     private readonly logger: Logger = new Logger('CuponController')
     private readonly idGenerator: IdGenerator<string>
+    private readonly auditingRepository: OrmAuditingRepository;
+    private readonly accountUserRepository: OrmAccountRepository;
 
     constructor(
         @Inject('DataSource') private readonly dataSource: DataSource//iny. dependencias
     ) {
         this.cuponRepository = new CuponRepository(new CuponMapper(), dataSource)
         this.idGenerator = new UuidGenerator();
+        this.auditingRepository = new OrmAuditingRepository(dataSource)  
+        this.accountUserRepository = new OrmAccountRepository(dataSource)
     }
 
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth() 
     @Post("create")
     @ApiOkResponse({
         description: 'Devuelve el id del cupon creado',
         type: CreateCuponResponseDto,
     })
     async createCupon(
-        @Body() request: CreateCuponEntryDto
+        @Body() request: CreateCuponEntryDto, @GetUser() user
     ) {
 
         const data: CreateCuponServiceEntryDto = {
-            userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+            userId: user.id,
             code: request.code,
             expiration_date: request.expiration_date,
             amount: request.amount
         }
-        const service =
-            new ExceptionDecorator(
-                new LoggingDecorator(
-                    new PerformanceDecorator(
-                        new CreateCuponService(
-                            this.cuponRepository,
-                            this.idGenerator,
-                        ),
-                        new NativeLogger(this.logger)
+
+
+        const allowedRoles = ['ADMIN']
+
+        const service = new ExceptionDecorator(
+        new AuditingDecorator(
+            new SecurityDecorator(
+            new LoggingDecorator(
+                new PerformanceDecorator(
+                    new CreateCuponService(
+                        this.cuponRepository,
+                        this.idGenerator,
                     ),
                     new NativeLogger(this.logger)
                 ),
-                new HttpExceptionHandler()
+                new NativeLogger(this.logger)
             )
+            ,
+            this.accountUserRepository,
+            allowedRoles
+        
+            )
+            ,
+            this.auditingRepository,
+            this.idGenerator
+            )
+                
+        ,
+            new HttpExceptionHandler()
+        )
         const result = await service.execute(data)
         const response: CreateCuponResponseDto = {
             cuponId: result.Value.cuponid
@@ -86,22 +112,40 @@ export class CuponController {
     }
 
 
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @Get('many')
     @ApiOkResponse({
         description: 'Devuelve la informacion de todos los cupones',
         type: GetAllCouponsResponseDTO,
     })
     async getAllCoupon(
-        @Query() paginacion: PaginationDto
+        @Query() paginacion: PaginationDto, @GetUser() user
     ) {
-        const service =
-            new LoggingDecorator(
-                new GetAllCouponService(this.cuponRepository),
-                new NativeLogger(this.logger)
-            )
+
+        const allowedRoles = ['ADMIN','CLIENT'];
+          
+        const service = new ExceptionDecorator(
+            new AuditingDecorator(
+                new SecurityDecorator(
+                    new LoggingDecorator(
+                        new PerformanceDecorator(
+                            new GetAllCouponService(this.cuponRepository),
+                            new NativeLogger(this.logger)
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    this.accountUserRepository,
+                    allowedRoles
+                ),
+                this.auditingRepository,
+                this.idGenerator
+            ),
+            new HttpExceptionHandler()
+        );
 
         const data: GetAllCuponServiceEntryDTO = {
-            userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+            userId: user.id,
             ...paginacion
         }
 
@@ -112,15 +156,15 @@ export class CuponController {
 
         const response: GetAllCouponsResponseDTO[] = result.Value.map((cupon: any) => ({
             ...cupon,
-            amount: cupon.amount.toString()
+            amount: cupon.amount
         }));
 
         return response
     }
 
-    @Get('many/by/user')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
+    @Get('many/by/user')
     @ApiOkResponse({
         description: 'Devuelve la informacion de todos los cupones de un usuario',
         type: GetAllCouponsResponseDTO,
@@ -128,17 +172,30 @@ export class CuponController {
     async getAllCouponUser(
         @GetUser() user
     ) {
-        const service =
-            new ExceptionDecorator(
-                new PerformanceDecorator(
+
+        const allowedRoles = ['ADMIN','CLIENT'];
+          
+        const service = new ExceptionDecorator(
+            new AuditingDecorator(
+                new SecurityDecorator(
                     new LoggingDecorator(
-                        new GetAllCouponService(this.cuponRepository),
+                        new PerformanceDecorator(
+                            new GetAllCouponService(this.cuponRepository),
+                            new NativeLogger(this.logger)
+                        ),
                         new NativeLogger(this.logger)
                     ),
-                    new NativeLogger(this.logger)
+                    this.accountUserRepository,
+                    allowedRoles
                 ),
-                new HttpExceptionHandler()
-            )
+                this.auditingRepository,
+                this.idGenerator
+            ),
+            new HttpExceptionHandler()
+        );
+
+
+
 
 
         const data: GetCuponByUserServiceEntryDTO = {
@@ -151,31 +208,55 @@ export class CuponController {
             return result.Error
 
         const response: GetAllCouponsResponseDTO[] = result.Value.map((cupon) => ({
-            ...cupon,
-            amount: cupon.amount.toString()
+                id_cupon: cupon.id_cupon,
+            
+                code: cupon.code,
+            
+                expiration_date: cupon.expiration_date,
+            
+                amount: cupon.amount
+            
         }));
 
         return response
     }
 
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @Get('one/by/code')
     @ApiOkResponse({
         description: 'Devuelve la informacion de un Cupón dado el código',
         type: GetCouponByCodeResponseDTO,
     })
     async getCuponByCode(
-        @Query('code') code: string
+        @Query('code') code: string, @GetUser() user
     ) {
         const data: GetCouponByCodeServiceEntryDTO = {
-            userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+            userId: user.id,
             cuponCode: code
         }
         console.log("Code" + code)
-        const service =
-            new LoggingDecorator(
-                new GetCouponByCodeService(this.cuponRepository),
-                new NativeLogger(this.logger)
-            )
+
+            const allowedRoles = ['ADMIN','CLIENT'];
+          
+            const service = new ExceptionDecorator(
+                new AuditingDecorator(
+                    new SecurityDecorator(
+                        new LoggingDecorator(
+                            new PerformanceDecorator(
+                              new GetCouponByCodeService(this.cuponRepository),
+                              new NativeLogger(this.logger)
+                            ),
+                            new NativeLogger(this.logger)
+                        ),
+                        this.accountUserRepository,
+                        allowedRoles
+                    ),
+                    this.auditingRepository,
+                    this.idGenerator
+                ),
+                new HttpExceptionHandler()
+            );
 
         const result = await service.execute(data)
         if (!result.isSuccess)
@@ -187,25 +268,44 @@ export class CuponController {
     }
 
 
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @ApiOkResponse({
         description: 'Elimina un cupón por su ID',
         type: DeleteCouponResponseDto,
     })
     @Delete('/delete/:id')
     async deleteCupon(
-        @Param('id', ParseUUIDPipe) id: string,
+        @Param('id', ParseUUIDPipe) id: string, @GetUser() user
     ): Promise<DeleteCouponResponseDto> {
         const infraEntryDto: DeleteCouponEntryDto = { cuponId: id };
         //const eventBus = EventBus.getInstance()
 
         const serviceEntryDto: DeleteCuponServiceEntryDto = {
-            userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+            userId: user.id,
             cuponId: infraEntryDto.cuponId
         };
 
-        const service = new LoggingDecorator(
-            new DeleteCouponApplicationService(this.cuponRepository),
-            new NativeLogger(this.logger)
+
+        const allowedRoles = ['ADMIN'];
+          
+        const service = new ExceptionDecorator(
+            new AuditingDecorator(
+                new SecurityDecorator(
+                    new LoggingDecorator(
+                        new PerformanceDecorator(
+                            new DeleteCouponApplicationService(this.cuponRepository),
+                            new NativeLogger(this.logger)
+                        ),
+                        new NativeLogger(this.logger)
+                    ),
+                    this.accountUserRepository,
+                    allowedRoles
+                ),
+                this.auditingRepository,
+                this.idGenerator
+            ),
+            new HttpExceptionHandler()
         );
 
         const result = await service.execute(serviceEntryDto);

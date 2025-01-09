@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNumber, IsArray, IsOptional, IsCurrency, IsInt, Min, IsPositive, IsDate } from 'class-validator';
 
 export class GetAllBundlesResponseDTO {
@@ -18,6 +19,9 @@ export class GetAllBundlesResponseDTO {
     @IsString()
     currency: string;
 
+
+
+    @ApiProperty({ type: Number })
     @IsNumber()
     @IsPositive()
     weight: number;
@@ -35,7 +39,7 @@ export class GetAllBundlesResponseDTO {
 
     @IsArray()
     @IsString({ each: true })
-    category: string[];
+    categories: string[];
 
     @IsArray()
     @IsString({ each: true })

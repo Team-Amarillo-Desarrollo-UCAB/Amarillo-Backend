@@ -197,22 +197,26 @@ export class BundleController {
 
 
 
-    const service = new ExceptionDecorator(
-      new AuditingDecorator(
-        new LoggingDecorator(
-          new PerformanceDecorator(
-            new GetBundleByIdService(this.bundleRepository),
-              new NativeLogger(this.logger)
+      const allowedRoles = ['ADMIN','CLIENT'];
+  
+      const service = new ExceptionDecorator(
+          new AuditingDecorator(
+              new SecurityDecorator(
+                  new LoggingDecorator(
+                      new PerformanceDecorator(
+                          new GetBundleByIdService(this.bundleRepository),
+                          new NativeLogger(this.logger)
+                      ),
+                      new NativeLogger(this.logger)
+                  ),
+                  this.accountUserRepository,
+                  allowedRoles
+              ),
+              this.auditingRepository,
+              this.idGenerator
           ),
-          new NativeLogger(this.logger)
-      )
-        ,
-        this.auditingRepository,
-        this.idGenerator
-      )
-      ,
-        new HttpExceptionHandler()
-    )
+          new HttpExceptionHandler()
+      );
 
     
 
@@ -246,23 +250,26 @@ export class BundleController {
     @GetUser() user
   ): Promise<GetAllBundlesResponseDTO[]> {
 
-
-    const service = new ExceptionDecorator(
-      new AuditingDecorator(
-        new LoggingDecorator(
-          new PerformanceDecorator(
-            new FindAllBundlesApplicationService(this.bundleRepository),
-              new NativeLogger(this.logger)
+      const allowedRoles = ['ADMIN','CLIENT'];
+  
+      const service = new ExceptionDecorator(
+          new AuditingDecorator(
+              new SecurityDecorator(
+                  new LoggingDecorator(
+                      new PerformanceDecorator(
+                          new FindAllBundlesApplicationService(this.bundleRepository),
+                          new NativeLogger(this.logger)
+                      ),
+                      new NativeLogger(this.logger)
+                  ),
+                  this.accountUserRepository,
+                  allowedRoles
+              ),
+              this.auditingRepository,
+              this.idGenerator
           ),
-          new NativeLogger(this.logger)
-      )
-        ,
-        this.auditingRepository,
-        this.idGenerator
-      )
-      ,
-        new HttpExceptionHandler()
-    )
+          new HttpExceptionHandler()
+      );
 
 
 
@@ -292,7 +299,7 @@ export class BundleController {
       measurement: bundle.measurement,
       stock: bundle.stock,
       caducityDate: bundle.caducityDate,
-      category: bundle.category,
+      categories: bundle.category,
       products: bundle.productId,
       discount: bundle.discount
     }));
@@ -310,11 +317,11 @@ export class BundleController {
     })
     async updateBundle(
         @Param('id', ParseUUIDPipe) id: string,
-        @Body() request: UpdateBundleEntryDTO
+        @Body() request: UpdateBundleEntryDTO, @GetUser() user
     ) {
 
         const data: UpdateBundleServiceEntryDto = {
-            userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+            userId: user.id,
             id: id,
             ...request
         }
@@ -323,25 +330,30 @@ export class BundleController {
 
         console.log("request: ", request)
 
-        const service = new ExceptionDecorator(
-              new AuditingDecorator(
-                new LoggingDecorator(
-                  new PerformanceDecorator(
-                      new UpdateBundleApplicationService (
+
+      const allowedRoles = ['ADMIN'];
+  
+      const service = new ExceptionDecorator(
+          new AuditingDecorator(
+              new SecurityDecorator(
+                  new LoggingDecorator(
+                      new PerformanceDecorator(
+                        new UpdateBundleApplicationService (
                           this.bundleRepository,
                         eventBus
                       ),
+                          new NativeLogger(this.logger)
+                      ),
                       new NativeLogger(this.logger)
                   ),
-                  new NativeLogger(this.logger)
-              )
-                ,
-                this.auditingRepository,
-                this.idGenerator
-              )
-              ,
-                new HttpExceptionHandler()
-            )
+                  this.accountUserRepository,
+                  allowedRoles
+              ),
+              this.auditingRepository,
+              this.idGenerator
+          ),
+          new HttpExceptionHandler()
+      );
 
         const result = await service.execute(data)
 
@@ -370,23 +382,26 @@ export class BundleController {
       };
   
 
-      const service = new ExceptionDecorator(
+    const allowedRoles = ['ADMIN'];
+
+    const service = new ExceptionDecorator(
         new AuditingDecorator(
-          new LoggingDecorator(
-            new PerformanceDecorator(
-              new DeleteBundleApplicationService(this.bundleRepository, eventBus),
-                new NativeLogger(this.logger)
+            new SecurityDecorator(
+                new LoggingDecorator(
+                    new PerformanceDecorator(
+                      new DeleteBundleApplicationService(this.bundleRepository, eventBus),
+                      new NativeLogger(this.logger)
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                this.accountUserRepository,
+                allowedRoles
             ),
-            new NativeLogger(this.logger)
-        )
-          ,
-          this.auditingRepository,
-          this.idGenerator
-        )
-        ,
-          new HttpExceptionHandler()
-      )
-  
+            this.auditingRepository,
+            this.idGenerator
+        ),
+        new HttpExceptionHandler()
+    );
 
       
   

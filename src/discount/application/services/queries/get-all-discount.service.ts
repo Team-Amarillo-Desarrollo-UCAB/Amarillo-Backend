@@ -31,8 +31,8 @@ export class GetAllDiscountService implements IApplicationService<GetAllDiscount
                     description: discount.Description.Value,
                     percentage: discount.Percentage.Value,
                     image: discount.Image.Image,
-                    startDate: discount.StartDate.Value,
-                    deadline: discount.Deadline.Value
+                    initDate: discount.StartDate.Value,
+                    expireDate: discount.Deadline.Value
                 })
             }
         )
