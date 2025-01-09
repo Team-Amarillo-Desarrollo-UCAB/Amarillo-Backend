@@ -7,6 +7,7 @@ import { IdGenerator } from "src/common/application/id-generator/id-generator.in
 import { OrderReport } from "src/order/domain/entites/order-report";
 import { OrderReportText } from "src/order/domain/value-object/order-report/order-report-text";
 import { OrderReportId } from "src/order/domain/value-object/order-report/order-report-id";
+import { EnumOrderEstados } from "@src/order/domain/enum/order-estados-enum";
 
 export class CreateReportService implements
     IApplicationService<CreateReportServiceEntryDTO, CreateReportServiceResponseDTO> {
@@ -24,6 +25,14 @@ export class CreateReportService implements
         const find_orden = await this.orderRepository.findOrderById(data.id_orden)
         if (!find_orden.isSuccess())
             return Result.fail(new Error("Orden no encontrada"), find_orden.StatusCode, "Orden no encontrada")
+
+        const orden = find_orden.Value
+
+        if(orden.Estado.Estado != EnumOrderEstados.CANCELLED &&
+            orden.Estado.Estado != EnumOrderEstados.DELIVERED &&
+            orden.Estado.Estado != EnumOrderEstados.CANCELED
+        )
+            return Result.fail(new Error("No es posible reportar la orden"), find_orden.StatusCode, "No es posible reportar la orden")
 
         const reporte = OrderReport.create(
             OrderReportId.create(await this.idGenerator.generateId()),

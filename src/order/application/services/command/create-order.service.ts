@@ -115,7 +115,7 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
                     quantity: p.quantity,
                     nombre: producto.Name,
                     descripcion: producto.Description,
-                    price: producto.Price,
+                    price: parseFloat(producto.Price.toString()),
                     currency: producto.Moneda,
                     images: producto.Images.map((imagen) => {
                         return imagen.Image
@@ -168,7 +168,7 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
                     quantity: c.quantity,
                     nombre: combo.name,
                     descripcion: combo.description,
-                    price: combo.price.Price,
+                    price: parseFloat(combo.price.Price.toString()),
                     currency: combo.price.Currency,
                     images: combo.images.map((imagen) => {
                         return imagen.Value
@@ -183,7 +183,7 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
 
         let orden = Order.create(
             OrderId.create(id_orden),
-            OrderEstado.create(EnumOrderEstados.CREADA),
+            OrderEstado.create(EnumOrderEstados.CREATED),
             OrderCreationDate.create(new Date()),
             OrderReciviedDate.create(new Date(data.orderReciviedDate)),
             OrderLocationDelivery.create(
@@ -233,7 +233,7 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
             },
             products: detalle_productos,
             bundles: detalle_combos,
-            orderReciviedDate: result.Value.Fecha_entrega ? result.Value.Fecha_entrega.Date_creation : null,
+            orderReciviedDate: result.Value.Fecha_entrega ? result.Value.Fecha_entrega.ReciviedDate : null,
             orderReport: null,
             orderPayment: {
                 amount: result.Value.Payment.AmountPayment().Total,
