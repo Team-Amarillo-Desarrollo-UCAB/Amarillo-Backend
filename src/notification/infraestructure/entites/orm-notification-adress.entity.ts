@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryColumn } from "typeorm";
 
-@Entity({ name: "notification-addres" })
+@Entity({ name: "notification-addres"})
 export class OrmNotificationAdressEntity {
 
     @PrimaryColumn({ type: "varchar", name: "token" })

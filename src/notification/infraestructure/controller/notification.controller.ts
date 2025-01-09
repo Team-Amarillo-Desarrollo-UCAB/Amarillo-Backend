@@ -77,7 +77,7 @@ export class NotificationController {
    // @Cron(CronExpression.EVERY_DAY_AT_7AM)
     @Get('goodday')  
     async goodDayNotification() {
-        const service = new ExceptionDecorator( 
+        const service = new ExceptionDecorator(
             new LoggingDecorator(
                 new PerformanceDecorator(
                     new NotifyGoodDayInfraService(
@@ -92,7 +92,7 @@ export class NotificationController {
             ),
             new HttpExceptionHandler()
         )
-        return (await service.execute( { userId: 'none' } )).Value    
+        return (await service.execute({ userId: 'none' })).Value
     }
 
 }

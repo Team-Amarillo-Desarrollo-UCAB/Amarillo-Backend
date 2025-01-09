@@ -1,8 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from "class-validator";
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from "class-validator";
 
-export class CreateOrderPayPalEntryDTO {
+export class CreateOrderCashEntryDTO {
     @ApiProperty({
         description: 'ID del metodo de pago',
     })
@@ -17,13 +17,6 @@ export class CreateOrderPayPalEntryDTO {
     @IsString()
     @IsNotEmpty()
     paymentMethod: string;
-
-    @ApiProperty({
-        description: 'Email de PayPal del usuario',
-    })
-    @IsString()
-    @IsNotEmpty()
-    email: string;
 
     @ApiProperty({
         example: "2025-01-05",

@@ -10,6 +10,6 @@ export interface UpdateOrderInformationServiceEntryDTO extends ApplicationServic
 
     direccion?: string
 
-    fecha_entrega?: string
+    orderReciviedDate?: string
 
 }

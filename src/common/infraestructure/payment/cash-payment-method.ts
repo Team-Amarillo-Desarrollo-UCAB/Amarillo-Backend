@@ -7,8 +7,11 @@ import { OrderPaymentCurrency } from "src/order/domain/value-object/oder-payment
 import { OrderPaymentId } from "src/order/domain/value-object/oder-payment/order-payment-id";
 import { OrderPaymentName } from "src/order/domain/value-object/oder-payment/order-payment-name";
 import { OrderPaymentTotal } from "src/order/domain/value-object/oder-payment/order-payment-total";
+import { InvalidPaymentMethod } from "src/payment-method/domain/domain-exception/invalid-payment-method";
 import { EnumPaymentMethod } from "src/payment-method/domain/enum/PaymentMethod";
 import { IPaymentMethodRepository } from "src/payment-method/domain/repositories/payment-method-repository.interface";
+import { PaymentMethodId } from "src/payment-method/domain/value-objects/payment-method-id";
+import { PaymentMethodState } from "src/payment-method/domain/value-objects/payment-method-state";
 
 export class CashPaymentMethod implements IPaymentMethod {
 
@@ -33,11 +36,19 @@ export class CashPaymentMethod implements IPaymentMethod {
         if (!method.isSuccess())
             return Result.fail<Order>(method.Error, 404, method.Message)
 
+        const estado = method.Value.Status().Value()
+
+        if(!estado)
+            return Result.fail<Order>(new InvalidPaymentMethod('El metodo de pago esta desabilitado'),500,'El metodo de pago esta desabilitado')
+
+        const name: EnumPaymentMethod = method.Value.NameMethod().Value()
+
         const pago = OrderPayment.create(
             OrderPaymentId.create(await this.idGenerator.generateId()),
-            OrderPaymentName.create(EnumPaymentMethod.EFECTIVO),
+            OrderPaymentName.create(name),
             OrderPaymentCurrency.create(orden.Moneda),
-            OrderPaymentTotal.create(orden.Monto.Total)
+            OrderPaymentTotal.create(orden.Monto.Total),
+            PaymentMethodId.create(method.Value.Id.Id),
         )
 
         orden.asignarMetodoPago(pago)

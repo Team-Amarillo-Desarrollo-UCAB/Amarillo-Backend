@@ -6,6 +6,7 @@ import { OrderPaymentName } from 'src/order/domain/value-object/oder-payment/ord
 import { OrderPaymentCurrency } from '../../domain/value-object/oder-payment/order-payment-currency';
 import { OrderTotal } from 'src/order/domain/value-object/order-total';
 import { OrderPaymentTotal } from 'src/order/domain/value-object/oder-payment/order-payment-total';
+import { PaymentMethodId } from 'src/payment-method/domain/value-objects/payment-method-id';
 
 export class PaymentMapper implements IMapper<OrderPayment, Payment> {
 
@@ -17,7 +18,8 @@ export class PaymentMapper implements IMapper<OrderPayment, Payment> {
             domain.Id.Id,
             domain.AmountPayment().Total,
             domain.NameMethod().Name(),
-            domain.CurrencyPayment().Currency
+            domain.CurrencyPayment().Currency,
+            //domain.PaymentMethodId() ? domain.PaymentMethodId().Id : null
         )
 
         return pago_orm
@@ -29,7 +31,8 @@ export class PaymentMapper implements IMapper<OrderPayment, Payment> {
             OrderPaymentId.create(persistence.id),
             OrderPaymentName.create(persistence.metodo),
             OrderPaymentCurrency.create(persistence.moneda),
-            OrderPaymentTotal.create(persistence.monto)
+            OrderPaymentTotal.create(persistence.monto),
+            //persistence.id_metodo ? PaymentMethodId.create(persistence.id_metodo) : null
         )
 
         return pago
