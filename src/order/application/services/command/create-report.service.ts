@@ -7,7 +7,7 @@ import { IdGenerator } from "src/common/application/id-generator/id-generator.in
 import { OrderReport } from "src/order/domain/entites/order-report";
 import { OrderReportText } from "src/order/domain/value-object/order-report/order-report-text";
 import { OrderReportId } from "src/order/domain/value-object/order-report/order-report-id";
-import { EnumOrderEstados } from "@src/order/domain/enum/order-estados-enum";
+import { EnumOrderEstados } from "src/order/domain/enum/order-estados-enum";
 
 export class CreateReportService implements
     IApplicationService<CreateReportServiceEntryDTO, CreateReportServiceResponseDTO> {
