@@ -47,7 +47,7 @@ export class GetPastOrdersService implements IApplicationService<GetPastOrdersSe
                     id: combo.Id.Value,
                     quantity: combo.Cantidad().Value
                 })),
-                orderReciviedDate: orden.Fecha_entrega ? orden.Fecha_entrega.Date_creation : null,
+                orderReciviedDate: orden.Fecha_entrega ? orden.Fecha_entrega.ReciviedDate : null,
                 orderReport: orden.Reporte ? orden.Reporte.Texto().Texto : null,
                 orderPayment: orden.Payment ? {
                     amount: orden.Payment.AmountPayment().Total,

@@ -24,6 +24,8 @@ import { OrderDiscount } from "./value-object/order-discount";
 import { OrderSubTotal } from "./value-object/order-subtotal";
 import { OrderShippingFee } from "./value-object/order-shipping-fee";
 import { OrderInstructions } from "./value-object/order-instructions";
+import { OrderReciviedDateModified } from "./domain-event/order-recivied-date-modified-event";
+import { OrderProcessed } from "./domain-event/order-processed-event";
 
 export class Order extends AggregateRoot<OrderId> {
 
@@ -77,7 +79,7 @@ export class Order extends AggregateRoot<OrderId> {
     }
 
     get Fecha_entrega() {
-        return this.fecha_creacion
+        return this.fecha_entrega
     }
 
     get Monto() {
@@ -129,25 +131,40 @@ export class Order extends AggregateRoot<OrderId> {
 
         if (!this.estado.equals(OrderEstado.create(estado))) {
 
-            if (estado === EnumOrderEstados.EN_CAMINO)
+            if(estado === EnumOrderEstados.BEING_PROCESSED)
+                this.changeStateOrderProcessed()
+
+            if (estado === EnumOrderEstados.EN_CAMINO || estado === EnumOrderEstados.SHIPPED)
                 this.chnageStateOrderSent()
 
-            if (estado === EnumOrderEstados.ENTREGADA)
+            if (estado === EnumOrderEstados.ENTREGADA || estado === EnumOrderEstados.DELIVERED)
                 this.changeStateOrderRecivied()
 
-            if (estado === EnumOrderEstados.CANCELED)
+            if (estado === EnumOrderEstados.CANCELLED)
                 this.cancelarOrden()
         }
+    }
+
+    private changeStateOrderProcessed(): void {
+        if (this.estado.equals(OrderEstado.create(EnumOrderEstados.CANCELED)))
+            throw new InvalidOrderState('La orden no se puede cambiar si ya fue cancelada')
+        this.estado = OrderEstado.create(EnumOrderEstados.BEING_PROCESSED)
+        this.events.push(
+            OrderProcessed.create(
+                this.Id.Id,
+                this.estado.Estado
+            )
+        )
     }
 
     private changeStateOrderRecivied(): void {
         if (this.estado.equals(OrderEstado.create(EnumOrderEstados.CANCELED)))
             throw new InvalidOrderState('La orden no se puede cambiar si ya fue cancelada')
-        this.estado = OrderEstado.create(EnumOrderEstados.ENTREGADA)
+        this.estado = OrderEstado.create(EnumOrderEstados.DELIVERED)
         this.events.push(
             OrderRecivied.create(
-                this.Id,
-                this.estado
+                this.Id.Id,
+                this.estado.Estado
             )
         )
     }
@@ -155,11 +172,11 @@ export class Order extends AggregateRoot<OrderId> {
     private chnageStateOrderSent(): void {
         if (this.estado.equals(OrderEstado.create(EnumOrderEstados.CANCELED)))
             throw new InvalidOrderState('La orden no se puede cambiar si ya fue cancelada')
-        this.estado = OrderEstado.create(EnumOrderEstados.EN_CAMINO)
+        this.estado = OrderEstado.create(EnumOrderEstados.SHIPPED)
         this.events.push(
             OrderSent.create(
-                this.Id,
-                this.estado
+                this.Id.Id,
+                this.estado.Estado
             )
         )
     }
@@ -168,7 +185,7 @@ export class Order extends AggregateRoot<OrderId> {
         if (this.estado.equals(OrderEstado.create(EnumOrderEstados.EN_CAMINO)))
             throw new InvalidOrderState('La orden no se puede cancelar debido a que esta en camino')
 
-        this.estado = OrderEstado.create(EnumOrderEstados.CANCELED)
+        this.estado = OrderEstado.create(EnumOrderEstados.CANCELLED)
         this.events.push(
             OrderCanceled.create(
                 this.Id,
@@ -203,11 +220,12 @@ export class Order extends AggregateRoot<OrderId> {
     }
 
     modifiedLocationDelivery(direccion: OrderLocationDelivery): void {
-        this
+
     }
 
-    modifiedReciviedDate(direccion: OrderReciviedDate): void {
-        this
+    modifiedReciviedDate(frecha_entrega: OrderReciviedDate): void {
+        const event = OrderReciviedDateModified.create(this.Id.Id, frecha_entrega.ReciviedDate)
+        this.onEvent(event)
     }
 
     protected applyEvent(event: DomainEvent): void {
@@ -229,6 +247,10 @@ export class Order extends AggregateRoot<OrderId> {
                     OrderSubTotal.create(orderTotalCalculated.subTotal),
                     OrderShippingFee.create(orderTotalCalculated.shippingFee)
                 )
+                break;
+            case 'OrderReciviedDateModified':
+                const evento = event as OrderReciviedDateModified
+                this.fecha_entrega = OrderReciviedDate.create(evento.fecha_entrega)
                 break;
         }
     }

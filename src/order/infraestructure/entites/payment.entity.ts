@@ -20,24 +20,23 @@ export class Payment {
     @Column({ type: 'enum', enum: Moneda })
     moneda: Moneda
 
-    /*@Column({ name: 'id_metodo', type: "uuid", unique: false, nullable: true })
+    @Column({ name: 'id_metodo', type: "uuid", unique: false, nullable: true })
     id_metodo: string
 
-    @OneToOne(() => OrmPaymentMethod, { eager: true })
-    @JoinColumn({ name: 'id_metodo' })
-    metodo_pago: OrmPaymentMethod*/
 
     static create(
         id: string,
         monto: number,
         metodo: EnumPaymentMethod,
         moneda: Moneda,
+        id_metodo?: string,
     ) {
         const pago = new Payment()
         pago.id = id
         pago.monto = monto
         pago.metodo = metodo
         pago.moneda = moneda
+        pago.id_metodo = id_metodo
         return pago
     }
 

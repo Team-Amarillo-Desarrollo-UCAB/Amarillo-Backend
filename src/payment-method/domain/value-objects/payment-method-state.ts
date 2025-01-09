@@ -8,7 +8,7 @@ export class PaymentMethodState implements IValueObject<PaymentMethodState> {
         this.active = active
     }
 
-    Value(){
+    Value(): boolean{
         return this.active
     }
 

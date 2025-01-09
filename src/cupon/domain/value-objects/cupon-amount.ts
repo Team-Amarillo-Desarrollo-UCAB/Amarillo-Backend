@@ -1,4 +1,5 @@
 import { IValueObject } from "src/common/domain/value-object/value-object.interface";
+import { InvalidCuponAmount } from "../domain-exceptions/invalid-cupon-amount";
 export class CuponAmount implements IValueObject<CuponAmount>{
 
     protected constructor(
@@ -6,7 +7,7 @@ export class CuponAmount implements IValueObject<CuponAmount>{
     ){
 
         if(ammount <= 0)
-            throw new Error('El monto del cupon no puede ser menor o igual a 0');
+            throw new InvalidCuponAmount('El monto del cupon no puede ser menor o igual a 0');
 
     }
 

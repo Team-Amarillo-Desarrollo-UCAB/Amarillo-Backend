@@ -90,7 +90,7 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
         const order = OrmOrder.createWithUser(
             domain.Id.Id,
             domain.Fecha_creacion.Date_creation,
-            domain.Fecha_entrega.Date_creation,
+            domain.Fecha_entrega.ReciviedDate,
             domain.Direccion.Longitud,
             domain.Direccion.Latitud,
             domain.Direccion.Direccion,
