@@ -69,7 +69,7 @@ import { GetAllCategoriesResponseDTO } from '../../../category/infraestructure/D
 import { OrmAuditingRepository } from 'src/common/infraestructure/auditing/repositories/orm-auditing-repository';
 import { OrmAccountRepository } from 'src/user/infraestructure/repositories/orm-repositories/orm-account-repository';
 import { SecurityDecorator } from 'src/common/application/application-services/decorators/security-decorator/security-decorator';
-import { AuditingDecorator } from 'src/common/application/auditing/auditing.decorator';
+import { AuditingDecorator } from 'src/common/application/application-services/decorators/auditing-decorator/auditing.decorator';
 
 @ApiTags("Product")
 @Controller("product")

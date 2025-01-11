@@ -35,7 +35,7 @@ import { EventBus } from 'src/common/infraestructure/event-bus/event-bus';
 import { ExceptionDecorator } from 'src/common/application/application-services/decorators/exception-decorator/exception.decorator';
 import { PerformanceDecorator } from 'src/common/application/application-services/decorators/performance-decorator/performance-decorator';
 import { SecurityDecorator } from 'src/common/application/application-services/decorators/security-decorator/security-decorator';
-import { AuditingDecorator } from 'src/common/application/auditing/auditing.decorator';
+import { AuditingDecorator } from 'src/common/application/application-services/decorators/auditing-decorator/auditing.decorator';
 import { HttpExceptionHandler } from 'src/common/infraestructure/exception-handler/http-exception-handler-code';
 import { UpdateDiscountApplicationService } from 'src/discount/application/services/commands/update-discount.service';
 import { GetUser } from 'src/auth/infraestructure/jwt/decorator/get-user.param.decorator';

@@ -14,6 +14,10 @@ export class ProductRepositoryMock implements IProductRepository {
         return Result.success<Product>(product, 200)
     }
 
+    async createProduct(p:Product): Promise<void> {
+        this.productos.push(p);
+    }
+
     updateProductAggregate(product: Product): Promise<Result<Product>> {
         throw new Error("Method not implemented.");
     }
