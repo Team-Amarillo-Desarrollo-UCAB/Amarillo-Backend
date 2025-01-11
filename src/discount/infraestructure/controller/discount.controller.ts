@@ -203,10 +203,18 @@ export class DiscountController {
     if (!result.isSuccess())
       return result.Error
 
-    const response: GetAllDiscountsResponseDTO[] = {
-      ...result.Value,
-    }
+        const response: GetAllDiscountsResponseDTO[] = result.Value.map((d) => ({
 
+            id: d.id,
+            name:d.name,
+            description:d.description,
+            percentage:d.percentage,
+            initDate: d.initDate,
+            expireDate: d.expireDate,
+            image: d.image
+
+
+          }));
     return response
   }
   @UseGuards(JwtAuthGuard)

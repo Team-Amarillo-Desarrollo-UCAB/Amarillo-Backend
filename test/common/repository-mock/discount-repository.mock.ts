@@ -16,8 +16,19 @@ export class DiscountMockRepository implements IDiscountRepository{
     findAllDiscounts(page: number, perpage: number): Promise<Result<Discount[]>> {
         throw new Error("Method not implemented.");
     }
-    findDiscountById(id: string): Promise<Result<Discount>> {
-        throw new Error("Method not implemented.");
+    async findDiscountById(id: string): Promise<Result<Discount>> {
+        const discount = this.discounts.find(
+            (discount) => discount.Id.Value === id,
+          );
+          if (discount === undefined) {
+            return Result.fail<Discount>(
+              new Error(`Discount with id ${id} not found`),
+              404,
+              `Discount with id ${id} not found`,
+            );
+          }
+          return Result.success<Discount>(discount, 200);
+          
     }
     updateDiscount(discount: Discount): Promise<Result<Discount>> {
         throw new Error("Method not implemented.");

@@ -27,7 +27,7 @@ export class GetCuponByUserService implements
                 return {
                     id_cupon: cupon.Id.Id(),
                     code: cupon.Code(),
-                    amount: cupon.Amount(),
+                    amount: Number(cupon.Amount()),
                     expiration_date: cupon.ExpirationDate(),
                     creation_date: cupon.CreationDate()
                 }

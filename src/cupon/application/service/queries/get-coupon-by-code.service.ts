@@ -24,7 +24,7 @@ export class GetCouponByCodeService implements IApplicationService<GetCouponByCo
         const response: GetCouponByCodeServiceResponseDTO = {
             code: coupon.Value.Code(),
             expiration_date: coupon.Value.ExpirationDate(),
-            amount: coupon.Value.Amount()
+            amount: Number(coupon.Value.Amount())
         }
 
         return Result.success(response,202)
