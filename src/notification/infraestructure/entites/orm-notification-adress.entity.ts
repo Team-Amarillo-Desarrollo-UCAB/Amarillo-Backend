@@ -3,10 +3,10 @@ import { Column, Entity, PrimaryColumn } from "typeorm";
 @Entity({ name: "notification-addres"})
 export class OrmNotificationAdressEntity {
 
-    @PrimaryColumn({ type: "varchar" })
+    @PrimaryColumn({ type: "varchar", name: "token" })
     token: string
 
-    @Column({ nullable: false })
+    @Column({ nullable: false, type: "uuid", name: "user_id" })
     user_id: string;
 
     static create(
