@@ -34,7 +34,7 @@ import { isNumber } from "class-validator"
 import { OrmAuditingRepository } from "src/common/infraestructure/auditing/repositories/orm-auditing-repository"
 import { OrmAccountRepository } from "src/user/infraestructure/repositories/orm-repositories/orm-account-repository"
 import { SecurityDecorator } from "src/common/application/application-services/decorators/security-decorator/security-decorator"
-import { AuditingDecorator } from "src/common/application/auditing/auditing.decorator"
+import { AuditingDecorator } from "src/common/application/application-services/decorators/auditing-decorator/auditing.decorator"
 
 @ApiTags("Cupon")
 @Controller('cupon')
@@ -318,7 +318,7 @@ export class CuponController {
         // Paso 4: Transformar la respuesta del servicio en un DTO de infraestructura
         const infraResponseDto: DeleteCouponResponseDto = {
             deletedId: result.Value.cuponId,
-            message: 'Categoría eliminada exitosamente.',
+            message: 'Cupon eliminado exitosamente.',
         };
 
         // Paso 5: Retornar el DTO de infraestructura

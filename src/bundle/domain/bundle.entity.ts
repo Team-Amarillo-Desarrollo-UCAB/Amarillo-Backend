@@ -23,6 +23,8 @@ import { BundleDiscountModified } from "./events/bundle-discount-modified";
 import { BundleProductsModified } from "./events/bundle-products-modified-event";
 import { BundleCategoryModified } from "./events/bundle-category-modified-event";
 import { BundleImagesModified } from "./events/bundle-images-modified-event";
+import { InvalidBundleRepeatedProductException } from "./exceptions/invalid-bundle-repeated-product.exception";
+import { InvalidBundleRepeatedCategoryException } from "./exceptions/invalid-bundle-repeated-category.exception";
 
 export class Bundle extends AggregateRoot<BundleID> {
     // Definición de atributos de la entidad
@@ -268,6 +270,28 @@ export class Bundle extends AggregateRoot<BundleID> {
       ) {
         throw new InvalidBundleException("ERROR: El bundle debe ser creado correctamente con sus propiedades obligatorias");
       }
+    
+      if (
+        this.bundleProducts.map(product => product.Id)
+          .some((id, index, array) => array.indexOf(id) !== index)
+      ) {
+        throw new InvalidBundleRepeatedProductException(
+          "ERROR: No se permiten productos duplicados en el bundle."
+        );
+      }
+
+      if (
+        this.bundleCategories.map(category => category.Value)
+          .some((value, index, array) => array.indexOf(value) !== index)
+      ) {
+        throw new InvalidBundleRepeatedCategoryException(
+          "ERROR: No se permiten categorías duplicadas en el bundle."
+        );
+      }
+
+      console.log("Validación exitosa. No se encontraron problemas en el bundle.");
+
+      
     }
 
     decreaseStock(stock: BundleStock) {

@@ -1,10 +1,10 @@
 import { Result } from "src/common/domain/result-handler/Result"
-import { IApplicationService } from "../application-services/application-service.interface"
-import { ApplicationServiceDecorator } from "../application-services/decorators/application-service.decorator"
-import { ApplicationServiceEntryDto } from "../application-services/DTO/application-service-entry.dto"
-import { IdGenerator } from "../id-generator/id-generator.interface"
-import { AuditingDto } from "./dto/auditing.dto"
-import { IAuditingRepository } from "./repositories/auditing-repository.interface"
+import { IApplicationService } from "../../application-service.interface"
+import { ApplicationServiceDecorator } from "../application-service.decorator"
+import { ApplicationServiceEntryDto } from "../../DTO/application-service-entry.dto"
+import { IdGenerator } from "../../../id-generator/id-generator.interface"
+import { AuditingDto } from "../../../auditing/dto/auditing.dto"
+import { IAuditingRepository } from "../../../auditing/repositories/auditing-repository.interface"
 
 
 

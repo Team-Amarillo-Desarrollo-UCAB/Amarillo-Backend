@@ -21,7 +21,7 @@ export class DiscountObjectMother{
             DiscountID.create(await idGenerator.generateId()),
             DiscountName.create(name),
             DiscountDescription.create('descripcion del descuento'),
-            DiscountPercentage.create(5),
+            DiscountPercentage.create(0.1),
             DiscountStartDate.create(new Date(2025, 0, 1)),
             Deadline.create(new Date(2026, 0, 1)),
             DiscountImage.create('www.examplediscount.com')
