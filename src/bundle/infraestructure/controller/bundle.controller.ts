@@ -57,7 +57,7 @@ import { DeleteBundleServiceEntryDto } from 'src/bundle/application/dto/entry/de
 import { DeleteBundleApplicationService } from 'src/bundle/application/services/commands/delete-bundle.service';
 import { JwtAuthGuard } from 'src/auth/infraestructure/jwt/decorator/jwt-auth.guard';
 import { GetUser } from 'src/auth/infraestructure/jwt/decorator/get-user.param.decorator';
-import { AuditingDecorator } from 'src/common/application/auditing/auditing.decorator';
+import { AuditingDecorator } from 'src/common/application/application-services/decorators/auditing-decorator/auditing.decorator';
 import { OrmAuditingRepository } from 'src/common/infraestructure/auditing/repositories/orm-auditing-repository';
 import { OrmUserRepository } from 'src/user/infraestructure/repositories/orm-repositories/orm-user-repository';
 import { UserMapper } from 'src/user/infraestructure/mappers/orm-mapper/user-mapper';
