@@ -74,8 +74,8 @@ export class NotificationController {
         return response
     }
 
-    @Cron(CronExpression.EVERY_DAY_AT_7AM)
-    @Get('goodday')
+   // @Cron(CronExpression.EVERY_DAY_AT_7AM)
+    @Get('goodday')  
     async goodDayNotification() {
         const service = new ExceptionDecorator(
             new LoggingDecorator(
