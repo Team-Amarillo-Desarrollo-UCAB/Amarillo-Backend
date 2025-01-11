@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Logger, Post, UseGuards } from "@nestjs/common"
+import { Body, Controller, Get, Inject, Logger, Param, Post, Query, UseGuards } from "@nestjs/common"
 import { DataSource } from "typeorm"
 
 import { IPushSender } from "src/common/application/push-sender/push-sender.interface"
@@ -22,6 +22,13 @@ import { NativeLogger } from "src/common/infraestructure/logger/logger"
 import { HttpExceptionHandler } from "src/common/infraestructure/exception-handler/http-exception-handler-code"
 import { Cron, CronExpression } from "@nestjs/schedule"
 import { NotifyGoodDayInfraService } from "../services/notification-services/notify-good-day-services.service"
+import { NotifyProductsByNamesServiceEntryInfrastructureDTO } from "./dto/entry/notify-products-by-names-infra-entry.dto"
+import { NotifyProductsByNameService } from "../services/notification-services/notify-products-by-name.service"
+import { OrmProductRepository } from "src/product/infraestructure/repositories/product-repository"
+import { OrmCategoryMapper } from "src/category/infraestructure/mappers/orm-category-mapper"
+import { ProductMapper } from "src/product/infraestructure/mappers/product-mapper"
+import { OrmCategoryRepository } from "src/category/infraestructure/repositories/orm-category-repository"
+import { NotifyProductsByNamesServiceEntryDTO } from "../services/dto/entry/notify-products-by-names-entry.dto"
 
 @ApiTags('Notification')
 @Controller('notifications')
@@ -31,16 +38,30 @@ export class NotificationController {
     private readonly notiAlertRepository: INotificationAlertRepository
     private readonly pushNotifier: IPushSender
     private readonly uuidGenerator: IdGenerator<string>
+    private readonly productRepository: OrmProductRepository
     private readonly logger: Logger
+    private readonly categoryMapper: OrmCategoryMapper
 
     constructor(
-        @Inject('DataSource') dataSource: DataSource,
+        @Inject('DataSource') private readonly dataSource: DataSource,
     ) {
         this.logger = new Logger('NotificationController')
         this.notiAddressRepository = new OrmNotificationAddressRepository(dataSource)
         this.notiAlertRepository = new OrmNotificationAlertRepository(dataSource)
         this.uuidGenerator = new UuidGenerator()
+        this.categoryMapper = new OrmCategoryMapper()
         this.pushNotifier = FirebaseNotifier.getInstance()
+        this.productRepository = new OrmProductRepository(
+                  new ProductMapper(
+                    this.categoryMapper,
+                    new OrmCategoryRepository(
+                      this.categoryMapper,
+                      dataSource
+                    )
+                  ),
+                  this.dataSource
+                )
+        
     }
 
     @Post('savetoken')
@@ -94,5 +115,37 @@ export class NotificationController {
         )
         return (await service.execute({ userId: 'none' })).Value
     }
+
+    @Get('products-announcement')
+    async productsAnnouncementNotification(@Query() productsNamesDTO: NotifyProductsByNamesServiceEntryInfrastructureDTO){
+
+        const service = new ExceptionDecorator( 
+            new LoggingDecorator(
+                new PerformanceDecorator(    
+                    new NotifyProductsByNameService(
+                        this.notiAddressRepository,
+                        this.notiAlertRepository,
+                        this.productRepository,
+                        this.uuidGenerator,
+                        this.pushNotifier
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new NativeLogger(this.logger)
+            ),
+            new HttpExceptionHandler()
+        )
+
+        const entry: NotifyProductsByNamesServiceEntryDTO={
+            userId: 'none',
+            ...productsNamesDTO
+        }
+
+        const r = await service.execute(entry)
+
+        return r.Value
+
+    }
+    
 
 }
