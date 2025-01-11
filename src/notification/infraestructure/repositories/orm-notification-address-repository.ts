@@ -2,7 +2,7 @@ import { DataSource, Repository } from "typeorm"
 import { OrmNotificationAdressEntity } from "../entites/orm-notification-adress.entity"
 import { Result } from '../../../common/domain/result-handler/Result';
 import { INotificationAddressRepository } from "../interface/notification-address-repository.interface";
-import { IMapper } from "@src/common/application/mappers/mapper.interface";
+import { IMapper } from "src/common/application/mappers/mapper.interface";
 
 export class OrmNotificationAddressRepository extends Repository<OrmNotificationAdressEntity> implements
 INotificationAddressRepository
