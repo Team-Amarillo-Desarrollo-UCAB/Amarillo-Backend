@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Param, ParseUUIDPipe, Post } from "@nestjs/common";
+import { Controller, Get, Inject, Param, ParseUUIDPipe, Patch, Post } from "@nestjs/common";
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { DataSource } from "typeorm";
 
@@ -64,7 +64,7 @@ export class UserController {
   }
 
 
-  @Put('update')
+  @Patch('update')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({
