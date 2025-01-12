@@ -28,8 +28,8 @@ export class GetDiscountByIdService
       name: discount.Value.Name.Value,
       description: discount.Value.Description.Value,
       percentage: discount.Value.Percentage.Value,
-      startDate: discount.Value.StartDate.Value,
-      deadline: discount.Value.Deadline.Value,
+      initDate: discount.Value.StartDate.Value,
+      expireDate: discount.Value.Deadline.Value,
       image: discount.Value.Image?.Image
     };
 

@@ -53,7 +53,7 @@ import { JwtAuthGuard } from 'src/auth/infraestructure/jwt/decorator/jwt-auth.gu
 import { GetUser } from 'src/auth/infraestructure/jwt/decorator/get-user.param.decorator';
 import { PerformanceDecorator } from 'src/common/application/application-services/decorators/performance-decorator/performance-decorator';
 import { SecurityDecorator } from 'src/common/application/application-services/decorators/security-decorator/security-decorator';
-import { AuditingDecorator } from 'src/common/application/auditing/auditing.decorator';
+import { AuditingDecorator } from 'src/common/application/application-services/decorators/auditing-decorator/auditing.decorator';
 import { OrmAccountRepository } from 'src/user/infraestructure/repositories/orm-repositories/orm-account-repository';
 import { OrmAuditingRepository } from 'src/common/infraestructure/auditing/repositories/orm-auditing-repository';
 import { DeleteCategoryInfraResponseDto } from '../DTO/response/delete-category-infra-response.dto';
