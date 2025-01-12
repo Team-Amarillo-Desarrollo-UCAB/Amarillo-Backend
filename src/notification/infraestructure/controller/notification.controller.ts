@@ -29,6 +29,17 @@ import { OrmCategoryMapper } from "src/category/infraestructure/mappers/orm-cate
 import { ProductMapper } from "src/product/infraestructure/mappers/product-mapper"
 import { OrmCategoryRepository } from "src/category/infraestructure/repositories/orm-category-repository"
 import { NotifyProductsByNamesServiceEntryDTO } from "../services/dto/entry/notify-products-by-names-entry.dto"
+import { NotifyRecommendBundlesInfraService } from "../services/notification-services/notify-recommend-bundles-service.service"
+import { OrmBundleRepository } from "src/bundle/infraestructure/repositories/orm-bundle.repository"
+import { BundleMapper } from "src/bundle/infraestructure/mappers/bundle-mapper"
+import { NotifyBundlesByNamesServiceEntryDTO } from "../services/dto/entry/notify-bundles-by-names-service.dto"
+import { NotifyBundlesByNameService } from "../services/notification-services/notify-bundles-by-names.service"
+import { NotifyBundlesByNamesServiceEntryInfrastructureDTO } from "./dto/entry/notify-bundles-by-name-infra-entry.dto"
+import { NotifyRecommendProductsInfraService } from "../services/notification-services/notify-recommend-products.service"
+import { OrmAccountRepository } from "src/user/infraestructure/repositories/orm-repositories/orm-account-repository"
+import { OrmAuditingRepository } from "src/common/infraestructure/auditing/repositories/orm-auditing-repository"
+import { SecurityDecorator } from "src/common/application/application-services/decorators/security-decorator/security-decorator"
+import { userInfo } from "os"
 
 @ApiTags('Notification')
 @Controller('notifications')
@@ -41,6 +52,10 @@ export class NotificationController {
     private readonly productRepository: OrmProductRepository
     private readonly logger: Logger
     private readonly categoryMapper: OrmCategoryMapper
+    private readonly bundleRepository: OrmBundleRepository;
+    private readonly auditingRepository: OrmAuditingRepository;
+    private readonly accountUserRepository: OrmAccountRepository;
+
 
     constructor(
         @Inject('DataSource') private readonly dataSource: DataSource,
@@ -51,6 +66,8 @@ export class NotificationController {
         this.uuidGenerator = new UuidGenerator()
         this.categoryMapper = new OrmCategoryMapper()
         this.pushNotifier = FirebaseNotifier.getInstance()
+        this.auditingRepository = new OrmAuditingRepository(dataSource)  
+        this.accountUserRepository = new OrmAccountRepository(dataSource)
         this.productRepository = new OrmProductRepository(
                   new ProductMapper(
                     this.categoryMapper,
@@ -61,11 +78,16 @@ export class NotificationController {
                   ),
                   this.dataSource
                 )
+        this.bundleRepository = new OrmBundleRepository(
+            new BundleMapper(),
+            this.dataSource//
+            );
         
     }
 
     @Post('savetoken')
     @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @ApiOkResponse({
         description: 'Registrar el token de direccion de un usuario',
         type: SaveTokenAdressResponseDto
@@ -95,7 +117,7 @@ export class NotificationController {
         return response
     }
 
-   // @Cron(CronExpression.EVERY_DAY_AT_7AM)
+    @Cron(CronExpression.EVERY_DAY_AT_10AM)
     @Get('goodday')  
     async goodDayNotification() {
         const service = new ExceptionDecorator(
@@ -117,9 +139,19 @@ export class NotificationController {
     }
 
     @Get('products-announcement')
-    async productsAnnouncementNotification(@Query() productsNamesDTO: NotifyProductsByNamesServiceEntryInfrastructureDTO){
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    async productsAnnouncementNotification(@Query() productsNamesDTO: NotifyProductsByNamesServiceEntryInfrastructureDTO,@GetUser() user){
+
+        if (!Array.isArray(productsNamesDTO.products_names)) {
+            productsNamesDTO.products_names = [productsNamesDTO.products_names];
+        }
+
+        const allowedRoles = ['ADMIN']
+
 
         const service = new ExceptionDecorator( 
+        new SecurityDecorator(
             new LoggingDecorator(
                 new PerformanceDecorator(    
                     new NotifyProductsByNameService(
@@ -132,20 +164,117 @@ export class NotificationController {
                     new NativeLogger(this.logger)
                 ),
                 new NativeLogger(this.logger)
-            ),
+            )
+            ,this.accountUserRepository,
+            allowedRoles
+        )
+        ,
             new HttpExceptionHandler()
         )
 
         const entry: NotifyProductsByNamesServiceEntryDTO={
-            userId: 'none',
+            userId: user.id,
             ...productsNamesDTO
         }
 
-        const r = await service.execute(entry)
+        const r = await service.execute(entry)//
 
         return r.Value
 
     }
+
+    @Cron(CronExpression.EVERY_DAY_AT_4PM)
+    @Get('bundle-recommend')
+    async recommendBundlesRandomNotification() {
+        const service = new ExceptionDecorator( 
+            new LoggingDecorator(
+                new PerformanceDecorator(
+                    new NotifyRecommendBundlesInfraService( 
+                        this.notiAddressRepository,  
+                        this.notiAlertRepository,
+                        this.bundleRepository,
+                        this.uuidGenerator,
+                        this.pushNotifier
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new NativeLogger(this.logger)
+            ),
+            new HttpExceptionHandler()    
+        )
+
+
+        return (await service.execute( { userId: 'none' } )).Value
+    }
+
+    @Cron(CronExpression.EVERY_DAY_AT_4PM)
+    @Get('product-recommend')
+    async recommendProductsRandomNotification() {
+        const service = new ExceptionDecorator( 
+            new LoggingDecorator(
+                new PerformanceDecorator(
+                    new NotifyRecommendProductsInfraService( 
+                        this.notiAddressRepository,  
+                        this.notiAlertRepository,
+                        this.productRepository,
+                        this.uuidGenerator,
+                        this.pushNotifier
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new NativeLogger(this.logger)
+            ),
+            new HttpExceptionHandler()    
+        )
+        return (await service.execute( { userId: 'none' } )).Value
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @Get('bundles-announcement')
+    async bundlesAnnouncementNotification(@Query() bundlesNamesDTO: NotifyBundlesByNamesServiceEntryInfrastructureDTO,@GetUser() user) {
+    
+        if (!Array.isArray(bundlesNamesDTO.bundles_names)) {
+            bundlesNamesDTO.bundles_names = [bundlesNamesDTO.bundles_names];
+        }
+    
+
+        const allowedRoles = ['ADMIN']
+
+
+        const service = new ExceptionDecorator( 
+        new SecurityDecorator(
+            new LoggingDecorator(
+                new PerformanceDecorator(    
+                    new NotifyBundlesByNameService(
+                        this.notiAddressRepository,
+                        this.notiAlertRepository,
+                        this.bundleRepository,
+                        this.uuidGenerator,
+                        this.pushNotifier
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new NativeLogger(this.logger)
+            )
+            ,this.accountUserRepository,
+            allowedRoles
+        )
+        ,
+            new HttpExceptionHandler()
+        )
+    
+        const entry: NotifyBundlesByNamesServiceEntryDTO = {
+            userId: user.id,
+            ...bundlesNamesDTO
+        };
+    
+        const r = await service.execute(entry);
+    
+        return r.Value;
+    }
+    
+
     
 
 }

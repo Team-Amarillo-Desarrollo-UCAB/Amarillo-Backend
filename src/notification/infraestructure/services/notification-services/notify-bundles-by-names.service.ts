@@ -2,36 +2,36 @@ import { IApplicationService } from "src/common/application/application-services
 import { Result } from "src/common/domain/result-handler/Result";
 import { INotificationAddressRepository } from "../../interface/notification-address-repository.interface";
 import { INotificationAlertRepository } from "../../interface/notification-alert-repository.interface";
-import { IProductRepository } from "src/product/domain/repositories/product-repository.interface";
+import { IBundleRepository } from "src/bundle/domain/repositories/bundle-repository.interface";
 import { IdGenerator } from "src/common/application/id-generator/id-generator.interface";
 import { IPushSender } from "src/common/application/push-sender/push-sender.interface";
 import { PushNotificationDto } from "src/common/application/push-sender/dto/send-notification-dto";
-import { NotifyProductsByNamesServiceEntryDTO } from "../dto/entry/notify-products-by-names-entry.dto";
+import { NotifyBundlesByNamesServiceEntryDTO } from "../dto/entry/notify-bundles-by-names-service.dto";
 
-export class NotifyProductsByNameService implements 
-    IApplicationService<NotifyProductsByNamesServiceEntryDTO, string> {
+export class NotifyBundlesByNameService implements 
+    IApplicationService<NotifyBundlesByNamesServiceEntryDTO, string> {
 
     private readonly notiAddressRepository: INotificationAddressRepository;
     private readonly notiAlertRepository: INotificationAlertRepository;
-    private readonly productRepository: IProductRepository;
+    private readonly bundleRepository: IBundleRepository;
     private readonly uuidGenerator: IdGenerator<string>;
     private readonly pushNotifier: IPushSender;
 
     constructor(
         notiAddressRepository: INotificationAddressRepository,
         notiAlertRepository: INotificationAlertRepository,
-        productRepository: IProductRepository,
+        bundleRepository: IBundleRepository,
         uuidGenerator: IdGenerator<string>,
         pushNotifier: IPushSender,
     ) {
         this.notiAddressRepository = notiAddressRepository;
         this.notiAlertRepository = notiAlertRepository;
-        this.productRepository = productRepository;
+        this.bundleRepository = bundleRepository;
         this.uuidGenerator = uuidGenerator;
         this.pushNotifier = pushNotifier;
     }
 
-    async execute(data: NotifyProductsByNamesServiceEntryDTO): Promise<Result<string>> {
+    async execute(data: NotifyBundlesByNamesServiceEntryDTO): Promise<Result<string>> {
         const findTokens = await this.notiAddressRepository.findAllTokens();
         if (!findTokens.isSuccess()) {
             return Result.fail(findTokens.Error, findTokens.StatusCode, findTokens.Message);
@@ -39,15 +39,20 @@ export class NotifyProductsByNameService implements
 
         const listTokens = findTokens.Value;
 
-        for (const productName of data.products_names) {
-            const findProduct = await this.productRepository.findProductByName(productName);
-            if (!findProduct.isSuccess()) {
-                return Result.fail(findProduct.Error, findProduct.StatusCode, findProduct.Message);
+        for (const bundleName of data.bundles_names) {
+            const findBundles = await this.bundleRepository.findAllBundles(null,null,null,bundleName);
+            if (!findBundles.isSuccess()) {
+                return Result.fail(findBundles.Error, findBundles.StatusCode, findBundles.Message);
             }
 
-            const product = findProduct.Value;
-            const pushTitle = `PIDETE YA: ${product.Name} disponible!`;
-            const pushBody = `${product.Name} disponible por ${product.Price} ${product.Moneda}`;
+            const bundles = findBundles.Value;
+            const bundle = bundles.find(b => b.name.Value === bundleName);
+            if (!bundle) {
+                console.error(`No se encontró un bundle con el nombre: ${bundleName}`);
+                continue; 
+            }            
+            const pushTitle = `PIDE YA EL COMBO ${bundle.name.Value}!`;
+            const pushBody = `${bundle.name.Value} disponible por ${bundle.price.Price} ${bundle.price.Currency}`;
 
             for (const tokenInfo of listTokens) {
                 try {
@@ -74,7 +79,7 @@ export class NotifyProductsByNameService implements
             
         }
 
-        return Result.success("Notifications for products by names sent successfully", 200);
+        return Result.success("Notifications for bundles by names sent successfully", 200);
     }
 
     get name(): string {
