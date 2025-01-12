@@ -3,7 +3,7 @@ export interface GetDiscountByIdServiceResponseDto{
     name: string;
     description: string;
     percentage: number;
-    startDate: Date;
-    deadline: Date;
+    initDate: Date;
+    expireDate: Date;
     image?: string;
 }
