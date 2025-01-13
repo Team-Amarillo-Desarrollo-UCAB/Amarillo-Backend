@@ -9,10 +9,10 @@ export class OrderCreated extends DomainEvent {
         public id: string,
         public estado: EnumOrderEstados,
         public fecha_creacion: Date,
-        public fecha_entrega: Date,
         public productos: OrderProduct[],
         public bundles: OrderBundle[],
-        public ubicacion: OrderLocationDelivery
+        public ubicacion: OrderLocationDelivery,
+        public fecha_entrega?: Date,
     ) {
         super();
     }
@@ -21,19 +21,19 @@ export class OrderCreated extends DomainEvent {
         id: string,
         estado: EnumOrderEstados,
         fecha_creacion: Date,
-        fecha_entrega: Date,
         productos: OrderProduct[],
         bundles: OrderBundle[],
-        ubicacion: OrderLocationDelivery
+        ubicacion: OrderLocationDelivery,
+        fecha_entrega?: Date,
     ): OrderCreated {
         return new OrderCreated(
             id,
             estado,
             fecha_creacion,
-            fecha_entrega,
             productos,
             bundles,
-            ubicacion
+            ubicacion,
+            fecha_entrega
         );
     }
 }

@@ -4,18 +4,23 @@ import { Result } from "src/common/domain/result-handler/Result";
 import { IOrderRepository } from "src/order/domain/repositories/order-repository.interface";
 import { IOrderReembolsoPort } from "src/common/domain/domain-service/order-reembolso.port";
 import { RefundOrderServiceResponseDTO } from "../../DTO/response/refund-order-service.response.dto";
+import { IEventHandler } from "src/common/application/event-handler/event-handler.interface";
+import { OrderRefunded } from "src/order/domain/domain-event/order-refunded-event";
 
 export class RefundOrderService implements IApplicationService<RefundOrderServiceEntryDTO, RefundOrderServiceResponseDTO> {
 
     private readonly orderRepository: IOrderRepository
     private readonly refundService: IOrderReembolsoPort
+    private readonly eventHandler: IEventHandler
 
     constructor(
         orderRepository: IOrderRepository,
-        refundService: IOrderReembolsoPort
+        refundService: IOrderReembolsoPort,
+        eventHandler: IEventHandler
     ) {
         this.orderRepository = orderRepository
         this.refundService = refundService
+        this.eventHandler = eventHandler
     }
 
     async execute(data: RefundOrderServiceEntryDTO): Promise<Result<RefundOrderServiceResponseDTO>> {
@@ -26,6 +31,12 @@ export class RefundOrderService implements IApplicationService<RefundOrderServic
         const reembolso = await this.refundService.execute(find_orden.Value)
         if (!reembolso.isSuccess())
             return Result.fail(reembolso.Error, reembolso.StatusCode, reembolso.Message)
+
+        await this.eventHandler.publish([OrderRefunded.create(
+            data.id_orden,
+            find_orden.Value.Payment.AmountPayment().Total,
+            find_orden.Value.Payment.CurrencyPayment().Currency
+        )])
 
         const response: RefundOrderServiceResponseDTO = {
             id_orden: find_orden.Value.Id.Id,

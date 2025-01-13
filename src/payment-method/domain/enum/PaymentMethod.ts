@@ -3,5 +3,7 @@ export enum EnumPaymentMethod {
     CREDIT = "Credit",
     DEBIT = "Debit",
     STRIPE = "Stripe",
-    EFECTIVO ='Efectivo'
+    EFECTIVO ='Efectivo',
+    'PAGO MOVIL'='Pago movil',
+    ZELLE = 'Zelle'
 }

@@ -23,7 +23,6 @@ export class Payment {
     @Column({ name: 'id_metodo', type: "uuid", unique: false, nullable: true })
     id_metodo: string
 
-
     static create(
         id: string,
         monto: number,

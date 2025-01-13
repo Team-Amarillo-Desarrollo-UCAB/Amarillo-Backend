@@ -79,13 +79,13 @@ export class UserController {
 
     const userUpdateDto: UpdateUserProfileServiceEntryDto = { userId: user.id, ...updateEntryDTO }
     const updateUserProfileService =
-         new ExceptionDecorator(
-      new LoggingDecorator(
-               new PerformanceDecorator(
-        new UpdateUserProfileAplicationService(
-          this.userRepository, eventBus
-        ),
-        new NativeLogger(this.logger),
+      new ExceptionDecorator(
+        new LoggingDecorator(
+          new PerformanceDecorator(
+            new UpdateUserProfileAplicationService(
+              this.userRepository, eventBus
+            ),
+            new NativeLogger(this.logger),
           ),
           new NativeLogger(this.logger),
         ), new HttpExceptionHandler()
@@ -94,20 +94,20 @@ export class UserController {
     const resultUpdate = (await updateUserProfileService.execute(userUpdateDto))
 
     const updateUserProfileInfraService =
-          new ExceptionDecorator(
-            new LoggingDecorator(
-              new PerformanceDecorator(
-      new UpdateUserProfileInfraService(
-        this.ormAccountRepository,
-        this.idGenerator,
-        this.encryptor,
-        this.fileUploader
-      ),
-              new NativeLogger(this.logger),
+      new ExceptionDecorator(
+        new LoggingDecorator(
+          new PerformanceDecorator(
+            new UpdateUserProfileInfraService(
+              this.ormAccountRepository,
+              this.idGenerator,
+              this.encryptor,
+              this.fileUploader
             ),
             new NativeLogger(this.logger),
           ),
-          new HttpExceptionHandler(),
+          new NativeLogger(this.logger),
+        ),
+        new HttpExceptionHandler(),
       );
 
     if (updateEntryDTO.password || updateEntryDTO.image) {
@@ -158,18 +158,18 @@ export class UserController {
   //   return response
   // }
 
-      @Get('/:id')
-      @UseGuards(JwtAuthGuard)
-      @ApiOkResponse({ description: 'Obtener usuario por id', type: CurrentUserSwaggerResponseDto })
-      @ApiBearerAuth()
-      async currentUser(@GetUser() user, @Param('id', ParseUUIDPipe) id: string) {
-          return {
-              id: user.id,
-              email: user.email,
-              name: user.name,
-              phone: user.phone,
-              image: user.image,
-              type: user.type
-          }
-      }
+  @Get('/:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ description: 'Obtener usuario por id', type: CurrentUserSwaggerResponseDto })
+  @ApiBearerAuth()
+  async currentUser(@GetUser() user, @Param('id', ParseUUIDPipe) id: string) {
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      image: user.image,
+      type: user.type
+    }
+  }
 }
