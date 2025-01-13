@@ -26,6 +26,7 @@ import { OrderShippingFee } from "./value-object/order-shipping-fee";
 import { OrderInstructions } from "./value-object/order-instructions";
 import { OrderReciviedDateModified } from "./domain-event/order-recivied-date-modified-event";
 import { OrderProcessed } from "./domain-event/order-processed-event";
+import { OrderStateChanged } from "./domain-event/order-state-changed";
 
 export class Order extends AggregateRoot<OrderId> {
 
@@ -56,10 +57,10 @@ export class Order extends AggregateRoot<OrderId> {
             id.Id,
             estado.Estado,
             fecha_creacion.Date_creation,
-            fecha_entrega.ReciviedDate,
             productos,
             bundles,
-            ubicacion
+            ubicacion,
+            fecha_entrega ? fecha_entrega.ReciviedDate : null
         )
 
         super(id, event)
@@ -78,8 +79,8 @@ export class Order extends AggregateRoot<OrderId> {
         return this.fecha_creacion
     }
 
-    get Fecha_entrega() {
-        return this.fecha_entrega
+    get Fecha_entrega(): OrderReciviedDate {
+        return this.fecha_entrega ? this.fecha_entrega : null
     }
 
     get Monto() {
@@ -131,7 +132,7 @@ export class Order extends AggregateRoot<OrderId> {
 
         if (!this.estado.equals(OrderEstado.create(estado))) {
 
-            if(estado === EnumOrderEstados.BEING_PROCESSED)
+            if (estado === EnumOrderEstados.BEING_PROCESSED)
                 this.changeStateOrderProcessed()
 
             if (estado === EnumOrderEstados.EN_CAMINO || estado === EnumOrderEstados.SHIPPED)
@@ -150,7 +151,7 @@ export class Order extends AggregateRoot<OrderId> {
             throw new InvalidOrderState('La orden no se puede cambiar si ya fue cancelada')
         this.estado = OrderEstado.create(EnumOrderEstados.BEING_PROCESSED)
         this.events.push(
-            OrderProcessed.create(
+            OrderStateChanged.create(
                 this.Id.Id,
                 this.estado.Estado
             )
@@ -162,7 +163,7 @@ export class Order extends AggregateRoot<OrderId> {
             throw new InvalidOrderState('La orden no se puede cambiar si ya fue cancelada')
         this.estado = OrderEstado.create(EnumOrderEstados.DELIVERED)
         this.events.push(
-            OrderRecivied.create(
+            OrderStateChanged.create(
                 this.Id.Id,
                 this.estado.Estado
             )
@@ -174,7 +175,7 @@ export class Order extends AggregateRoot<OrderId> {
             throw new InvalidOrderState('La orden no se puede cambiar si ya fue cancelada')
         this.estado = OrderEstado.create(EnumOrderEstados.SHIPPED)
         this.events.push(
-            OrderSent.create(
+            OrderStateChanged.create(
                 this.Id.Id,
                 this.estado.Estado
             )
@@ -187,9 +188,9 @@ export class Order extends AggregateRoot<OrderId> {
 
         this.estado = OrderEstado.create(EnumOrderEstados.CANCELLED)
         this.events.push(
-            OrderCanceled.create(
-                this.Id,
-                this.estado
+            OrderStateChanged.create(
+                this.Id.Id,
+                this.estado.Estado
             )
         )
     }
@@ -273,10 +274,10 @@ export class Order extends AggregateRoot<OrderId> {
         id: OrderId,
         estado: OrderEstado,
         fecha_creacion: OrderCreationDate,
-        fecha_entrega: OrderReciviedDate,
         ubicacion: OrderLocationDelivery,
         productos: OrderProduct[],
         bundles: OrderBundle[],
+        fecha_entrega?: OrderReciviedDate,
         userId?: UserId,
         instruccion?: OrderInstructions,
         montoTotal?: OrderTotal
@@ -300,11 +301,11 @@ export class Order extends AggregateRoot<OrderId> {
         id: OrderId,
         estado: OrderEstado,
         fecha_creacion: OrderCreationDate,
-        fecha_entrega: OrderReciviedDate,
         ubicacion: OrderLocationDelivery,
         productos: OrderProduct[],
         bundles: OrderBundle[],
         reporte: OrderReport,
+        fecha_entrega?: OrderReciviedDate,
         userId?: UserId,
         instruccion?: OrderInstructions,
         montoTotal?: OrderTotal
@@ -318,7 +319,7 @@ export class Order extends AggregateRoot<OrderId> {
             productos,
             bundles,
             instruccion,
-            fecha_entrega,
+            fecha_entrega ? fecha_entrega : null,
             ubicacion,
             montoTotal ? montoTotal : null,
             reporte

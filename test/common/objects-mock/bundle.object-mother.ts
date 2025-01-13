@@ -19,9 +19,9 @@ import { ProductRepositoryMock } from "../repository-mock/product-repository.moc
 import { Product } from "src/product/domain/product";
 import { BundleCaducityDate } from "src/bundle/domain/value-objects/bundle-caducityDate";
 
-export class BundleObjectMother{
+export class BundleObjectMother {
 
-    static async createNormalBundle(name:string){
+    static async createNormalBundle(name: string) {
 
         const c1 = await CategoryObjectMother.createNormalCategory('BunCat1')
         const c2 = await CategoryObjectMother.createNormalCategory('BunCat2')
@@ -59,19 +59,19 @@ export class BundleObjectMother{
 
         const idGenerator = new UuidGenerator();
 
-    //   id: BundleID,
-    //   bundleName: BundleName,
-    //   bundleDescription: BundleDescription,
-    //   bundleWeight: BundleWeight,
-    //   bundlePrice: BundlePrice,
-    //   bundleCategories: CategoryID[],
-    //   bundleImages: BundleImage[],
-    //   bundleStock: BundleStock,
-    //   bundleProducts: ProductId[],
-    //   bundleCaducityDate?: BundleCaducityDate,
-    //   discount?:DiscountID
+        //   id: BundleID,
+        //   bundleName: BundleName,
+        //   bundleDescription: BundleDescription,
+        //   bundleWeight: BundleWeight,
+        //   bundlePrice: BundlePrice,
+        //   bundleCategories: CategoryID[],
+        //   bundleImages: BundleImage[],
+        //   bundleStock: BundleStock,
+        //   bundleProducts: ProductId[],
+        //   bundleCaducityDate?: BundleCaducityDate,
+        //   discount?:DiscountID
 
-        const images: string[] = ["BIm1","BIm2"]
+        const images: string[] = ["BIm1", "BIm2"]
         const bundleImages = images.map(image => BundleImage.create(image));
 
 
@@ -79,16 +79,82 @@ export class BundleObjectMother{
             BundleID.create(await idGenerator.generateId()),
             BundleName.create(name),
             BundleDescription.create('Description bundle testing'),
-            BundleWeight.create(1,Measurement.KG),
-            BundlePrice.create(20,BundleCurrency.USD),
-            categories.map(i=>i.Id),
+            BundleWeight.create(1, Measurement.KG),
+            BundlePrice.create(20, BundleCurrency.USD),
+            categories.map(i => i.Id),
             bundleImages,
             BundleStock.create(25),
-            productos.map(i=>i.Id),
+            productos.map(i => i.Id),
             BundleCaducityDate.create(new Date(2026, 0, 1)),
             discount.Id
         )
 
         return normalBundle;
     }
+
+    static async createBundleWithOutDiscount(name: string) {
+
+        const c1 = await CategoryObjectMother.createNormalCategory('BunCat1')
+        const c2 = await CategoryObjectMother.createNormalCategory('BunCat2')
+
+        const p1 = await ProductObjectMother.createNormalProduct('PB1')
+        const p2 = await ProductObjectMother.createNormalProduct('PB2')
+
+
+        const categoryRepositoryMock = new CategoryMockRepository();
+
+
+        categoryRepositoryMock.createCategory(c1)
+        categoryRepositoryMock.createCategory(c2)
+
+        const categories: Category[] = []
+
+        categories.push(c1)
+        categories.push(c2)
+
+        const productRepositoryMock = new ProductRepositoryMock();
+
+        productRepositoryMock.createProduct(p1)
+        productRepositoryMock.createProduct(p2)
+
+        const productos: Product[] = []
+
+        productos.push(p1)
+        productos.push(p2)
+
+        const idGenerator = new UuidGenerator();
+
+        //   id: BundleID,
+        //   bundleName: BundleName,
+        //   bundleDescription: BundleDescription,
+        //   bundleWeight: BundleWeight,
+        //   bundlePrice: BundlePrice,
+        //   bundleCategories: CategoryID[],
+        //   bundleImages: BundleImage[],
+        //   bundleStock: BundleStock,
+        //   bundleProducts: ProductId[],
+        //   bundleCaducityDate?: BundleCaducityDate,
+        //   discount?:DiscountID
+
+        const images: string[] = ["BIm1", "BIm2"]
+        const bundleImages = images.map(image => BundleImage.create(image));
+
+
+        const normalBundle = Bundle.create(
+            BundleID.create(await idGenerator.generateId()),
+            BundleName.create(name),
+            BundleDescription.create('Description bundle testing'),
+            BundleWeight.create(1, Measurement.KG),
+            BundlePrice.create(20, BundleCurrency.USD),
+            categories.map(i => i.Id),
+            bundleImages,
+            BundleStock.create(25),
+            productos.map(i => i.Id),
+            BundleCaducityDate.create(new Date(2026, 0, 1)),
+            null
+        )
+
+        return normalBundle;
+    }
+
 }

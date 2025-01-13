@@ -23,14 +23,15 @@ export class CreateOrderCashEntryDTO {
     })
     @IsString()
     @IsNotEmpty()
-    orderReciviedDate: string
+    @IsOptional()
+    orderReciviedDate?: string
 
     @ApiProperty({
         example: "Universidad Catolica Andres Bello",
     })
     @IsString()
     @IsNotEmpty()
-    ubicacion: string
+    address: string
 
     @ApiProperty({
         example: 40.7128, // Ejemplo de latitud (por ejemplo, para Nueva York)
@@ -39,7 +40,7 @@ export class CreateOrderCashEntryDTO {
     @IsNotEmpty()
     @Min(-90)   // Mínimo valor de latitud
     @Max(90)    // Máximo valor de latitud
-    latitud: number;
+    latitude: number;
 
     @ApiProperty({
         example: -74.0060, // Ejemplo de longitud (por ejemplo, para Nueva York)
@@ -48,11 +49,15 @@ export class CreateOrderCashEntryDTO {
     @IsNotEmpty()
     @Min(-180)  // Mínimo valor de longitud
     @Max(180)   // Máximo valor de longitud
-    longitud: number;
+    longitude: number;
 
     @ApiProperty({
         description: 'Lista de productos asociados al pago',
         required: true,
+        example: [
+            { id: 'ID del producto', quantity: 2 },
+            { id: 'ID del producto', quantity: 1 },
+        ]
     })
     @IsArray()
     @IsNotEmpty()
@@ -63,12 +68,16 @@ export class CreateOrderCashEntryDTO {
     @ApiProperty({
         description: 'Lista de combos asociados al pago',
         type: [Object],
+        example: [
+            { id: 'ID del combo', quantity: 2 },
+            { id: 'ID del combo', quantity: 1 },
+        ]
     })
     @IsArray()
     @IsNotEmpty()
     @IsOptional()
     @Type(() => Object) // Aquí igualmente, transformamos los objetos en una forma estándar
-    bundles?: { id: string; quantity: number }[];
+    combos?: { id: string; quantity: number }[];
 
     @ApiProperty({
         description: 'Codigo del cupon a aplicar en la orden',

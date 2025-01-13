@@ -77,4 +77,53 @@ export class ProductObjectMother{
 
         return normalProduct;
     }
+
+    static async createProductWithOutDiscount(name:string){
+
+        const c1 = await CategoryObjectMother.createNormalCategory('ProdCat1')
+        const c2 = await CategoryObjectMother.createNormalCategory('ProdCat2')
+        //const cNot = await CategoryObjectMother.createNormalCategory('C_NOT')
+        const categoryRepositoryMock = new CategoryMockRepository();
+
+
+        categoryRepositoryMock.createCategory(c1)
+        categoryRepositoryMock.createCategory(c2)
+
+        const categories: Category[] = []
+
+        categories.push(c1)
+        categories.push(c2)
+
+        const idGenerator = new UuidGenerator();
+
+                // id: ProductId,
+                // name: ProductName,
+                // description: ProductDescription,
+                // unit: ProductUnit,
+                // images: ProductImage[],
+                // stock: ProductStock,
+                // price?: ProductPrice,
+                // categories?: CategoryID[],
+                // discount?: DiscountID,
+                // caducityDate?: ProductCaducityDate
+
+        const images: string[] = ["PIm1","PIm2"]
+        const productImages = images.map(image => ProductImage.create(image));
+
+        const normalProduct = Product.create(
+            ProductId.create(await idGenerator.generateId()),
+            ProductName.create(name),
+            ProductDescription.create('Description testing'),
+            ProductUnit.create(UnidadMedida.KG,ProductCantidadMedida.create(1)),
+            productImages,
+            ProductStock.create(15),
+            ProductPrice.create(ProductAmount.create(25),ProductCurrency.create(Moneda.USD)),
+            categories.map(i=>i.Id),
+            null,
+            ProductCaducityDate.create(new Date(2026, 0, 1))
+
+        )
+
+        return normalProduct;
+    }
 }

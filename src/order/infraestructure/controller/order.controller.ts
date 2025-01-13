@@ -86,8 +86,6 @@ import { CreateReportServiceEntryDTO } from "src/order/application/DTO/entry/cre
 import { CreateReportService } from "src/order/application/services/command/create-report.service";
 import { IShippingFee } from "src/common/domain/domain-service/shipping-fee-calculate.port";
 import { ShippingFeeDistance } from "src/common/infraestructure/domain-services-adapters/shipping-fee-distance.adapter";
-import { OrderLocationDelivery } from '../../domain/value-object/order-location-delivery';
-import { RefundOrderEntryDTO } from "../DTO/entry/refund-order-entry.dto";
 import { RefundOrderResponseDTO } from "../DTO/response/refund-order-response.dto";
 import { RefundOrderServiceEntryDTO } from "src/order/application/DTO/entry/refund-order-service.entry.dto";
 import { RefundOrderService } from "src/order/application/services/command/refund-order.service";
@@ -102,6 +100,21 @@ import { UpdateOrderInformationEntryDTO } from "../DTO/entry/update-order-inform
 import { UpdateOrderInformationResponseDTO } from "../DTO/response/update-order-information-response.dto";
 import { UpdateOrderInformationServiceEntryDTO } from "src/order/application/DTO/entry/update-order-information-service-entry.dto";
 import { UpdateOrderInformationService } from "src/order/application/services/command/update-order-information.service";
+import { PaymentMethodName } from "src/payment-method/domain/value-objects/payment-method-name";
+import { OrderStateChanged } from "src/order/domain/domain-event/order-state-changed";
+import { NotifyChangeStateOrderService } from "src/notification/infraestructure/services/notification-services/notify-change-state-order.service";
+import { INotificationAlertRepository } from "src/notification/infraestructure/interface/notification-alert-repository.interface";
+import { INotificationAddressRepository } from "src/notification/infraestructure/interface/notification-address-repository.interface";
+import { OrmNotificationAddressRepository } from "src/notification/infraestructure/repositories/orm-notification-address-repository";
+import { OrmNotificationAlertRepository } from "src/notification/infraestructure/repositories/orm-notification-alert-repository";
+import { NotifyRefundOrderService } from "src/notification/infraestructure/services/notification-services/notify-refund-order.service";
+import { OrderRefunded } from "src/order/domain/domain-event/order-refunded-event";
+import { OrmAuditingRepository } from "src/common/infraestructure/auditing/repositories/orm-auditing-repository";
+import { AuditingDecorator } from "src/common/application/application-services/decorators/auditing-decorator/auditing.decorator";
+import { SecurityDecorator } from "src/common/application/application-services/decorators/security-decorator/security-decorator";
+import { OrmAccountRepository } from "src/user/infraestructure/repositories/orm-repositories/orm-account-repository";
+import { NotifyOrderCreatedService } from "src/notification/infraestructure/services/notification-services/notify-created-order.service";
+import { NotifyCreatedOrderServiceEntryDTO } from "src/notification/infraestructure/services/dto/entry/notify-created-order-service-entry.dto";
 
 @ApiTags("Order")
 @Controller("order")
@@ -121,7 +134,10 @@ export class OrderController {
     private readonly paymentMethodRepository: PaymentMethodRepository
     private readonly bundleRepository: OrmBundleRepository;
     private readonly discountRepository: IDiscountRepository
-
+    private readonly notiAddressRepository: INotificationAddressRepository
+    private readonly notiAlertRepository: INotificationAlertRepository
+    private readonly auditingRepository: OrmAuditingRepository
+    private readonly accountUserRepository: OrmAccountRepository;
 
     constructor(
         @Inject('DataSource') private readonly dataSource: DataSource
@@ -155,9 +171,14 @@ export class OrderController {
         this.detalleRepository = new DetalleRepository(dataSource)
         this.paymentMethodRepository = new PaymentMethodRepository(dataSource, new PaymentMethodMapper())
         this.discountRepository = new OrmDiscountRepository(new OrmDiscountMapper(), dataSource)
+        this.notiAddressRepository = new OrmNotificationAddressRepository(dataSource)
+        this.notiAlertRepository = new OrmNotificationAlertRepository(dataSource)
+        this.auditingRepository = new OrmAuditingRepository(dataSource)
+        this.accountUserRepository = new OrmAccountRepository(dataSource)
+
     }
 
-    @Get('one/by/:id')
+    @Get('one/:id')
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard)
     @ApiOkResponse({
@@ -165,21 +186,38 @@ export class OrderController {
         type: GetOrderByIdReponseDTO
     })
     async getOrder(
+        @GetUser() user,
         @Param('id', ParseUUIDPipe) id: string,
     ) {
 
+        const allowedRoles = ['ADMIN', 'CLIENT'];
+
         const data: GetOrderByIdEntryServiceDTO = {
-            userId: "24117a35-07b0-4890-a70f-a082c948b3d4",
+            userId: user.id,
             id_orden: id
         }
 
         const service =
-            new LoggingDecorator(
-                new GetOrderByIdService(
-                    this.orderRepository
+            new ExceptionDecorator(
+                new AuditingDecorator(
+                    new SecurityDecorator(
+                        new LoggingDecorator(
+                            new PerformanceDecorator(
+                                new GetOrderByIdService(
+                                    this.orderRepository
+                                ),
+                                new NativeLogger(this.logger)
+                            ),
+                            new NativeLogger(this.logger)
+                        ),
+                        this.accountUserRepository,
+                        allowedRoles
+                    ),
+                    this.auditingRepository,
+                    this.idGenerator
                 ),
-                new NativeLogger(this.logger)
-            )
+                new HttpExceptionHandler()
+            );
 
         const result = await service.execute(data)
 
@@ -210,26 +248,31 @@ export class OrderController {
         @Body() request: CreateOrderEntryDTO,
     ) {
 
-        let metodo: IPaymentMethod = new CashPaymentMethod(
+        //const metodo = PaymentMethodName.create(request.paymentMethod)
+
+        let adapter: IPaymentMethod = new CashPaymentMethod(
             this.idGenerator,
             this.paymentMethodRepository,
+            //PaymentMethodName.create(request.paymentMethod),
             request.idPayment
         )
 
         if (request.email) {
-            metodo = new PaypalPaymentMethod(
+            adapter = new PaypalPaymentMethod(
                 request.email,
                 this.idGenerator,
                 this.paymentMethodRepository,
+                //PaymentMethodName.create(request.paymentMethod),
                 request.idPayment
             )
         }
 
         if (request.token) {
-            metodo = new StripePaymentMethod(
+            adapter = new StripePaymentMethod(
                 request.token,
                 this.idGenerator,
                 this.paymentMethodRepository,
+                //PaymentMethodName.create(request.paymentMethod),
                 request.idPayment
             )
         }
@@ -242,9 +285,26 @@ export class OrderController {
             sender.sendEmail(user.email, user.name, order_id);
         }, 'Notificar orden de compra');
 
+        // Envia notificacion push sobre la creacion de la orden
+        await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
+            const service = new NotifyOrderCreatedService(
+                this.notiAddressRepository,
+                this.notiAlertRepository,
+                this.orderRepository,
+                this.idGenerator,
+                FirebaseNotifier.getInstance()
+            )
+            const entry: NotifyCreatedOrderServiceEntryDTO = {
+                userId: user.id,
+                id_orden: event.id
+            }
+            const response = await service.execute(entry)
+            console.log("Resultado servicio: ", response.isSuccess())
+        }, 'Notificar via push por orden creada');
+
+
         // Decrementa el stock de los productos elegidos en la orden
         await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
-            console.log("Se publico el evento para decrementar los productos")
 
             const productos = event.productos
 
@@ -264,34 +324,44 @@ export class OrderController {
 
         }, 'Decrementar el stock')
 
+        const allowedRoles = ['ADMIN', 'CLIENT'];
+
         const data: CreateOrderEntryServiceDTO = {
             userId: user.id,
             ...request,
             products: request.products,
-            bundles: request.bundles
+            bundles: request.combos
         };
 
         const service =
             new ExceptionDecorator(
-                new LoggingDecorator(
-                    new PerformanceDecorator(
-                        new CreateOrderService(
-                            this.orderRepository,
-                            this.productRepository,
-                            this.bundleRepository,
-                            this.cuponReporitory,
-                            this.discountRepository,
-                            this.idGenerator,
-                            this.eventBus,
-                            new OrderCalculationTotal(
-                                metodo,
-                                this.taxes,
-                                new ShippingFeeDistance()
-                            )
+                new AuditingDecorator(
+                    new SecurityDecorator(
+                        new LoggingDecorator(
+                            new PerformanceDecorator(
+                                new CreateOrderService(
+                                    this.orderRepository,
+                                    this.productRepository,
+                                    this.bundleRepository,
+                                    this.cuponReporitory,
+                                    this.discountRepository,
+                                    this.idGenerator,
+                                    this.eventBus,
+                                    new OrderCalculationTotal(
+                                        adapter,
+                                        this.taxes,
+                                        new ShippingFeeDistance()
+                                    )
+                                ),
+                                new NativeLogger(this.logger)
+                            ),
+                            new NativeLogger(this.logger)
                         ),
-                        new NativeLogger(this.logger)
+                        this.accountUserRepository,
+                        allowedRoles
                     ),
-                    new NativeLogger(this.logger)
+                    this.auditingRepository,
+                    this.idGenerator
                 ),
                 new HttpExceptionHandler()
             )
@@ -326,6 +396,23 @@ export class OrderController {
             sender.sendEmail(user.email, user.name, order_id);
         }, 'Notificar orden de compra');
 
+        // Envia notificacion push sobre la creacion de la orden
+        await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
+            const service = new NotifyOrderCreatedService(
+                this.notiAddressRepository,
+                this.notiAlertRepository,
+                this.orderRepository,
+                this.idGenerator,
+                FirebaseNotifier.getInstance()
+            )
+            const entry: NotifyCreatedOrderServiceEntryDTO = {
+                userId: user.id,
+                id_orden: event.id
+            }
+            const response = await service.execute(entry)
+            console.log("Resultado servicio: ", response.isSuccess())
+        }, 'Notificar via push por orden creada');
+
         // Decrementa el stock de los productos elegidos en la orden
         await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
             console.log("Se publico el evento para decrementar los productos")
@@ -352,34 +439,44 @@ export class OrderController {
             userId: user.id,
             ...request,
             products: request.products,
-            bundles: request.bundles
+            bundles: request.combos
         };
+
+        const allowedRoles = ['ADMIN', 'CLIENT'];
 
         const service =
             new ExceptionDecorator(
-                new LoggingDecorator(
-                    new PerformanceDecorator(
-                        new CreateOrderService(
-                            this.orderRepository,
-                            this.productRepository,
-                            this.bundleRepository,
-                            this.cuponReporitory,
-                            this.discountRepository,
-                            this.idGenerator,
-                            this.eventBus,
-                            new OrderCalculationTotal(
-                                new CashPaymentMethod(
+                new AuditingDecorator(
+                    new SecurityDecorator(
+                        new LoggingDecorator(
+                            new PerformanceDecorator(
+                                new CreateOrderService(
+                                    this.orderRepository,
+                                    this.productRepository,
+                                    this.bundleRepository,
+                                    this.cuponReporitory,
+                                    this.discountRepository,
                                     this.idGenerator,
-                                    this.paymentMethodRepository,
-                                    request.idPayment
+                                    this.eventBus,
+                                    new OrderCalculationTotal(
+                                        new CashPaymentMethod(
+                                            this.idGenerator,
+                                            this.paymentMethodRepository,
+                                            request.idPayment
+                                        ),
+                                        this.taxes,
+                                        new ShippingFeeDistance()
+                                    )
                                 ),
-                                this.taxes,
-                                new ShippingFeeDistance()
-                            )
+                                new NativeLogger(this.logger)
+                            ),
+                            new NativeLogger(this.logger)
                         ),
-                        new NativeLogger(this.logger)
+                        this.accountUserRepository,
+                        allowedRoles
                     ),
-                    new NativeLogger(this.logger)
+                    this.auditingRepository,
+                    this.idGenerator
                 ),
                 new HttpExceptionHandler()
             )
@@ -413,6 +510,23 @@ export class OrderController {
             sender.sendEmail(user.email, user.name, order_id);
         }, 'Notificar orden de compra');
 
+        // Envia notificacion push sobre la creacion de la orden
+        await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
+            const service = new NotifyOrderCreatedService(
+                this.notiAddressRepository,
+                this.notiAlertRepository,
+                this.orderRepository,
+                this.idGenerator,
+                FirebaseNotifier.getInstance()
+            )
+            const entry: NotifyCreatedOrderServiceEntryDTO = {
+                userId: user.id,
+                id_orden: event.id
+            }
+            const response = await service.execute(entry)
+            console.log("Resultado servicio: ", response.isSuccess())
+        }, 'Notificar via push por orden creada');
+
         // Decrementa el stock de los productos elegidos en la orden
         await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
             console.log("Se publico el evento para decrementar los productos")
@@ -439,35 +553,45 @@ export class OrderController {
             userId: user.id,
             ...request,
             products: request.products,
-            bundles: request.bundles
+            bundles: request.combos
         };
+
+        const allowedRoles = ['ADMIN', 'CLIENT'];
 
         const service =
             new ExceptionDecorator(
-                new LoggingDecorator(
-                    new PerformanceDecorator(
-                        new CreateOrderService(
-                            this.orderRepository,
-                            this.productRepository,
-                            this.bundleRepository,
-                            this.cuponReporitory,
-                            this.discountRepository,
-                            this.idGenerator,
-                            this.eventBus,
-                            new OrderCalculationTotal(
-                                new PaypalPaymentMethod(
-                                    request.email,
+                new AuditingDecorator(
+                    new SecurityDecorator(
+                        new LoggingDecorator(
+                            new PerformanceDecorator(
+                                new CreateOrderService(
+                                    this.orderRepository,
+                                    this.productRepository,
+                                    this.bundleRepository,
+                                    this.cuponReporitory,
+                                    this.discountRepository,
                                     this.idGenerator,
-                                    this.paymentMethodRepository,
-                                    request.idPayment
+                                    this.eventBus,
+                                    new OrderCalculationTotal(
+                                        new PaypalPaymentMethod(
+                                            request.email,
+                                            this.idGenerator,
+                                            this.paymentMethodRepository,
+                                            request.idPayment
+                                        ),
+                                        this.taxes,
+                                        new ShippingFeeDistance()
+                                    )
                                 ),
-                                this.taxes,
-                                new ShippingFeeDistance()
-                            )
+                                new NativeLogger(this.logger)
+                            ),
+                            new NativeLogger(this.logger)
                         ),
-                        new NativeLogger(this.logger)
+                        this.accountUserRepository,
+                        allowedRoles
                     ),
-                    new NativeLogger(this.logger)
+                    this.auditingRepository,
+                    this.idGenerator
                 ),
                 new HttpExceptionHandler()
             )
@@ -500,6 +624,23 @@ export class OrderController {
             sender.sendEmail(user.email, user.name, order_id);
         }, 'Notificar orden de compra');
 
+        // Envia notificacion push sobre la creacion de la orden
+        await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
+            const service = new NotifyOrderCreatedService(
+                this.notiAddressRepository,
+                this.notiAlertRepository,
+                this.orderRepository,
+                this.idGenerator,
+                FirebaseNotifier.getInstance()
+            )
+            const entry: NotifyCreatedOrderServiceEntryDTO = {
+                userId: user.id,
+                id_orden: event.id
+            }
+            const response = await service.execute(entry)
+            console.log("Resultado servicio: ", response.isSuccess())
+        }, 'Notificar via push por orden creada');
+
         // Decrementa el stock de los productos elegidos en la orden
         await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
             console.log("Se publico el evento para decrementar los productos")
@@ -526,35 +667,45 @@ export class OrderController {
             userId: user.id,
             ...request,
             products: request.products,
-            bundles: request.bundles
+            bundles: request.combos
         };
+
+        const allowedRoles = ['ADMIN', 'CLIENT'];
 
         const service =
             new ExceptionDecorator(
-                new LoggingDecorator(
-                    new PerformanceDecorator(
-                        new CreateOrderService(
-                            this.orderRepository,
-                            this.productRepository,
-                            this.bundleRepository,
-                            this.cuponReporitory,
-                            this.discountRepository,
-                            this.idGenerator,
-                            this.eventBus,
-                            new OrderCalculationTotal(
-                                new StripePaymentMethod(
-                                    request.token,
+                new AuditingDecorator(
+                    new SecurityDecorator(
+                        new LoggingDecorator(
+                            new PerformanceDecorator(
+                                new CreateOrderService(
+                                    this.orderRepository,
+                                    this.productRepository,
+                                    this.bundleRepository,
+                                    this.cuponReporitory,
+                                    this.discountRepository,
                                     this.idGenerator,
-                                    this.paymentMethodRepository,
-                                    request.idPayment
+                                    this.eventBus,
+                                    new OrderCalculationTotal(
+                                        new StripePaymentMethod(
+                                            request.token,
+                                            this.idGenerator,
+                                            this.paymentMethodRepository,
+                                            request.idPayment
+                                        ),
+                                        this.taxes,
+                                        new ShippingFeeDistance()
+                                    )
                                 ),
-                                this.taxes,
-                                new ShippingFeeDistance()
-                            )
+                                new NativeLogger(this.logger)
+                            ),
+                            new NativeLogger(this.logger)
                         ),
-                        new NativeLogger(this.logger)
+                        this.accountUserRepository,
+                        allowedRoles
                     ),
-                    new NativeLogger(this.logger)
+                    this.auditingRepository,
+                    this.idGenerator
                 ),
                 new HttpExceptionHandler()
             )
@@ -574,7 +725,7 @@ export class OrderController {
     @ApiOkResponse({
         description: 'Devuelve la informacion de todas las ordenes',
         type: GetAllOrdersReponseDTO,
-        isArray: true
+        isArray: false
     })
     async getAllOrders(
         @Query() request: GetAllOrdersEntryDTO,
@@ -593,28 +744,55 @@ export class OrderController {
             status: request.status
         }
 
+        const allowedRoles = ['ADMIN', 'CLIENT'];
+
         const service =
             new ExceptionDecorator(
-                new LoggingDecorator(
-                    new PerformanceDecorator(
-                        new GetAllOrdersService(
-                            this.orderRepository
+                new AuditingDecorator(
+                    new SecurityDecorator(
+                        new LoggingDecorator(
+                            new PerformanceDecorator(
+                                new GetAllOrdersService(
+                                    this.orderRepository
+                                ),
+                                new NativeLogger(this.logger)
+                            ),
+                            new NativeLogger(this.logger)
                         ),
-                        new NativeLogger(this.logger)
+                        this.accountUserRepository,
+                        allowedRoles
                     ),
-                    new NativeLogger(this.logger)
+                    this.auditingRepository,
+                    this.idGenerator
                 ),
                 new HttpExceptionHandler()
             )
 
         const result = await service.execute(data)
 
-        const response: GetAllOrdersReponseDTO[] = {
-            ...result.Value
-        }
+        const response = {
+            orders: result.Value.map(order => ({
+                id: order.id,
+                orderState: order.orderState,
+                orderCreatedDate: order.orderCreatedDate,
+                totalAmount: order.totalAmount,
+                sub_total: order.sub_total,
+                shipping_fee: order.shipping_fee,
+                currency: order.currency,
+                orderDirection: order.orderDirection,
+                directionName: order.directionName,
+                products: order.products,
+                bundles: order.bundles,
+                orderReciviedDate: order.orderReciviedDate,
+                orderReport: order.orderReport,
+                orderPayment: order.orderPayment,
+                orderDiscount: order.orderDiscount,
+                instructions: order.instructions
+            }))
+        };
 
-        return response
-
+        console.log("Ordenes: ", response)
+        return response;
     }
 
     @Get('many/past')
@@ -636,6 +814,8 @@ export class OrderController {
             perPage: pagination.perpage
         }
 
+        const allowedRoles = ['ADMIN', 'CLIENT'];
+
         const service =
             new ExceptionDecorator(
                 new LoggingDecorator(
@@ -652,11 +832,27 @@ export class OrderController {
 
         const result = await service.execute(data)
 
-        const response: GetAllOrdersReponseDTO[] = {
-            ...result.Value
-        }
-
-        return response
+        const response = {
+            ordenes: result.Value.map(order => ({
+                id: order.id,
+                orderState: order.orderState,
+                orderCreatedDate: order.orderCreatedDate,
+                totalAmount: order.totalAmount,
+                sub_total: order.sub_total,
+                shipping_fee: order.shipping_fee,
+                currency: order.currency,
+                orderDirection: order.orderDirection,
+                directionName: order.directionName,
+                products: order.products,
+                bundles: order.bundles,
+                orderReciviedDate: order.orderReciviedDate,
+                orderReport: order.orderReport,
+                orderPayment: order.orderPayment,
+                orderDiscount: order.orderDiscount,
+                instructions: order.instructions
+            }))
+        };
+        return response;
 
     }
 
@@ -695,15 +891,31 @@ export class OrderController {
 
         const result = await service.execute(data)
 
-        const response: GetAllOrdersReponseDTO[] = {
-            ...result.Value
-        }
-
-        return response
+        const response = {
+            ordenes: result.Value.map(order => ({
+                id: order.id,
+                orderState: order.orderState,
+                orderCreatedDate: order.orderCreatedDate,
+                totalAmount: order.totalAmount,
+                sub_total: order.sub_total,
+                shipping_fee: order.shipping_fee,
+                currency: order.currency,
+                orderDirection: order.orderDirection,
+                directionName: order.directionName,
+                products: order.products,
+                bundles: order.bundles,
+                orderReciviedDate: order.orderReciviedDate,
+                orderReport: order.orderReport,
+                orderPayment: order.orderPayment,
+                orderDiscount: order.orderDiscount,
+                instructions: order.instructions
+            }))
+        };
+        return response;
 
     }
 
-    @Post('change/state')
+    @Patch('change/state/:id')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOkResponse({
@@ -712,25 +924,55 @@ export class OrderController {
     })
     async changeState(
         @GetUser() user,
+        @Param('id', ParseUUIDPipe) id: string,
         @Body() request: ChangeOrderStateEntryDTO
     ) {
 
+        // Envia notificacion push sobre el cambio de estado
+        await this.eventBus.subscribe('OrderStateChanged', async (event: OrderStateChanged) => {
+            const service = new NotifyChangeStateOrderService(
+                this.notiAddressRepository,
+                this.notiAlertRepository,
+                this.orderRepository,
+                this.idGenerator,
+                FirebaseNotifier.getInstance()
+            )
+            const entry = {
+                userId: user.id,
+                id_orden: event.id,
+                estado: event.estado
+            }
+            const response = await service.execute(entry)
+            console.log("Resultado servicio: ", response.isSuccess())
+        }, 'Notificar cambio de estado');
+
         const data: ChangeOrderServiceEntryDTO = {
             userId: user.id,
+            id_order: id,
             ...request
         }
 
+        const allowedRoles = ['ADMIN', 'CLIENT'];
+
         const service =
             new ExceptionDecorator(
-                new LoggingDecorator(
-                    new PerformanceDecorator(
-                        new ChangeOrderStateService(
-                            this.orderRepository,
-                            this.eventBus
+                new AuditingDecorator(
+                    new SecurityDecorator(
+                        new LoggingDecorator(
+                            new PerformanceDecorator(
+                                new ChangeOrderStateService(
+                                    this.orderRepository,
+                                    this.eventBus
+                                ),
+                                new NativeLogger(this.logger)
+                            ),
+                            new NativeLogger(this.logger)
                         ),
-                        new NativeLogger(this.logger)
+                        this.accountUserRepository,
+                        allowedRoles
                     ),
-                    new NativeLogger(this.logger)
+                    this.auditingRepository,
+                    this.idGenerator
                 ),
                 new HttpExceptionHandler()
             )
@@ -745,7 +987,7 @@ export class OrderController {
 
     }
 
-    @Patch('report')
+    @Patch('report/:id')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOkResponse({
@@ -754,26 +996,37 @@ export class OrderController {
     })
     async createReport(
         @GetUser() user,
+        @Param('id', ParseUUIDPipe) id: string,
         @Body() request: CreateReportEntryDTO
     ) {
 
         const data: CreateReportServiceEntryDTO = {
             userId: user.id,
-            id_orden: request.id_orden,
+            id_orden: id,
             texto: request.texto
         }
 
+        const allowedRoles = ['ADMIN', 'CLIENT'];
+
         const service =
             new ExceptionDecorator(
-                new LoggingDecorator(
-                    new PerformanceDecorator(
-                        new CreateReportService(
-                            this.orderRepository,
-                            this.idGenerator
+                new AuditingDecorator(
+                    new SecurityDecorator(
+                        new LoggingDecorator(
+                            new PerformanceDecorator(
+                                new CreateReportService(
+                                    this.orderRepository,
+                                    this.idGenerator
+                                ),
+                                new NativeLogger(this.logger)
+                            ),
+                            new NativeLogger(this.logger)
                         ),
-                        new NativeLogger(this.logger)
+                        this.accountUserRepository,
+                        allowedRoles
                     ),
-                    new NativeLogger(this.logger)
+                    this.auditingRepository,
+                    this.idGenerator
                 ),
                 new HttpExceptionHandler()
             )
@@ -800,22 +1053,51 @@ export class OrderController {
         @Param('id', ParseUUIDPipe) id: string
     ) {
 
+        // Envia notificacion push sobre el cambio de estado
+        await this.eventBus.subscribe('OrderRefunded', async (event: OrderRefunded) => {
+            const service = new NotifyRefundOrderService(
+                this.notiAddressRepository,
+                this.notiAlertRepository,
+                this.orderRepository,
+                this.idGenerator,
+                FirebaseNotifier.getInstance()
+            )
+            const entry = {
+                userId: user.id,
+                id_orden: event.id,
+                monto_reembolsado: event.monto
+            }
+            const response = await service.execute(entry)
+            console.log("Resultado servicio: ", response.isSuccess())
+        }, 'Notificar reembolso de la orden');
+
         const data: RefundOrderServiceEntryDTO = {
             userId: user.id,
             id_orden: id
         }
 
+        const allowedRoles = ['ADMIN', 'CLIENT'];
+
         const service =
             new ExceptionDecorator(
-                new LoggingDecorator(
-                    new PerformanceDecorator(
-                        new RefundOrderService(
-                            this.orderRepository,
-                            new StripeOrderReembolsoAdapter()
+                new AuditingDecorator(
+                    new SecurityDecorator(
+                        new LoggingDecorator(
+                            new PerformanceDecorator(
+                                new RefundOrderService(
+                                    this.orderRepository,
+                                    new StripeOrderReembolsoAdapter(),
+                                    this.eventBus
+                                ),
+                                new NativeLogger(this.logger)
+                            ),
+                            new NativeLogger(this.logger)
                         ),
-                        new NativeLogger(this.logger)
+                        this.accountUserRepository,
+                        allowedRoles
                     ),
-                    new NativeLogger(this.logger)
+                    this.auditingRepository,
+                    this.idGenerator
                 ),
                 new HttpExceptionHandler()
             )
@@ -847,17 +1129,27 @@ export class OrderController {
             ...request
         }
 
+        const allowedRoles = ['ADMIN', 'CLIENT'];
+
         const service =
             new ExceptionDecorator(
-                new LoggingDecorator(
-                    new PerformanceDecorator(
-                        new UpdateOrderInformationService(
-                            this.orderRepository,
-                            this.eventBus
+                new AuditingDecorator(
+                    new SecurityDecorator(
+                        new LoggingDecorator(
+                            new PerformanceDecorator(
+                                new UpdateOrderInformationService(
+                                    this.orderRepository,
+                                    this.eventBus
+                                ),
+                                new NativeLogger(this.logger)
+                            ),
+                            new NativeLogger(this.logger)
                         ),
-                        new NativeLogger(this.logger)
+                        this.accountUserRepository,
+                        allowedRoles
                     ),
-                    new NativeLogger(this.logger)
+                    this.auditingRepository,
+                    this.idGenerator
                 ),
                 new HttpExceptionHandler()
             )

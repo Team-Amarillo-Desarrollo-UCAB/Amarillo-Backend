@@ -89,6 +89,7 @@ export class OrmOrder {
         orden.monto_total = monto_total
         orden.subTotal = subTotal
         orden.shipping_fee = shipping_fee
+        orden.instruccion = instruccion
         orden.detalles = detalles
         orden.estados = estados
         orden.pago = pago
@@ -99,7 +100,6 @@ export class OrmOrder {
     static createWithUser(
         id: string,
         fecha_creacion: Date,
-        fecha_entrega: Date,
         longitud: number,
         latitud: number,
         ubicacion: string,
@@ -108,6 +108,7 @@ export class OrmOrder {
         descuento: number,
         shipping_fee: number,
         id_user: string,
+        fecha_entrega?: Date,
         instruccion?: string,
         detalles?: Detalle_Orden[],
         estados?: Estado_Orden[],

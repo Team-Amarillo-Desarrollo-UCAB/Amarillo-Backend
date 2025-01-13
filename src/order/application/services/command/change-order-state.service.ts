@@ -27,6 +27,8 @@ export class ChangeOrderStateService implements IApplicationService<ChangeOrderS
             if (!save.isSuccess())
                 return Result.fail(save.Error, save.StatusCode, save.Message)
 
+            await this.eventHandler.publish(orden.pullEvents())
+
             const result: ChangeOrderServiceResponseDTO = {
                 id_order: orden.Id.Id,
             }

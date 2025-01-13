@@ -102,7 +102,7 @@ export class AuthController {
             this.ormAccountRepository.saveUser(ormUser)
             const sender = new NodemailerEmailSender();
             const user_id = event.userId;
-            sender.sendWelcomeEmail(event.userEmail, "Jamal", user_id);
+            sender.sendWelcomeEmail(event.userEmail, event.userName, user_id);
         }, "Notificar usuario registrado");
 
 

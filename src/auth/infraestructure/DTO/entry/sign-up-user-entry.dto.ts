@@ -30,6 +30,7 @@ export class SignUpUserEntryInfraDto {
         example: 'base64image',
     })
     @IsString()
+    @IsOptional()
     image?: string;
 
 }

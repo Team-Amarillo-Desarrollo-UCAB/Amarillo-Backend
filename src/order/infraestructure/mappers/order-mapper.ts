@@ -90,7 +90,6 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
         const order = OrmOrder.createWithUser(
             domain.Id.Id,
             domain.Fecha_creacion.Date_creation,
-            domain.Fecha_entrega.ReciviedDate,
             domain.Direccion.Longitud,
             domain.Direccion.Latitud,
             domain.Direccion.Direccion,
@@ -99,6 +98,7 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
             domain.Monto.Discount.Value,
             domain.Monto.ShippingFee.Value,
             domain.Comprador.Id,
+            domain.Fecha_entrega ? domain.Fecha_entrega.ReciviedDate : null,
             domain.Instruction ? domain.Instruction.Value : null,
             ormDetalles,
             undefined,
@@ -173,7 +173,6 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
                 OrderId.create(persistence.id),
                 orderEstado,
                 OrderCreationDate.create(persistence.fecha_creacion),
-                OrderReciviedDate.create(persistence.fecha_entrega),
                 OrderLocationDelivery.create(
                     persistence.ubicacion,
                     persistence.longitud,
@@ -185,6 +184,7 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
                     OrderReportId.create(persistence.reporte.id),
                     OrderReportText.create(persistence.reporte.texto)
                 ),
+                persistence.fecha_entrega ? OrderReciviedDate.create(persistence.fecha_entrega) : null,
                 persistence.id_user ? UserId.create(persistence.id_user) : null,
                 persistence.instruccion ? OrderInstructions.create(persistence.instruccion) : null,
                 OrderTotal.create(
@@ -206,7 +206,6 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
             OrderId.create(persistence.id),
             orderEstado,
             OrderCreationDate.create(persistence.fecha_creacion),
-            OrderReciviedDate.create(persistence.fecha_entrega),
             OrderLocationDelivery.create(
                 persistence.ubicacion,
                 persistence.longitud,
@@ -214,6 +213,7 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
             ),
             productos,
             combos,
+            persistence.fecha_entrega ? OrderReciviedDate.create(persistence.fecha_entrega) : null,
             persistence.id_user ? UserId.create(persistence.id_user) : null,
             persistence.instruccion ? OrderInstructions.create(persistence.instruccion) : null,
             OrderTotal.create(
