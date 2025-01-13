@@ -44,20 +44,22 @@ export class StripePaymentMethod implements IPaymentMethod {
                 return Result.fail<Order>(method.Error, 404, method.Message)
 
             // Crea un PaymentIntent con el token del frontend;
-            const paymentIntent = await this.stripe.paymentIntents.create({
-                amount: orden.Monto.Total * 100,
-                currency: orden.Moneda,
-                confirm: true,
-                payment_method: this.token,
-                payment_method_types: ['card'],
+            const paymentStripe = await this.stripe.paymentIntents.retrieve(this.token);
+
+            if(!paymentStripe){
+                Result.fail<Order>(new Error('El pago no se encuentra en stripe'),404,'El pago no se encuentra en stripe')
+            }
+
+            // Actualiza los metadatos del PaymentIntent
+            const updatedPaymentIntent = await this.stripe.paymentIntents.update(this.token, {
                 metadata: {
                     id_orden: orden.Id.Id,
                     id_pago: id_payment,  // Un identificador personalizado
-                }
+                }, // Los nuevos metadatos que quieres agregar o modificar
             });
 
             // Loggeamos la respuesta del PaymentIntent en la consola
-            console.log('Pago realizado con éxito:', paymentIntent);
+            console.log('Payment actualizado:', updatedPaymentIntent);
 
             const pago = OrderPayment.create(
                 OrderPaymentId.create(id_payment),

@@ -30,6 +30,23 @@ export class PaymentMethodRepository extends Repository<OrmPaymentMethod> implem
         }
     }
 
+    async findPaymentMethodByName(name: EnumPaymentMethod): Promise<Result<PaymentMethod>> {
+        try {
+
+            const metodo = await this.findOne({
+                where: { name: name }
+            })
+
+            if (!metodo)
+                return Result.fail<PaymentMethod>(new Error('Metodo no existente'), 404, 'Metodo no existente')
+
+            return Result.success<PaymentMethod>(await this.paymentMethodMapper.fromPersistenceToDomain(metodo), 200)
+
+        } catch (error) {
+            return Result.fail<PaymentMethod>(new Error(error.message), error.code, error.message)
+        }
+    }
+
     async findPaymentMethodById(id: string): Promise<Result<PaymentMethod>> {
         try {
 

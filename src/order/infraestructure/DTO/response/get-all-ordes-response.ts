@@ -3,9 +3,7 @@ import { Transform, Type } from "class-transformer";
 import { IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateNested } from "class-validator";
 import { EnumOrderEstados } from "src/order/domain/enum/order-estados-enum";
 
-export class GetAllOrdersReponseDTO {
-
-
+class OrderInformation {
     @ApiProperty({
         example: "fb078b8f-b622-4292-9d94-b0bd71551162"
     })
@@ -171,4 +169,17 @@ export class GetAllOrdersReponseDTO {
     @IsNotEmpty()
     @IsOptional()
     instructions?: string
+}
+
+export class GetAllOrdersReponseDTO {
+
+    @ApiProperty({
+        description: 'Lista de órdenes',
+        type: [OrderInformation], // Asegúrate de importar GetAllOrdersReponseDTO
+    })
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => OrderInformation)
+    orders: OrderInformation[];
+
 }

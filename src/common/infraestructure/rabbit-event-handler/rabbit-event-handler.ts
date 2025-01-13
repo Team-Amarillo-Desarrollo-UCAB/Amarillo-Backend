@@ -6,6 +6,8 @@ import { IEventSubscriber } from "src/common/application/event-handler/subscribe
 import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface"
 import { OrderTotalCalculated } from 'src/order/domain/domain-event/order-amount-calculated'
 import { OrderCreated } from "src/order/domain/domain-event/order-created-event"
+import { OrderRefunded } from 'src/order/domain/domain-event/order-refunded-event'
+import { OrderStateChanged } from 'src/order/domain/domain-event/order-state-changed'
 import { OrderBundle } from 'src/order/domain/entites/order-bundle'
 import { OrderProduct } from 'src/order/domain/entites/order-product'
 import { OrderBundleAmount } from 'src/order/domain/value-object/order-bundle/order-bundle-amount'
@@ -122,7 +124,6 @@ export class RabbitEventBus implements IEventHandler {
                                 event_data.id,
                                 event_data.estado,
                                 new Date(event_data.fecha_creacion),
-                                new Date(event_data.fecha_entrega),
                                 await Promise.all(
                                     event_data.productos.map(async (p) => {
                                         return OrderProduct.create(
@@ -153,7 +154,8 @@ export class RabbitEventBus implements IEventHandler {
                                     event_data.ubicacion.direccion,
                                     event_data.ubicacion.longitud,
                                     event_data.ubicacion.latitud
-                                )
+                                ),
+                                event_data.fecha_entrega ? new Date(event_data.fecha_entrega) : null,
                             );
                             break;
                         case 'OrderTotalCalculated':
@@ -164,6 +166,19 @@ export class RabbitEventBus implements IEventHandler {
                                 event_data.moneda,
                                 event_data.descuento,
                                 event_data.shippingFee
+                            )
+                            break;
+                        case 'OrderStateChanged':
+                            event = OrderStateChanged.create(
+                                event_data.id,
+                                event_data.estado
+                            )
+                            break;
+                        case 'OrderRefunded':
+                            event = OrderRefunded.create(
+                                event_data.id,
+                                event_data.monto,
+                                event_data.moneda
                             )
                             break;
                         case 'ProductCreated':

@@ -2,13 +2,13 @@ import { ApplicationServiceEntryDto } from "src/common/application/application-s
 
 export interface CreateOrderEntryServiceDTO extends ApplicationServiceEntryDto {
 
-    orderReciviedDate: string
+    orderReciviedDate?: string
 
-    ubicacion: string
+    address: string
 
-    latitud: number
+    latitude: number
 
-    longitud: number
+    longitude: number
 
     products?: {
         id: string;

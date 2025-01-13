@@ -60,41 +60,43 @@ export class OrderCalculationTotal {
                 descuento_cupon += cupon.Amount()
             }
         }
-        console.log("Monto total: ",monto_total)
-        console.log("SubTotal antes de los impuestos: ",subTotal.Value)
+        console.log("Monto total: ", monto_total)
+        console.log("SubTotal antes de los impuestos: ", subTotal.Value)
 
         const impuesto = await this.taxesCalculationService.execute(subTotal)
         if (!impuesto.isSuccess())
             return Result.fail<Order>(impuesto.Error, impuesto.StatusCode, impuesto.Message)
 
-        console.log("Impuestos aplicados: ",impuesto.Value)
+        console.log("Impuestos aplicados: ", impuesto.Value)
 
         let shipping_fee = await this.shippingFee.execute(orden.Direccion)
         if (!shipping_fee)
             return Result.fail<Order>(shipping_fee.Error, shipping_fee.StatusCode, shipping_fee.Message)
 
-        console.log("Shipping fee aplicado: ",shipping_fee.Value)
+        console.log("Shipping fee aplicado: ", shipping_fee.Value)
 
         let s = subTotal.add(impuesto.Value)
-        console.log('sub total despues del impuesto: ',s.Value)
+        console.log('sub total despues del impuesto: ', s.Value)
 
         monto_total += shipping_fee.Value.Value
-        console.log("Monto total con shipping fee: ",monto_total)
+        console.log("Monto total con shipping fee: ", monto_total)
 
         monto_total += impuesto.Value
-        console.log("Monto total con impuestos: ",monto_total)
+        console.log("Monto total con impuestos: ", monto_total)
 
         let descuento = Math.abs(parseFloat((s.Value + shipping_fee.Value.Value - monto_total).toFixed(2)))
 
-        console.log("Descuento aplicado: ",descuento)
+        console.log("Descuento aplicado: ", descuento)
 
-        orden.assignOrderCost(OrderTotal.create(
+        const total = OrderTotal.create(
             parseFloat(monto_total.toFixed(2)),
             moneda,
             OrderDiscount.create(descuento),
             subTotal,
             shipping_fee.Value
-        ))
+        )
+
+        orden.assignOrderCost(total)
 
         const result = await this.metodoPagoService.execute(orden)
 
