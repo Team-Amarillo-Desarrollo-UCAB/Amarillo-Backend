@@ -46,9 +46,11 @@ export class StripePaymentMethod implements IPaymentMethod {
             // Crea un PaymentIntent con el token del frontend;
             const paymentStripe = await this.stripe.paymentIntents.retrieve(this.token);
 
-            if(!paymentStripe){
-                Result.fail<Order>(new Error('El pago no se encuentra en stripe'),404,'El pago no se encuentra en stripe')
+            if (!paymentStripe) {
+                Result.fail<Order>(new Error('El pago no se encuentra en stripe'), 404, 'El pago no se encuentra en stripe')
             }
+
+            const charge = await this.stripe.charges.retrieve(paymentStripe.latest_charge.toString())
 
             // Actualiza los metadatos del PaymentIntent
             const updatedPaymentIntent = await this.stripe.paymentIntents.update(this.token, {
@@ -69,7 +71,7 @@ export class StripePaymentMethod implements IPaymentMethod {
                 PaymentMethodId.create(method.Value.Id.Id),
             )
 
-            orden.asignarMetodoPago(pago)
+            orden.asignarMetodoPago(pago,charge.receipt_url)
 
             return Result.success<Order>(orden, 200)
         } catch (error) {

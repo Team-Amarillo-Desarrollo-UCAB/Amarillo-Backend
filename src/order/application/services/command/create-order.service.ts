@@ -36,6 +36,8 @@ import { OrderLocationDelivery } from "src/order/domain/value-object/order-locat
 import { OrderDiscount } from "src/order/domain/value-object/order-discount";
 import { OrderSubTotal } from "src/order/domain/value-object/order-subtotal";
 import { OrderInstructions } from "src/order/domain/value-object/order-instructions";
+import { OrderBundleImage } from "src/order/domain/value-object/order-bundle/order-bundle-image";
+import { OrderProductImage } from "src/order/domain/value-object/order-product/order-product-image";
 
 export class CreateOrderService implements IApplicationService<CreateOrderEntryServiceDTO, CreateOrderResponseServiceDTO> {
 
@@ -107,7 +109,8 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
                             OrderProductPrice.create(
                                 OrderProductAmount.create(precio_producto),
                                 OrderProductCurrency.create(producto.Moneda)
-                            )
+                            ),
+                            OrderProductImage.create(producto.Images[0].Image)
                         )
                     )
 
@@ -160,7 +163,8 @@ export class CreateOrderService implements IApplicationService<CreateOrderEntryS
                             OrderBundlePrice.create(
                                 OrderBundleAmount.create(precio_combo),
                                 OrderBundleCurrency.create(combo.price.Currency)
-                            )
+                            ),
+                            OrderBundleImage.create(combo.images[0].Value)
                         )
                     )
 
