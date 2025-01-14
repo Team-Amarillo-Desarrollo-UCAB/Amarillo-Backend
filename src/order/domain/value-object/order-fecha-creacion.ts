@@ -6,16 +6,6 @@ export class OrderCreationDate implements IValueObject<OrderCreationDate> {
     protected constructor(
         private readonly date_creation: Date
     ) {
-        const today = new Date();
-
-        if (
-            date_creation.getFullYear() > today.getFullYear() ||
-            date_creation.getMonth() > today.getMonth() ||
-            date_creation.getDay() > today.getDay()
-        ) {
-            throw new InvalidOrderCreationDate("La fecha de creación es invalida");
-        }
-
 
         this.date_creation = date_creation
     }
