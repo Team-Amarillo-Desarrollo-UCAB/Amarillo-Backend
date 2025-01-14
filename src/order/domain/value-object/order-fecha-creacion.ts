@@ -9,7 +9,9 @@ export class OrderCreationDate implements IValueObject<OrderCreationDate> {
         const today = new Date();
 
         if (
-            date_creation > today
+            date_creation.getFullYear() > today.getFullYear() ||
+            date_creation.getMonth() > today.getMonth() ||
+            date_creation.getDay() > today.getDay()
         ) {
             throw new InvalidOrderCreationDate("La fecha de creación es invalida");
         }
