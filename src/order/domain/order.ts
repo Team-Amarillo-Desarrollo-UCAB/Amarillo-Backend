@@ -28,6 +28,7 @@ import { OrderReciviedDateModified } from "./domain-event/order-recivied-date-mo
 import { OrderProcessed } from "./domain-event/order-processed-event";
 import { OrderStateChanged } from "./domain-event/order-state-changed";
 import { OrderLocationDeliveryModified } from "./domain-event/order-location-delivery-modified-event";
+import { OrderBillRecivied } from "./domain-event/order-bill-recivied";
 
 export class Order extends AggregateRoot<OrderId> {
 
@@ -217,8 +218,12 @@ export class Order extends AggregateRoot<OrderId> {
         ))
     }
 
-    asignarMetodoPago(payment: OrderPayment): void {
+    asignarMetodoPago(payment: OrderPayment, bill?: string): void {
         this.payment = payment
+        if (bill) {
+            this.events.push(OrderBillRecivied.create(this.Id.Id, bill))
+        }
+
     }
 
     modifiedLocationDelivery(direccion: OrderLocationDelivery): void {

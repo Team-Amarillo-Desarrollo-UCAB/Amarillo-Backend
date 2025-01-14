@@ -37,6 +37,8 @@ import { OrderDiscount } from "src/order/domain/value-object/order-discount";
 import { OrderSubTotal } from "src/order/domain/value-object/order-subtotal";
 import { OrderShippingFee } from "src/order/domain/value-object/order-shipping-fee";
 import { OrderInstructions } from "src/order/domain/value-object/order-instructions";
+import { OrderProductImage } from "src/order/domain/value-object/order-product/order-product-image";
+import { OrderBundleImage } from "src/order/domain/value-object/order-bundle/order-bundle-image";
 
 export class OrderMapper implements IMapper<Order, OrmOrder> {
 
@@ -138,7 +140,8 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
                         OrderProductPrice.create(
                             OrderProductAmount.create(detalle.producto.price),
                             OrderProductCurrency.create(detalle.producto.currency)
-                        )
+                        ),
+                        OrderProductImage.create(detalle.producto.image[0])
                     )
                 )
             }
@@ -153,7 +156,8 @@ export class OrderMapper implements IMapper<Order, OrmOrder> {
                         OrderBundlePrice.create(
                             OrderBundleAmount.create(detalle.combos.price),
                             OrderBundleCurrency.create(detalle.combos.currency)
-                        )
+                        ),
+                        OrderBundleImage.create(detalle.combos.images[0])
                     )
                 )
 

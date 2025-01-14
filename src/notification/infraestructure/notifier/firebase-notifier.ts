@@ -32,7 +32,11 @@ export class FirebaseNotifier implements IPushSender {
             android: { notification: { title: message.notification.title, body: message.notification.body }, },
             webpush: { notification: { title: message.notification.title, body: message.notification.body }, },
         }
-        const res = await admin.messaging().sendEachForMulticast(msg)
+        try {
+            const res = await admin.messaging().sendEachForMulticast(msg)
+        } catch (error) {
+            console.log("Error en el push: ", error)
+        }
     }
 
     public static getInstance(): FirebaseNotifier {
@@ -63,7 +67,7 @@ export class FirebaseNotifier implements IPushSender {
             const res = await admin.messaging().send(msg).then(e => { console.log(' sendeeeeed ') })
             return Result.success<string>('push_sended', 200)
         } catch (e) {
-            console.log("ERROR e:",e)
+            console.log("ERROR e:", e)
             return Result.fail<string>(new Error('error_sending_push'), 500, 'error_sending_push')
         }
     }
