@@ -5,6 +5,7 @@ import { BundleID } from 'src/bundle/domain/value-objects/bundle-id'
 import { IEventHandler } from "src/common/application/event-handler/event-handler.interface"
 import { IEventSubscriber } from "src/common/application/event-handler/subscriber.interface"
 import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface"
+import { Result } from 'src/common/domain/result-handler/Result'
 import { OrderTotalCalculated } from 'src/order/domain/domain-event/order-amount-calculated'
 import { OrderCreated } from "src/order/domain/domain-event/order-created-event"
 import { OrderRefunded } from 'src/order/domain/domain-event/order-refunded-event'
@@ -71,7 +72,7 @@ export class RabbitEventBus implements IEventHandler {
         }
     }
 
-    async publish(events: DomainEvent[]): Promise<void> {
+    async publish(events: DomainEvent[]): Promise<Result<void>> {
         if (!this.connection) {
             throw new Error("RabbitMQ connection not initialized.");
         }
@@ -89,13 +90,16 @@ export class RabbitEventBus implements IEventHandler {
                 console.log(`Mensaje enviado al exchange ${exchange} con routingKey ${routingKey}:`);
             }
 
+            return Result.success(null,500)
+
             //await channel.close();
         } catch (error) {
             console.error("Error al publicar el evento:", error);
+            Result.fail(error,500,'Error al publicar el evento')
         }
     }
 
-    async subscribe(eventName: string, callback: (event: DomainEvent) => Promise<void>, operation: string): Promise<IEventSubscriber> {
+    async subscribe(eventName: string, callback: (event: DomainEvent) => Promise<void>, operation: string): Promise<Result<IEventSubscriber>> {
         if (!this.connection) {
             throw new Error("RabbitMQ connection not initialized.");
         }
@@ -229,7 +233,7 @@ export class RabbitEventBus implements IEventHandler {
                     }
 
                     // Ejecutar el callback con el evento procesado
-                    await callback(event);
+                    const result = await callback(event);
 
                     // Acknowledge del mensaje
                     channel.ack(msg);
@@ -244,14 +248,14 @@ export class RabbitEventBus implements IEventHandler {
             }, { noAck: false });
 
         } catch (error) {
-            console.error("Error al subscribirse al evento:", error);
+            return Result.fail(error,500,error.message)
         }
 
-        return {
+        return Result.success({
             unsubscribe: async () => {
                 console.log(`Desuscribiéndose del evento ${eventName}`);
             }
-        };
+        },200);
     }
 
 

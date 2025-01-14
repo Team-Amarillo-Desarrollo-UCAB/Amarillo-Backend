@@ -44,7 +44,7 @@ export class NotifyChangeStateOrderService implements
 
         const orden = find_orden.Value
         const token = find_token.Value
-        const pushTitle = 'Orden ' + orden.Id.Id.slice(-3) + ' estado cambiado'
+        const pushTitle = 'Orden #' + orden.Id.Id.slice(-3) + ' estado cambiado'
         const pushBody = 'Su Orden #'+orden.Id.Id.slice(-3)+ " esta actualmente en el estado " + orden.Estado.Estado
 
         this.notiAlertRepository.saveNotificationAlert({

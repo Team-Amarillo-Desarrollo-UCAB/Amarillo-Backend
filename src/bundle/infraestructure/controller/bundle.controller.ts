@@ -49,7 +49,6 @@ import { OrmDiscountMapper } from '../../../discount/infraestructure/mappers/dis
 import { UpdateBundleServiceEntryDto } from 'src/bundle/application/dto/entry/update-bundle-service-entry.dto';
 import { PerformanceDecorator } from 'src/common/application/application-services/decorators/performance-decorator/performance-decorator';
 import { UpdateBundleApplicationService } from 'src/bundle/application/services/commands/update-bundle.service';
-import { EventBus } from '../../../common/infraestructure/event-bus/event-bus';
 import { UpdateBundleEntryDTO } from '../dto/entry/update-bundle-entry.dto';
 import { UpdateBundleResponseDTO } from '../dto/response/update-bundle-response.dto';
 import { DeleteBundleResponseDTO } from '../dto/response/delete-bundle-response.dto';
@@ -405,7 +404,7 @@ export class BundleController {
       @Param('id', ParseUUIDPipe) id: string,  @GetUser() user
   ): Promise<DeleteBundleResponseDTO> {
       const infraEntryDto: DeleteBundleResponseDTO = { id: id };
-      const eventBus = EventBus.getInstance();
+      const eventBus = RabbitEventBus.getInstance();
   
       const serviceEntryDto: DeleteBundleServiceEntryDto = {
           id: infraEntryDto.id,
