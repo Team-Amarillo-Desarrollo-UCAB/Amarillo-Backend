@@ -22,6 +22,12 @@ import { ProductCaducityDate } from "./value-objects/productCaducityDate";
 import { ProductWeight } from './value-objects/product-weight';
 import { Category } from '../../category/domain/category.entity';
 import { Moneda } from "./enum/Monedas";
+import { ProductCaducityDateModified } from "./domain-event/product-caducityDate-modified";
+import { ProductCategoryModified } from "./domain-event/product-categories-modified";
+import { ProductDiscountModified } from "./domain-event/product-discount-modified";
+import { ProductImagesModified } from "./domain-event/product-images-modified";
+import { ProductNameModified } from "./domain-event/product-name-modified";
+import { ProductUnitModified } from "./domain-event/product-unit-modified";
 
 export class Product extends AggregateRoot<ProductId> {
 
@@ -102,11 +108,6 @@ export class Product extends AggregateRoot<ProductId> {
 
 
 
-    modifiedName(nombre: ProductName){
-        if(!this.name.equals(nombre))
-            this.name = nombre
-    }
-
     decreaseStock(stock: ProductStock) {
         if (stock.Stock < this.stock.Stock)
             this.stock = this.stock.disminuir(stock.Stock)
@@ -117,45 +118,44 @@ export class Product extends AggregateRoot<ProductId> {
             this.stock = this.stock.aumentar(stock.Stock)
     }
 
-    modifieStock(stock: ProductStock) {
-        if (!this.stock.equals(stock)) {
-            this.stock = stock
-            console.log("Nuevo stock: ",this.stock)
-            const event = ProductStockModified.create(
-                this.Id.Id,
-                this.stock.Stock
-            )
-            this.events.push(event)
-        }
-
+    public updateCaducityDate(caducityDate: ProductCaducityDate): void {
+        this.onEvent(ProductCaducityDateModified.create(this.Id.Id, caducityDate.Value));  
     }
 
-    modifiedPrice(precio: ProductPrice) {
-
-        if (!this.price.equals(precio)) {
-            this.price = precio
-            const event = ProductPriceModified.create(
-                this.Id.Id,
-                this.price.Amount,
-                this.price.Currency
-            )
-            this.events.push(event)
-        }
-
-
+    public updateCategories(categories: CategoryID[]){
+        this.onEvent(ProductCategoryModified.create(this.Id.Id, categories.map(i=>i.Value)))
     }
 
-    modifiedDescription(descripcion: ProductDescription){
-
-        if(!this.description.equals(descripcion)){
-            this.description = descripcion
-            const event = ProductDescriptionModified.create(
-                this.Id.Id,
-                this.description.Description,
-            )
-        }
-
+    public updateDescription(description: ProductDescription): void {
+        this.onEvent(ProductDescriptionModified.create(this.Id.Id, description.Description));
     }
+
+    public updateDiscount(discount: DiscountID):void{
+        this.onEvent(ProductDiscountModified.create(this.Id.Id, discount.Value))
+    }
+
+    public updateImages(images:ProductImage[]){
+        this.onEvent(ProductImagesModified.create(this.Id.Id, images.map(i=>i.Image)))
+    }
+
+    public updateName(name: ProductName): void {
+        this.onEvent(ProductNameModified.create(this.Id.Id, name.Name));
+    }
+
+    public updatePrice(price: ProductPrice): void {
+        this.onEvent(ProductPriceModified.create(this.Id.Id, price.Amount, price.Currency));
+    }
+    
+    public updateStock(stock: ProductStock): void {
+        this.onEvent(ProductStockModified.create(this.Id.Id, stock.Stock));
+    }
+
+    public updateUnit(unit: ProductUnit): void {
+        this.onEvent(ProductUnitModified.create(this.Id.Id,unit.Cantidad_medida ,unit.Unit));
+    }
+
+
+
 
 
     protected applyEvent(event: DomainEvent): void {
@@ -186,6 +186,63 @@ export class Product extends AggregateRoot<ProductId> {
                 }
     
                 break;
+                case 'ProductNameModified':
+                    const nameModified = event as ProductNameModified;
+                    this.name = ProductName.create(nameModified.nombre);
+                    break;
+          
+                  case 'ProductDescriptionModified':
+                    const descriptionModified = event as ProductDescriptionModified;
+                    this.description = ProductDescription.create(descriptionModified.descipcion);
+                    break;
+          
+                  case 'ProductPriceModified':
+                    const priceModified = event as ProductPriceModified;
+                    this.price = ProductPrice.create(ProductAmount.create(priceModified.precio), ProductCurrency.create(priceModified.moneda));
+                    break;
+          
+                  case 'ProductStockModified':
+                    const stockModified = event as ProductStockModified;
+                    this.stock = ProductStock.create(stockModified.stock);
+                    break;
+          
+                  case 'ProductUnitModified':
+                    const unitModified = event as ProductUnitModified;
+                    this.unit = ProductUnit.create(unitModified.unit,ProductCantidadMedida.create(unitModified.cantidad_medida));
+                    break;
+          
+                  case 'ProductCaducityDateModified':
+                    const caducityDateModified = event as ProductCaducityDateModified;
+                    this.caducityDate = caducityDateModified.date ? ProductCaducityDate.create(caducityDateModified.date) : undefined;
+                    break;
+          
+                  case 'ProductCategoryModified':
+                  const categoryModified = event as ProductCategoryModified;
+          
+                  let cats: CategoryID[] = [];
+                   
+                   for (const cm of categoryModified.category){
+                    cats.push(CategoryID.create(cm));
+                   }
+                  this.categories = cats;
+                  break;
+          
+                 case 'ProductDiscountModified':
+                  const discountModified = event as ProductDiscountModified;
+                  this.discount = discountModified.discount ? DiscountID.create(discountModified.discount) : undefined;
+                    break;
+          
+                  case 'ProductImagesModified':
+                  const imagesModified = event as ProductImagesModified;
+                  
+                  let imas: ProductImage[] = [];
+                   
+                  for (const im of imagesModified.images){
+                   imas.push(ProductImage.create(im));
+                  }
+                 this.images = imas;
+                 break;
+                 
         }
     }
     
