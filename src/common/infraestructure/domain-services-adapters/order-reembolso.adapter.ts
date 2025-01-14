@@ -15,8 +15,7 @@ export class StripeOrderReembolsoAdapter implements IOrderReembolsoPort {
   async execute(orden: Order): Promise<Result<string>> {
     try {
       if (
-        !orden.Estado.equals(OrderEstado.create(EnumOrderEstados.CANCELLED)) &&
-        !orden.Estado.equals(OrderEstado.create(EnumOrderEstados.CREADA))
+        !orden.Estado.equals(OrderEstado.create(EnumOrderEstados.CANCELLED))
       ) {
         return Result.fail<string>(new Error('La orden debe estar cancelada'), 403, 'La orden debe estar cancelada');
       }
