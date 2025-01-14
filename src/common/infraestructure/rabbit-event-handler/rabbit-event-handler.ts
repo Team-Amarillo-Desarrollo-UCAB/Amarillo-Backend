@@ -192,6 +192,7 @@ export class RabbitEventBus implements IEventHandler {
                             )
                             break;
                         case 'OrderBillRecivied':
+                            console.log("Es el evento de factura")
                             event = OrderBillRecivied.create(
                                 event_data.id,
                                 event_data.factura

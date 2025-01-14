@@ -286,11 +286,6 @@ export class OrderController {
             sender.sendEmail(user.email, user.name, order_id);
         }, 'Notificar orden de compra');
 
-        // Envia correo electronico para informar de la creacion de la orden
-        await this.eventBus.subscribe('OrderBillRecivied', async (event: OrderBillRecivied) => {
-            const sender = new NodemailerEmailSender();
-            sender.sendCharge(user.email, user.name, event.id, event.factura);
-        }, 'Notificar factura de la orden');
 
         // Envia notificacion push sobre la creacion de la orden
         await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
@@ -330,6 +325,14 @@ export class OrderController {
             }
 
         }, 'Decrementar el stock')
+
+        // Envia correo electronico para informar de la creacion de la orden
+        await this.eventBus.subscribe('OrderBillRecivied', async (event: OrderBillRecivied) => {
+            console.log("Evento en ejecucion: ", event)
+            const sender = new NodemailerEmailSender();
+            sender.sendCharge(user.email, user.name, event.id, event.factura);
+        }, 'Notificar factura de la orden');
+
 
         const allowedRoles = ['ADMIN', 'CLIENT'];
 
@@ -631,12 +634,6 @@ export class OrderController {
             sender.sendEmail(user.email, user.name, order_id);
         }, 'Notificar orden de compra');
 
-        // Envia correo electronico para informar de la creacion de la orden
-        await this.eventBus.subscribe('OrderBillRecivied', async (event: OrderBillRecivied) => {
-            const sender = new NodemailerEmailSender();
-            sender.sendCharge(user.email, user.name, event.id, event.factura);
-        }, 'Notificar factura de la orden');
-
         // Envia notificacion push sobre la creacion de la orden
         await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
             const service = new NotifyOrderCreatedService(
@@ -675,6 +672,13 @@ export class OrderController {
             }
 
         }, 'Decrementar el stock')
+
+        // Envia correo electronico para informar de la creacion de la orden
+        await this.eventBus.subscribe('OrderBillRecivied', async (event: OrderBillRecivied) => {
+            console.log("Evento en ejecucion: ", event)
+            const sender = new NodemailerEmailSender();
+            sender.sendCharge(user.email, user.name, event.id, event.factura);
+        }, 'Notificar factura de la orden');
 
         const data: CreateOrderEntryServiceDTO = {
             userId: user.id,
