@@ -41,7 +41,6 @@ import { GetCategoryByNameService } from 'src/category/application/queries/get-c
 import { CloudinaryFileUploader } from 'src/common/infraestructure/cloudinary-file-uploader/cloudinary-file-uploader';
 import { UpdateCategoryEntryDTO } from '../DTO/entry/update-category-entry-infraestructure';
 import { UpdateCategoryApplicationService } from 'src/category/application/commands/update-category.service';
-import { EventBus } from 'src/common/infraestructure/event-bus/event-bus';
 import { DeleteCategoryServiceEntryDto } from 'src/category/application/dto/entry/delete-category-service-entry.dto';
 import { DeleteCategoryInfraEntryDto } from '../DTO/entry/delete-category-infra-enty.dto';
 import { DeleteCategoryApplicationService } from 'src/category/application/commands/delete-category.service';
@@ -57,6 +56,7 @@ import { AuditingDecorator } from 'src/common/application/application-services/d
 import { OrmAccountRepository } from 'src/user/infraestructure/repositories/orm-repositories/orm-account-repository';
 import { OrmAuditingRepository } from 'src/common/infraestructure/auditing/repositories/orm-auditing-repository';
 import { DeleteCategoryInfraResponseDto } from '../DTO/response/delete-category-infra-response.dto';
+import { RabbitEventBus } from 'src/common/infraestructure/rabbit-event-handler/rabbit-event-handler';
 
 
 @ApiTags("Category")
@@ -310,7 +310,7 @@ export class CategoryController {
     @Body() updateEntryDTO: UpdateCategoryEntryDTO, @GetUser() user 
   ): Promise<string> {
     let image = null; 
-    const eventBus = EventBus.getInstance()
+    const eventBus = RabbitEventBus.getInstance()
 
     
     if (updateEntryDTO.image) {
@@ -371,7 +371,7 @@ export class CategoryController {
     @Param('id', ParseUUIDPipe) id: string, @GetUser() user
   ): Promise<DeleteCategoryInfraResponseDto> {
     const infraEntryDto: DeleteCategoryInfraEntryDto = { categoryId: id };
-    const eventBus = EventBus.getInstance()
+    const eventBus = RabbitEventBus.getInstance()
 
     const serviceEntryDto: DeleteCategoryServiceEntryDto = {
       id: infraEntryDto.categoryId,
