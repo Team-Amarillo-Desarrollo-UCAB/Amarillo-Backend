@@ -62,6 +62,8 @@ export class NotifyOrderCreatedService implements
             }
         }
         const result = await this.pushNotifier.sendNotificationPush(pushMessage)
+        console.log("Valor de isSuccess de result es:",result.isSuccess())
+        console.log("Valor de error:",result.Error,"y mensaje del error:",result.Message)
         if (!result.isSuccess())
             return Result.fail<string>(result.Error, 500, result.Message)
 

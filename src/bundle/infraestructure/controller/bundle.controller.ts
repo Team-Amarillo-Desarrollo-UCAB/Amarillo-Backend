@@ -63,6 +63,16 @@ import { OrmUserRepository } from 'src/user/infraestructure/repositories/orm-rep
 import { UserMapper } from 'src/user/infraestructure/mappers/orm-mapper/user-mapper';
 import { SecurityDecorator } from 'src/common/application/application-services/decorators/security-decorator/security-decorator';
 import { OrmAccountRepository } from 'src/user/infraestructure/repositories/orm-repositories/orm-account-repository';
+import { FirebaseNotifier } from 'src/notification/infraestructure/notifier/firebase-notifier';
+import { INotificationAddressRepository } from 'src/notification/infraestructure/interface/notification-address-repository.interface';
+import { INotificationAlertRepository } from 'src/notification/infraestructure/interface/notification-alert-repository.interface';
+import { OrmNotificationAddressRepository } from 'src/notification/infraestructure/repositories/orm-notification-address-repository';
+import { OrmNotificationAlertRepository } from 'src/notification/infraestructure/repositories/orm-notification-alert-repository';
+import { RabbitEventBus } from 'src/common/infraestructure/rabbit-event-handler/rabbit-event-handler';
+import { BundleDiscountModified } from 'src/bundle/domain/events/bundle-discount-modified';
+import { NotifyBundleDiscountService } from 'src/notification/infraestructure/services/notification-services/notify-bundle-discount.service';
+import { IDiscountRepository } from 'src/discount/domain/repositories/discount.repository.interface';
+import { NotifyBundleDiscountServiceEntryDTO } from 'src/notification/infraestructure/services/dto/entry/notify-bundle-discount-service-entry.dto';
 
 
 @ApiTags("Bundle")
@@ -75,6 +85,11 @@ export class BundleController {
   private readonly categoryMapper: OrmCategoryMapper
   private readonly auditingRepository: OrmAuditingRepository;
   private readonly accountUserRepository: OrmAccountRepository;
+  private readonly firebaseNotifier = FirebaseNotifier.getInstance()
+  private readonly eventBus = RabbitEventBus.getInstance();
+  private readonly notiAddressRepository: INotificationAddressRepository
+  private readonly notiAlertRepository: INotificationAlertRepository
+  private readonly discountRepo: IDiscountRepository
 
 
   constructor(
@@ -82,13 +97,15 @@ export class BundleController {
     
     private readonly categoriesExistenceService: CategoriesExistenceService,
     private readonly productExistenceService: ProductsExistenceService,
-    private readonly discountExistenceService: DiscountExistenceService
+    private readonly discountExistenceService: DiscountExistenceService,
+    
 
   ) {
     this.bundleRepository = new OrmBundleRepository(
       new BundleMapper(),
       this.dataSource//
     );
+    this.discountRepo = new OrmDiscountRepository(new OrmDiscountMapper(), this.dataSource)
     this.idGenerator = new UuidGenerator();
     this.fileUploader = new CloudinaryFileUploader();
     this.categoriesExistenceService = new CategoriesExistenceService(new OrmCategoryRepository(new OrmCategoryMapper(), this.dataSource))
@@ -106,9 +123,11 @@ export class BundleController {
           this.dataSource
         )
       )
-    this.discountExistenceService = new DiscountExistenceService(new OrmDiscountRepository(new OrmDiscountMapper(), this.dataSource))
+    this.discountExistenceService = new DiscountExistenceService(this.discountRepo)
     this.auditingRepository = new OrmAuditingRepository(dataSource)  
     this.accountUserRepository = new OrmAccountRepository(dataSource)
+    this.notiAddressRepository = new OrmNotificationAddressRepository(dataSource)
+    this.notiAlertRepository = new OrmNotificationAlertRepository(dataSource)
   }
 
   /**
@@ -326,10 +345,22 @@ export class BundleController {
             ...request
         }
 
-        const eventBus = EventBus.getInstance()
-
-        console.log("request: ", request)
-
+        await this.eventBus.subscribe('BundleDiscountModified', async (event: BundleDiscountModified) => {
+          const service = new NotifyBundleDiscountService(
+              this.notiAddressRepository,
+              this.notiAlertRepository,
+              this.bundleRepository,
+              this.idGenerator,
+              FirebaseNotifier.getInstance(),
+              this.discountRepo
+          )
+          const entry: NotifyBundleDiscountServiceEntryDTO = {
+            userId: user.id,
+            bundle_id: event.id
+          }
+          const response = await service.execute(entry)
+          console.log("Resultado servicio: ", response.isSuccess())
+      }, 'Notificar via push por combo descuento modificado');
 
       const allowedRoles = ['ADMIN'];
   
@@ -340,7 +371,7 @@ export class BundleController {
                       new PerformanceDecorator(
                         new UpdateBundleApplicationService (
                           this.bundleRepository,
-                        eventBus
+                          this.eventBus
                       ),
                           new NativeLogger(this.logger)
                       ),

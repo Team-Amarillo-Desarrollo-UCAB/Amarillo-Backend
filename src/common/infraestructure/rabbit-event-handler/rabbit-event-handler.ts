@@ -1,4 +1,5 @@
 import * as amqp from 'amqplib'
+import { BundleDiscountModified } from 'src/bundle/domain/events/bundle-discount-modified'
 import { BundleID } from 'src/bundle/domain/value-objects/bundle-id'
 
 import { IEventHandler } from "src/common/application/event-handler/event-handler.interface"
@@ -220,6 +221,11 @@ export class RabbitEventBus implements IEventHandler {
                                 event_data.userRole
                             );
                             break;
+                        case 'BundleDiscountModified':
+                            event = BundleDiscountModified.create(
+                                event_data.id,
+                                event_data.discount
+                            )
                     }
 
                     // Ejecutar el callback con el evento procesado

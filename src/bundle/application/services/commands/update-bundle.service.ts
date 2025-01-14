@@ -154,6 +154,8 @@ export class UpdateBundleApplicationService
 
     };
 
+    await this.eventHandler.publish(bundleR.pullEvents())
+
     return Result.success<UpdateBundleServiceResponseDto>(response, 200);
   }
 

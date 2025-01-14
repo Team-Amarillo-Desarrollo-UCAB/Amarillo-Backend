@@ -48,7 +48,7 @@ import { NotificationController } from './notification/infraestructure/controlle
     BundleController,
     DiscountController,
     PaymentMethodController,
-    NotificationController
+    NotificationController,
   ],
   providers: [
     Logger,
