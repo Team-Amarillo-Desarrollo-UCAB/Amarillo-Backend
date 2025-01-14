@@ -11,6 +11,7 @@ import { DiscountObjectMother } from "test/common/objects-mock/discount.object-m
 import { PaymentMethodObjectMock } from "test/common/objects-mock/payment-method.object-mother";
 import { ProductObjectMother } from "test/common/objects-mock/product.object-mother";
 import { UserObjectMother } from "test/common/objects-mock/user.object-mother";
+import { StripePaymentMethodMock } from "test/common/other-mock/payment-stripe.mock";
 import { ShippingFeeLocationMock } from "test/common/other-mock/shipping-fee-location.mock";
 import { UuidGeneratorMock } from "test/common/other-mock/uuid-generator.mock";
 import { BundleRepositoryMock } from "test/common/repository-mock/bundle-repository.mock";
@@ -49,8 +50,8 @@ describe('Create order', () => {
             userId: user.Id.Id,
             orderReciviedDate: '2025-10-5',
             address: 'Universidad Catolinca Andres Bello',
-            latitud: 10.4854606,
-            longitud: -66.9343683,
+            latitude: 10.4854606,
+            longitude: -66.9343683,
             products: [
                 {
                     id: product.Id.Id,
@@ -116,8 +117,8 @@ describe('Create order', () => {
             userId: user.Id.Id,
             orderReciviedDate: '2025-10-5',
             address: 'Universidad Catolinca Andres Bello',
-            latitud: 10.4854606,
-            longitud: -66.9343683,
+            latitude: 10.4854606,
+            longitude: -66.9343683,
             products: [
                 {
                     id: product.Id.Id,
@@ -174,7 +175,7 @@ describe('Create order', () => {
         const bundleRepositoryMock = new BundleRepositoryMock()
         await bundleRepositoryMock.addBundle(bundle)
 
-        const metodo_pago = await PaymentMethodObjectMock.createNormal(EnumPaymentMethod.PAYPAL)
+        const metodo_pago = await PaymentMethodObjectMock.createNormal(EnumPaymentMethod.STRIPE)
         const paymentMethodRepositoryMock = new PaymentMethodRepositoryMock()
         await paymentMethodRepositoryMock.savePaymentMethodAggregate(metodo_pago)
 
@@ -184,8 +185,8 @@ describe('Create order', () => {
             userId: user.Id.Id,
             orderReciviedDate: '2025-10-5',
             address: 'Universidad Catolinca Andres Bello',
-            latitud: 10.4854606,
-            longitud: -66.9343683,
+            latitude: 10.4854606,
+            longitude: -66.9343683,
             products: [
                 {
                     id: product.Id.Id,
@@ -211,8 +212,7 @@ describe('Create order', () => {
             new UuidGeneratorMock(),
             new EventHandlerMock(),
             new OrderCalculationTotal(
-                new StripePaymentMethod(
-                    "pm_token_card",
+                new StripePaymentMethodMock(
                     new UuidGeneratorMock(),
                     paymentMethodRepositoryMock,
                     metodo_pago.Id.Id
@@ -252,8 +252,8 @@ describe('Create order', () => {
             userId: user.Id.Id,
             orderReciviedDate: '2025-10-5',
             address: 'Universidad Catolinca Andres Bello',
-            latitud: 10.4854606,
-            longitud: -66.9343683,
+            latitude: 10.4854606,
+            longitude: -66.9343683,
             products: [],
             bundles: []
         }
@@ -308,8 +308,8 @@ describe('Create order', () => {
             userId: user.Id.Id,
             orderReciviedDate: '2025-10-5',
             address: 'Universidad Catolinca Andres Bello',
-            latitud: 10.4854606,
-            longitud: -66.9343683,
+            latitude: 10.4854606,
+            longitude: -66.9343683,
             products: [
                 {
                     id: product.Id.Id,

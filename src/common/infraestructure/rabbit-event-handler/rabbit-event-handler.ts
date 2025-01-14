@@ -7,6 +7,7 @@ import { IEventSubscriber } from "src/common/application/event-handler/subscribe
 import { DomainEvent } from "src/common/domain/domain-event/domain-event.interface"
 import { Result } from 'src/common/domain/result-handler/Result'
 import { OrderTotalCalculated } from 'src/order/domain/domain-event/order-amount-calculated'
+import { OrderBillRecivied } from 'src/order/domain/domain-event/order-bill-recivied'
 import { OrderCreated } from "src/order/domain/domain-event/order-created-event"
 import { OrderRefunded } from 'src/order/domain/domain-event/order-refunded-event'
 import { OrderStateChanged } from 'src/order/domain/domain-event/order-state-changed'
@@ -15,12 +16,14 @@ import { OrderProduct } from 'src/order/domain/entites/order-product'
 import { OrderBundleAmount } from 'src/order/domain/value-object/order-bundle/order-bundle-amount'
 import { OrderBundleCantidad } from 'src/order/domain/value-object/order-bundle/order-bundle-cantidad'
 import { OrderBundleCurrency } from 'src/order/domain/value-object/order-bundle/order-bundle-currency'
+import { OrderBundleImage } from 'src/order/domain/value-object/order-bundle/order-bundle-image'
 import { OrderBundleName } from 'src/order/domain/value-object/order-bundle/order-bundle-name'
 import { OrderBundlePrice } from 'src/order/domain/value-object/order-bundle/order-bundle-price'
 import { OrderLocationDelivery } from 'src/order/domain/value-object/order-location-delivery'
 import { OrderProductAmount } from 'src/order/domain/value-object/order-product/order-product-amount'
 import { OrderProductCantidad } from 'src/order/domain/value-object/order-product/order-product-cantidad'
 import { OrderProductCurrency } from 'src/order/domain/value-object/order-product/order-product-currency'
+import { OrderProductImage } from 'src/order/domain/value-object/order-product/order-product-image'
 import { OrderProductName } from 'src/order/domain/value-object/order-product/order-product-name'
 import { OrderProductPrice } from 'src/order/domain/value-object/order-product/order-product-price'
 import { ProductCreated } from 'src/product/domain/domain-event/product-created-event'
@@ -90,12 +93,12 @@ export class RabbitEventBus implements IEventHandler {
                 console.log(`Mensaje enviado al exchange ${exchange} con routingKey ${routingKey}:`);
             }
 
-            return Result.success(null,500)
+            return Result.success(null, 500)
 
             //await channel.close();
         } catch (error) {
             console.error("Error al publicar el evento:", error);
-            Result.fail(error,500,'Error al publicar el evento')
+            Result.fail(error, 500, 'Error al publicar el evento')
         }
     }
 
@@ -138,7 +141,8 @@ export class RabbitEventBus implements IEventHandler {
                                             OrderProductPrice.create(
                                                 OrderProductAmount.create(p.precio.amount),
                                                 OrderProductCurrency.create(p.precio.currency)
-                                            )
+                                            ),
+                                            OrderProductImage.create(p.image.url)
                                         )
                                     })
                                 ),
@@ -151,7 +155,8 @@ export class RabbitEventBus implements IEventHandler {
                                             OrderBundlePrice.create(
                                                 OrderBundleAmount.create(c.precio.amount),
                                                 OrderBundleCurrency.create(c.precio.currency)
-                                            )
+                                            ),
+                                            OrderBundleImage.create(c.image.url)
                                         )
                                     })
                                 ),
@@ -186,6 +191,12 @@ export class RabbitEventBus implements IEventHandler {
                                 event_data.moneda
                             )
                             break;
+                        case 'OrderBillRecivied':
+                            event = OrderBillRecivied.create(
+                                event_data.id,
+                                event_data.factura
+                            )
+                            break;
                         case 'ProductCreated':
                             event = ProductCreated.create(
                                 event_data.id,
@@ -204,6 +215,7 @@ export class RabbitEventBus implements IEventHandler {
                             event = testCreated.create(
                                 event_data.msg
                             )
+                            break;
                         case 'UserCreated':
                             event = UserCreated.create(
                                 event_data.userId,
@@ -229,7 +241,8 @@ export class RabbitEventBus implements IEventHandler {
                             event = BundleDiscountModified.create(
                                 event_data.id,
                                 event_data.discount
-                            )
+                            );
+                            break;
                     }
 
                     // Ejecutar el callback con el evento procesado
@@ -248,14 +261,14 @@ export class RabbitEventBus implements IEventHandler {
             }, { noAck: false });
 
         } catch (error) {
-            return Result.fail(error,500,error.message)
+            return Result.fail(error, 500, error.message)
         }
 
         return Result.success({
             unsubscribe: async () => {
                 console.log(`Desuscribiéndose del evento ${eventName}`);
             }
-        },200);
+        }, 200);
     }
 
 

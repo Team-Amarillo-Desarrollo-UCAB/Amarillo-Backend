@@ -115,6 +115,7 @@ import { SecurityDecorator } from "src/common/application/application-services/d
 import { OrmAccountRepository } from "src/user/infraestructure/repositories/orm-repositories/orm-account-repository";
 import { NotifyOrderCreatedService } from "src/notification/infraestructure/services/notification-services/notify-created-order.service";
 import { NotifyCreatedOrderServiceEntryDTO } from "src/notification/infraestructure/services/dto/entry/notify-created-order-service-entry.dto";
+import { OrderBillRecivied } from "src/order/domain/domain-event/order-bill-recivied";
 
 @ApiTags("Order")
 @Controller("order")
@@ -273,7 +274,7 @@ export class OrderController {
                 this.idGenerator,
                 this.paymentMethodRepository,
                 //PaymentMethodName.create(request.paymentMethod),
-                request.idPayment
+                request.idPayment,
             )
         }
 
@@ -284,6 +285,12 @@ export class OrderController {
             console.log("Receptor: ", user.email)
             sender.sendEmail(user.email, user.name, order_id);
         }, 'Notificar orden de compra');
+
+        // Envia correo electronico para informar de la creacion de la orden
+        await this.eventBus.subscribe('OrderBillRecivied', async (event: OrderBillRecivied) => {
+            const sender = new NodemailerEmailSender();
+            sender.sendCharge(user.email, user.name, event.id, event.factura);
+        }, 'Notificar factura de la orden');
 
         // Envia notificacion push sobre la creacion de la orden
         await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
@@ -624,6 +631,12 @@ export class OrderController {
             sender.sendEmail(user.email, user.name, order_id);
         }, 'Notificar orden de compra');
 
+        // Envia correo electronico para informar de la creacion de la orden
+        await this.eventBus.subscribe('OrderBillRecivied', async (event: OrderBillRecivied) => {
+            const sender = new NodemailerEmailSender();
+            sender.sendCharge(user.email, user.name, event.id, event.factura);
+        }, 'Notificar factura de la orden');
+
         // Envia notificacion push sobre la creacion de la orden
         await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
             const service = new NotifyOrderCreatedService(
@@ -691,7 +704,7 @@ export class OrderController {
                                             request.token,
                                             this.idGenerator,
                                             this.paymentMethodRepository,
-                                            request.idPayment
+                                            request.idPayment,
                                         ),
                                         this.taxes,
                                         new ShippingFeeDistance()

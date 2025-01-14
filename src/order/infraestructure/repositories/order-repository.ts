@@ -230,7 +230,6 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
 
             return Result.success<Order[]>(result, 202)
         } catch (error) {
-            console.log(error)
             return Result.fail<Order[]>(new Error(`Error al buscar las ordenes`), 500, `Error al buscar las ordenes`)
         }
     }

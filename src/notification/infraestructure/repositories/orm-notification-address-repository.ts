@@ -56,4 +56,17 @@ INotificationAddressRepository
         }
     }
 
+    async findAllTokensByUser(userId: string): Promise<Result<OrmNotificationAdressEntity[]>> {
+        try {
+            const tokens = await this.find({
+                where: {
+                    user_id: userId
+                }
+            })
+            return Result.success<OrmNotificationAdressEntity[]>(tokens, 200)
+        } catch (error) {
+            return Result.fail<OrmNotificationAdressEntity[]>(error, 500, "Error buscando PushToken")
+        }
+    }
+
 }

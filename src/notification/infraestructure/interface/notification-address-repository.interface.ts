@@ -5,5 +5,5 @@ export interface INotificationAddressRepository {
     findTokenByIdUser(userId: string): Promise<Result<OrmNotificationAdressEntity>>
     saveNotificationAddress(noti_address: OrmNotificationAdressEntity): Promise<Result<OrmNotificationAdressEntity>>
     findAllTokens(): Promise<Result<OrmNotificationAdressEntity[]>>
-
+    findAllTokensByUser(userId: string): Promise<Result<OrmNotificationAdressEntity[]>>
 }
