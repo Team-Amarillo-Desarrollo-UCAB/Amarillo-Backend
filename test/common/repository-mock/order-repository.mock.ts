@@ -10,6 +10,7 @@ import { Estado_Orden } from "src/order/infraestructure/entites/Estado-orden/est
 import { Payment } from "src/order/infraestructure/entites/payment.entity";
 import { UserId } from "src/user/domain/value-object/user-id";
 import { EstadoRepositoryMock } from "./estado-repository.mock";
+import { OrderObjectMother } from "../objects-mock/order.object-mother";
 
 export class OrderRepositoryMock implements IOrderRepository {
 
@@ -19,7 +20,7 @@ export class OrderRepositoryMock implements IOrderRepository {
     private readonly orderStates: Estado_Orden[] = []
 
     constructor(
-        private readonly estadoRepository:EstadoRepositoryMock
+        private readonly estadoRepository: EstadoRepositoryMock
     ) { }
 
     async saveOrderAggregate(order: Order): Promise<Result<Order>> {
@@ -43,14 +44,19 @@ export class OrderRepositoryMock implements IOrderRepository {
         return Result.success<Order>(order, 200);
     }
 
-    async saveReport(order: Order, reporte: OrderReport): Promise<Result<OrderReport>> {
-        this.reports.push(reporte);
+    async saveReport(order: Order): Promise<Result<OrderReport>> {
+
         const orderIndex = this.orders.findIndex(o => o.Id.Id === order.Id.Id);
+
         if (orderIndex === -1) {
             return Result.fail<OrderReport>(new Error('Order not found'), 404, 'Order not found');
         }
-        //this.orders[orderIndex].Reporte = reporte;
-        return Result.success<OrderReport>(reporte, 200);
+
+        const orden = OrderObjectMother.createOrderWithReport()
+
+        this.orders[orderIndex] = orden
+
+        return Result.success<OrderReport>(orden.Reporte, 200)
     }
 
     async changeOrderState(order: Order): Promise<Result<Order>> {
