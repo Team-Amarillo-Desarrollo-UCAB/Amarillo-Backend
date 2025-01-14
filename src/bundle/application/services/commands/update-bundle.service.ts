@@ -13,6 +13,8 @@ import { BundleCaducityDate } from "src/bundle/domain/value-objects/bundle-caduc
 import { DiscountID } from "src/discount/domain/value-objects/discount-id";
 import { CategoryID } from "src/category/domain/value-objects/category-id";
 import { ProductId } from "src/product/domain/value-objects/product-id";
+import { ProductImage } from "src/product/domain/value-objects/product-image";
+import { BundleImage } from "src/bundle/domain/value-objects/bundle-image";
 
 export class UpdateBundleApplicationService 
   implements IApplicationService<UpdateBundleServiceEntryDto, UpdateBundleServiceResponseDto> {
@@ -131,8 +133,8 @@ export class UpdateBundleApplicationService
 
       let ims = []
 
-      for (const i of data.productId){
-       ims.push(ProductId.create(i))
+      for (const i of data.images){
+       ims.push(BundleImage.create(i))
       }
       bundleR.updateImages(ims)
      }
@@ -153,6 +155,8 @@ export class UpdateBundleApplicationService
         id: data.id
 
     };
+
+    await this.eventHandler.publish(bundleR.pullEvents())
 
     return Result.success<UpdateBundleServiceResponseDto>(response, 200);
   }

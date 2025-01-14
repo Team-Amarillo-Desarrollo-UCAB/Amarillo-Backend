@@ -44,8 +44,8 @@ export class NotifyNewProductService implements
 
         const producto = find_product.Value
         const listTokens = find_tokens.Value
-        const pushTitle = 'New product available now'
-        const pushBody = producto.Name + " is available with the price of " + producto.Price + producto.Moneda + ' theres only ' + producto.Stock
+        const pushTitle = 'NUEVO PRODUCTO DISPONIBLE!'
+        const pushBody = producto.Name + " disponible por " + producto.Moneda + producto.Price
 
         listTokens.forEach(async e => {
             this.notiAlertRepository.saveNotificationAlert({
