@@ -25,16 +25,11 @@ export class UpdateProductEntryDTO {
     description: string
 
     @ApiProperty({
-        example: "gm"
+        example: 'base64image',
     })
-    @IsEnum(UnidadMedida)
-    measurement: UnidadMedida
-
-    @ApiProperty({
-        example: 200
-    })
-    @IsNumber()
-    weight: number
+    @IsArray()
+    @IsString({ each: true })
+    images: string[];
 
     @ApiProperty({
         example: 2
@@ -50,18 +45,25 @@ export class UpdateProductEntryDTO {
     currency: Moneda
 
     @ApiProperty({
+        example: 200
+    })
+    @IsNumber()
+    weight: number
+
+    @ApiProperty({
+        example: "gm"
+    })
+    @IsEnum(UnidadMedida)
+    measurement: UnidadMedida
+
+
+    @ApiProperty({
         example: 500
     })
     @IsNumber()
     @Min(1)
     stock: number
 
-    @ApiProperty({
-        example: 'base64image',
-    })
-    @IsArray()
-    @IsString({ each: true })
-    images: string[];
 
     @ApiProperty({
         example: 'id de las categorias',
