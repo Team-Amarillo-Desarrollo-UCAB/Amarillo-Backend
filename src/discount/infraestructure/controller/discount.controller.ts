@@ -31,7 +31,6 @@ import { GetAllDiscountsResponseDTO } from '../dto/response/get-all-discounts-re
 import { PaginationDto } from 'src/common/infraestructure/dto/entry/pagination.dto';
 import { GetAllDiscountService } from 'src/discount/application/services/queries/get-all-discount.service';
 import { GetAllDiscountServiceEntryDTO } from 'src/discount/application/dto/entry/get-all-discount-service.dto';
-import { EventBus } from 'src/common/infraestructure/event-bus/event-bus';
 import { ExceptionDecorator } from 'src/common/application/application-services/decorators/exception-decorator/exception.decorator';
 import { PerformanceDecorator } from 'src/common/application/application-services/decorators/performance-decorator/performance-decorator';
 import { SecurityDecorator } from 'src/common/application/application-services/decorators/security-decorator/security-decorator';
@@ -48,6 +47,7 @@ import { JwtAuthGuard } from 'src/auth/infraestructure/jwt/decorator/jwt-auth.gu
 import { DeleteDiscountApplicationService } from 'src/discount/application/services/commands/delete-discount.service';
 import { DeleteDiscountServiceEntryDto } from 'src/discount/application/dto/entry/delete-discount-service-entry.dto';
 import { DeleteDiscountResponseDTO } from '../dto/response/delete-discount-response.dto';
+import { RabbitEventBus } from 'src/common/infraestructure/rabbit-event-handler/rabbit-event-handler';
 
 
 @ApiTags('Discount')
@@ -234,7 +234,7 @@ export class DiscountController {
           ...request
       }
   
-      const eventBus = EventBus.getInstance();
+      const eventBus = RabbitEventBus.getInstance();
   
       const allowedRoles = ['ADMIN'];
   
@@ -274,7 +274,7 @@ async deleteDiscount(
     @Param('id', ParseUUIDPipe) id: string, @GetUser() user
 ): Promise<DeleteDiscountResponseDTO> {
     const infraEntryDto: DeleteDiscountResponseDTO = { id: id };
-    const eventBus = EventBus.getInstance();
+    const eventBus = RabbitEventBus.getInstance();
 
     const serviceEntryDto: DeleteDiscountServiceEntryDto = {
         id: infraEntryDto.id,

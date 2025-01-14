@@ -33,7 +33,7 @@ export class OrderObjectMother {
         return Order.create(
             OrderId.create('cb0e2f2c-1326-428e-9fd4-b7822ff94ab7'),
             OrderEstado.create(EnumOrderEstados.CREADA),
-            OrderCreationDate.create(new Date('2026-12-02')),
+            OrderCreationDate.create(new Date('2025-01-13')),
             OrderLocationDelivery.create('Universidad Catolia', 74.0060, 40.7128),
             [OrderProduct.create(
                 ProductId.create('cb0e2f2c-1326-428e-9fd4-b7822ff94ab7'),
@@ -54,7 +54,7 @@ export class OrderObjectMother {
                 )
             )],
             OrderReciviedDate.create(new Date('2026-12-03')),
-            UserId.create('c1L22f2c-1326-428e-9fd4-b7822ff94ab7')
+            UserId.create('cb0e2f2c-1326-428e-9fd4-b7822ff94ab0')
         )
     }
 

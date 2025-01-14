@@ -27,6 +27,7 @@ import { OrderInstructions } from "./value-object/order-instructions";
 import { OrderReciviedDateModified } from "./domain-event/order-recivied-date-modified-event";
 import { OrderProcessed } from "./domain-event/order-processed-event";
 import { OrderStateChanged } from "./domain-event/order-state-changed";
+import { OrderLocationDeliveryModified } from "./domain-event/order-location-delivery-modified-event";
 
 export class Order extends AggregateRoot<OrderId> {
 
@@ -221,7 +222,13 @@ export class Order extends AggregateRoot<OrderId> {
     }
 
     modifiedLocationDelivery(direccion: OrderLocationDelivery): void {
-
+        const event = OrderLocationDeliveryModified.create(
+            this.Id.Id,
+            direccion.Longitud,
+            direccion.Latitud,
+            direccion.Direccion
+        )
+        this.onEvent(event)
     }
 
     modifiedReciviedDate(frecha_entrega: OrderReciviedDate): void {
@@ -252,6 +259,14 @@ export class Order extends AggregateRoot<OrderId> {
             case 'OrderReciviedDateModified':
                 const evento = event as OrderReciviedDateModified
                 this.fecha_entrega = OrderReciviedDate.create(evento.fecha_entrega)
+                break;
+            case 'OrderLocationDeliveryModified':
+                const orderLocationDeliveryModified = event as OrderLocationDeliveryModified
+                this.ubicacion = OrderLocationDelivery.create(
+                    orderLocationDeliveryModified.ubicacion,
+                    orderLocationDeliveryModified.longitud,
+                    orderLocationDeliveryModified.latitud
+                )
                 break;
         }
     }
