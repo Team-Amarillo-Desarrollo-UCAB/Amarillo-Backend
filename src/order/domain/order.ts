@@ -186,8 +186,8 @@ export class Order extends AggregateRoot<OrderId> {
     }
 
     private cancelarOrden() {
-        if (this.estado.equals(OrderEstado.create(EnumOrderEstados.EN_CAMINO)))
-            throw new InvalidOrderState('La orden no se puede cancelar debido a que esta en camino')
+        if (!this.estado.equals(OrderEstado.create(EnumOrderEstados.CREATED)))
+            throw new InvalidOrderState('La orden no se puede cancelar debido a que no esta en estado creada')
 
         this.estado = OrderEstado.create(EnumOrderEstados.CANCELLED)
         this.events.push(
