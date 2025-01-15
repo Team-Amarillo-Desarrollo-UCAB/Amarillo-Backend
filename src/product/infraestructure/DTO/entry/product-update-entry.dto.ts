@@ -16,45 +16,52 @@ export class UpdateProductEntryDTO {
         example: 'Cheese Tris'
     })
     @IsString()
-    name: string
+    @IsOptional()
+    name?: string
 
     @ApiProperty({
         example: 'El mejor queso del mundo'
     })
     @IsString()
-    description: string
+    @IsOptional()
+    description?: string
 
     @ApiProperty({
         example: 'base64image',
     })
     @IsArray()
     @IsString({ each: true })
-    images: string[];
+    @IsOptional()
+    images?: string[];
 
     @ApiProperty({
         example: 2
     })
     @IsNumber()
     @Min(1)
-    price: number
+    @IsOptional()
+    price?: number
 
     @ApiProperty({
         example: "$"
     })
     @IsEnum(Moneda)
-    currency: Moneda
+    @IsOptional()
+    currency?: Moneda
 
     @ApiProperty({
         example: 200
     })
     @IsNumber()
-    weight: number
+    @IsOptional()
+    weight?: number
 
     @ApiProperty({
         example: "gm"
     })
     @IsEnum(UnidadMedida)
-    measurement: UnidadMedida
+    @IsOptional()
+    measurement?: UnidadMedida
 
 
     @ApiProperty({
@@ -62,7 +69,8 @@ export class UpdateProductEntryDTO {
     })
     @IsNumber()
     @Min(1)
-    stock: number
+    @IsOptional()
+    stock?: number
 
 
     @ApiProperty({
@@ -72,7 +80,7 @@ export class UpdateProductEntryDTO {
     @IsOptional()
     @IsArray()
     @IsString({ each: true })
-    category: string[];
+    category?: string[];
 
     @ApiProperty({
         example: '"caducityDate": "2024-12-31T23:59:59.000Z"'

@@ -63,7 +63,7 @@ export class CreateProductEntryDTO {
     @IsOptional()
     @IsArray()
     @IsString({ each: true })
-    categories: string[];
+    category: string[];
 
     @ApiProperty({
         example: 'UUID'
@@ -78,5 +78,12 @@ export class CreateProductEntryDTO {
     @IsDate()
     @IsOptional()
     caducityDate?: Date
+
+    @ApiProperty({
+        example: 'base64url'
+    })
+    @IsString()
+    @IsOptional()
+    image3d?: string;
 
 }

@@ -57,6 +57,10 @@ export class OrmProduct {
     @Column('varchar', { nullable: true })
     discount?: string;
 
+    @Column('varchar', { nullable: true })
+    image3d?: string;
+
+
 
     static create(
         id: string,
@@ -71,6 +75,7 @@ export class OrmProduct {
         categories?: string[],
         caducityDate?: Date,
         discount?:string,
+        image3d?:string
         //historicos?: HistoricoPrecio[],
     ): OrmProduct {
         const product = new OrmProduct()
@@ -87,6 +92,7 @@ export class OrmProduct {
         //product.historicos = historicos
         product.caducityDate = caducityDate;
         product.discount=discount;
+        product.image3d = image3d
 
         return product
     }

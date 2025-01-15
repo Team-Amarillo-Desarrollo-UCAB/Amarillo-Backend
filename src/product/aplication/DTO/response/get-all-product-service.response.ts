@@ -21,5 +21,6 @@ export interface GetAllProductServiceResponseDTO{
     caducityDate?:Date
     category?: string[]
     discount?:string
+    image3d?:string
 
 }
