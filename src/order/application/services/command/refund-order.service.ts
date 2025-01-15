@@ -27,16 +27,12 @@ export class RefundOrderService implements IApplicationService<RefundOrderServic
         const find_orden = await this.orderRepository.findOrderById(data.id_orden)
         if (!find_orden.isSuccess())
             return Result.fail(find_orden.Error, find_orden.StatusCode, find_orden.Message)
-
-        const reembolso = await this.refundService.execute(find_orden.Value)
+        const orden = find_orden.Value
+        const reembolso = await this.refundService.execute(orden)
         if (!reembolso.isSuccess())
             return Result.fail(reembolso.Error, reembolso.StatusCode, reembolso.Message)
 
-        await this.eventHandler.publish([OrderRefunded.create(
-            data.id_orden,
-            find_orden.Value.Payment.AmountPayment().Total,
-            find_orden.Value.Payment.CurrencyPayment().Currency
-        )])
+        await this.eventHandler.publish(orden.pullEvents())
 
         const response: RefundOrderServiceResponseDTO = {
             id_orden: find_orden.Value.Id.Id,
