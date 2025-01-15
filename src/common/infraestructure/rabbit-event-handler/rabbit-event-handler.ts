@@ -188,7 +188,8 @@ export class RabbitEventBus implements IEventHandler {
                             event = OrderRefunded.create(
                                 event_data.id,
                                 event_data.monto,
-                                event_data.moneda
+                                event_data.moneda,
+                                event_data.factura
                             )
                             break;
                         case 'OrderBillRecivied':

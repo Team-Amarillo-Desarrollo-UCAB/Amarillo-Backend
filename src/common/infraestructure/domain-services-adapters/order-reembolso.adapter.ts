@@ -59,6 +59,12 @@ export class StripeOrderReembolsoAdapter implements IOrderReembolsoPort {
         console.log('Reembolso procesado:', reembolso.status);
 
         if (reembolso.status === "succeeded") {
+
+          const charge = await this.stripe.charges.retrieve(reembolso.charge.toString())
+          const recibo: string = charge.receipt_url
+
+          orden.refundOrderEvent(orden.Payment,recibo)
+
           return Result.success<string>(
             `Reembolso exitoso. ID: ${reembolso.id}`,
             200

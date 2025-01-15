@@ -1088,6 +1088,13 @@ export class OrderController {
             console.log("Resultado servicio: ", response.isSuccess())
         }, 'Notificar reembolso de la orden');
 
+        // Envia correo electronico para informar de la creacion de la orden
+        await this.eventBus.subscribe('OrderRefunded', async (event: OrderRefunded) => {
+            console.log("Evento en ejecucion: ", event)
+            const sender = new NodemailerEmailSender();
+            sender.sendChargeRefund(user.email, user.name, event.id, event.factura);
+        }, 'Notificar factura de la orden');
+
         const data: RefundOrderServiceEntryDTO = {
             userId: user.id,
             id_orden: id
