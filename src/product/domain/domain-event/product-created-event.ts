@@ -22,7 +22,6 @@ export class ProductCreated extends DomainEvent {
         public categories: CategoryID[],
         public discount?: DiscountID,
         public caducityDate?: ProductCaducityDate,
-        public weight?: ProductWeight,
         public image3d?: Product3DImage
     ) {
         super();
@@ -41,7 +40,6 @@ export class ProductCreated extends DomainEvent {
         categories: CategoryID[],
         discount?: DiscountID,
         caducityDate?: ProductCaducityDate,
-        weight?: ProductWeight,
         image3d?: Product3DImage
     ): ProductCreated {
         return new ProductCreated(
@@ -57,7 +55,6 @@ export class ProductCreated extends DomainEvent {
             categories,
             discount,
             caducityDate,
-            weight,
             image3d
         );
     }

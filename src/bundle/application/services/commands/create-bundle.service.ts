@@ -18,6 +18,7 @@ import { CategoriesExistenceService } from '../../../../common/application/appli
 import { ProductsExistenceService } from '../queries/product-existence-check.service';
 import { DiscountExistenceService } from '../../../../common/application/application-services/common-services/discount-existence-check.service';
 import { DiscountID } from 'src/discount/domain/value-objects/discount-id';
+import { IEventHandler } from 'src/common/application/event-handler/event-handler.interface';
 
 export class CreateBundleApplicationService
   implements IApplicationService<CreateBundleServiceEntryDto, CreateBundleServiceResponseDTO>
@@ -28,6 +29,8 @@ export class CreateBundleApplicationService
   private readonly categorieExistenceService: CategoriesExistenceService;
   private readonly productExistenceService: ProductsExistenceService;
   private readonly discountExistenceService:DiscountExistenceService;
+  private readonly eventBus: IEventHandler
+  
 
   constructor(
     bundleRepository: IBundleRepository,
@@ -35,7 +38,9 @@ export class CreateBundleApplicationService
     fileUploader: IFileUploader,
     categorieExistenceService: CategoriesExistenceService, // Inyección del servicio de categorías
     productExistenceService: ProductsExistenceService, // Inyección del servicio de productos
-    discountExistenceService: DiscountExistenceService//Inyección del servicio de descuento (check)
+    discountExistenceService: DiscountExistenceService,//Inyección del servicio de descuento (check)
+    eventBus: IEventHandler
+    
   ) {
     this.bundleRepository = bundleRepository;
     this.idGenerator = idGenerator;
@@ -43,6 +48,7 @@ export class CreateBundleApplicationService
     this.categorieExistenceService = categorieExistenceService;
     this.productExistenceService = productExistenceService;
     this.discountExistenceService=discountExistenceService
+    this.eventBus=eventBus
   }
 
   async execute(data: CreateBundleServiceEntryDto): Promise<Result<CreateBundleServiceResponseDTO>> {
@@ -118,6 +124,8 @@ export class CreateBundleApplicationService
       caducityDate: bundle.caducityDate?.Value ?? null,
       discount: bundle.Discount?.Value ?? null,
     };
+
+    await this.eventBus.publish(bundle.pullEvents())
 
     // Retorna éxito si el bundle se guarda correctamente
     return Result.success(response, 200);

@@ -72,6 +72,9 @@ import { BundleDiscountModified } from 'src/bundle/domain/events/bundle-discount
 import { NotifyBundleDiscountService } from 'src/notification/infraestructure/services/notification-services/notify-bundle-discount.service';
 import { IDiscountRepository } from 'src/discount/domain/repositories/discount.repository.interface';
 import { NotifyBundleDiscountServiceEntryDTO } from 'src/notification/infraestructure/services/dto/entry/notify-bundle-discount-service-entry.dto';
+import { BundleCreated } from 'src/bundle/domain/events/bundle-created-event';
+import { NotifyNewBundleService } from 'src/notification/infraestructure/services/notification-services/notify-new-bundle.service';
+import { NotifyNewBundleServiceEntryDto } from 'src/notification/infraestructure/services/dto/entry/notify-new-bundle-service-entry.dto';
 
 
 @ApiTags("Bundle")
@@ -149,6 +152,24 @@ export class BundleController {
       measurement: entry.measurement as Measurement
     };
 
+    await this.eventBus.subscribe('BundleCreated', async (event: BundleCreated) => {
+      const service = new NotifyNewBundleService(
+          this.notiAddressRepository,
+          this.notiAlertRepository,
+          this.bundleRepository,
+          this.idGenerator,
+          FirebaseNotifier.getInstance(),
+          this.discountRepo
+      )
+      const entry: NotifyNewBundleServiceEntryDto = {
+          userId: user.id,
+          id_bundle: event.id
+      }
+      const response = await service.execute(entry)
+      console.log("Resultado servicio: ", response.isSuccess())
+  }, 'Notificar via push por bundle creado');
+  
+
 
     const allowedRoles = ['ADMIN']
 
@@ -163,7 +184,8 @@ export class BundleController {
                 this.fileUploader,
                 this.categoriesExistenceService,
                 this.productExistenceService,
-                this.discountExistenceService
+                this.discountExistenceService,
+                this.eventBus
               ),
                 new NativeLogger(this.logger)
             ),
