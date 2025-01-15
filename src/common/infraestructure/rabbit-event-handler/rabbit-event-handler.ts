@@ -1,4 +1,5 @@
 import * as amqp from 'amqplib'
+import { BundleCreated } from 'src/bundle/domain/events/bundle-created-event'
 import { BundleDiscountModified } from 'src/bundle/domain/events/bundle-discount-modified'
 import { BundleID } from 'src/bundle/domain/value-objects/bundle-id'
 
@@ -251,7 +252,43 @@ export class RabbitEventBus implements IEventHandler {
                                 event_data.id,
                                 event_data.discount
                             );
-                            break;
+                        break;
+                        case 'ProductCreated':
+                            event = ProductCreated.create(
+                                event_data.id,
+                                event_data.name,
+                                event_data.description,
+                                event_data.unit,
+                                event_data.cantidad_medida,
+                                event_data.amount,
+                                event_data.currency,
+                                event_data.images,
+                                event_data.stock,
+                                event_data.categories,
+                                event_data.discount,
+                                event_data.caducityDate,
+                                event_data.image3d
+
+                            )
+                        break;
+                        case 'BundleCreated':
+                        event = BundleCreated.create(
+                            event_data.id,
+                            event_data.name,
+                            event_data.description,
+                            event_data.measurement,
+                            event_data.weight,
+                            event_data.price,
+                            event_data.currency,
+                            event_data.categories,
+                            event_data.images,
+                            event_data.stock,
+                            event_data.products,
+                            event_data.bundleCaducityDate,
+                            event_data.discount
+                        )
+                        break;
+
                             
                     }
 

@@ -79,6 +79,9 @@ import { INotificationAlertRepository } from 'src/notification/infraestructure/i
 import { OrmNotificationAddressRepository } from 'src/notification/infraestructure/repositories/orm-notification-address-repository';
 import { OrmNotificationAlertRepository } from 'src/notification/infraestructure/repositories/orm-notification-alert-repository';
 import { NotifyProductDiscountServiceEntryDTO } from 'src/notification/infraestructure/services/dto/entry/notify-product-discount-service-entry.dto';
+import { NotifyNewProductServiceEntryDto } from 'src/notification/infraestructure/services/dto/entry/notify-new-product-service-entry.dto';
+import { NotifyNewProductService } from 'src/notification/infraestructure/services/notification-services/notify-new-product.service';
+import { ProductCreated } from 'src/product/domain/domain-event/product-created-event';
 
 @ApiTags("Product")
 @Controller("product")
@@ -145,6 +148,24 @@ export class ProductController {
             userId: user.id,
             ...entry
         }
+
+        await this.eventBus.subscribe('ProductCreated', async (event: ProductCreated) => {
+            const service = new NotifyNewProductService(
+                this.notiAddressRepository,
+                this.notiAlertRepository,
+                this.productRepository,
+                this.idGenerator,
+                FirebaseNotifier.getInstance(),
+                this.discountRepo
+            )
+            const entry: NotifyNewProductServiceEntryDto = {
+                userId: user.id,
+                id_product: event.id
+            }
+            const response = await service.execute(entry)
+            console.log("Resultado servicio: ", response.isSuccess())
+        }, 'Notificar via push por producto creado');
+        
 
         const allowedRoles = ['ADMIN']
         
@@ -435,7 +456,8 @@ export class ProductController {
                     new LoggingDecorator(
                         new PerformanceDecorator(
                             new UpdateProductService(
-                            this.productRepository
+                            this.productRepository,
+                            this.eventBus
                             ),
                             new NativeLogger(this.logger)
                         ),
