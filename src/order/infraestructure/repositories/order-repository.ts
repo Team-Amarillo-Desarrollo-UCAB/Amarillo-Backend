@@ -143,13 +143,33 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
 
         try {
 
-            // Busca la entidad estado en la tabla "Estado" de la base de datos
+            // Se busca la entidad estado en la tabla "Estado" de la base de datos
             const estado = await this.ormEstadoRepository.findOne({
                 where: { nombre: order.Estado.Estado }
             });
 
             let fecha_cambio = new Date()
 
+            //Buscar el estado actual
+            const estado_actual = await this.ormEstadoOrdenRepository.findOne({
+                where: {
+                    id_orden: order.Id.Id,
+                    fecha_fin: null,
+                },
+            });
+
+            //Verificar si el estado actual existe
+            if (!estado_actual) {
+                return Result.fail(new Error('Estado actual no encontrado'), 404, 'No se encontró el estado actual');
+            }
+
+            //Actualizar el campo fecha_fin directamente en la entidad
+            estado_actual.fecha_fin = fecha_cambio
+
+            //Guardar la entidad actualizada
+            await this.ormEstadoOrdenRepository.save(estado_actual)
+
+            //Crear el nuevo estado si es necesario
             const nuevo_estado = Estado_Orden.create(
                 order.Id.Id,
                 estado.id,
@@ -157,21 +177,10 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
                 null
             )
 
-            const estado_actual = await this.ormEstadoOrdenRepository.findOne({
-                where: {
-                    id_orden: order.Id.Id,
-                    fecha_fin: null
-                }
-            })
+            //Guardar el nuevo estado
+            await this.ormEstadoOrdenRepository.save(nuevo_estado)
 
-            // Cambiar la fecha de fin del estado actual por el cambio de estado
-            estado_actual.fecha_fin = fecha_cambio
-
-            await this.ormEstadoOrdenRepository.save(estado_actual);
-            await this.ormEstadoOrdenRepository.save(nuevo_estado);
-
-
-            return Result.success<Order>(order, 200)
+            return Result.success<Order>(order, 200);
         } catch (error) {
             return Result.fail<Order>(new Error(error.message), 500, error.message)
         }
@@ -213,8 +222,8 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
                 .andWhere('estados.fecha_fin IS NULL') // Condición para asegurarse de que fecha_fin sea NULL
                 .andWhere('estado.nombre IN (:...states)', { states: estados }) // Estados permitidos
                 .orderBy('orden.fecha_creacion', 'DESC') // Ordenar por fecha de creación
-                //.skip(page)
-                //.take(limit)
+            //.skip(page)
+            //.take(limit)
 
             const ordenes = await queryBuilder.getMany();
 
