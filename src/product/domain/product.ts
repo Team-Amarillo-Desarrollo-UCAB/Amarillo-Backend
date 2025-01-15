@@ -100,7 +100,7 @@ export class Product extends AggregateRoot<ProductId> {
         return this.categories
     }
 
-    get Discount(): DiscountID{
+    get Discount(): DiscountID| undefined{
         return this.discount
     }
 
