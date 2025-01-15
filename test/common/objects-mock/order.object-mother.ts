@@ -25,6 +25,8 @@ import { OrderBundleCurrency } from "src/order/domain/value-object/order-bundle/
 import { OrderReport } from "src/order/domain/entites/order-report";
 import { OrderReportId } from "src/order/domain/value-object/order-report/order-report-id";
 import { OrderReportText } from "src/order/domain/value-object/order-report/order-report-text";
+import { OrderBundleImage } from "src/order/domain/value-object/order-bundle/order-bundle-image";
+import { OrderProductImage } from "src/order/domain/value-object/order-product/order-product-image";
 
 export class OrderObjectMother {
 
@@ -42,7 +44,8 @@ export class OrderObjectMother {
                 OrderProductPrice.create(
                     OrderProductAmount.create(20),
                     OrderProductCurrency.create('usd')
-                )
+                ),
+                OrderProductImage.create('https://res.cloudinary.com/dxttqmyxu/image/upload/v1733509389/rfjsujtsc9np91mcvksg.jpg')
             )],
             [OrderBundle.create(
                 BundleID.create('cb0e2f2c-1326-428e-9fd4-b7822ff94ab0'),
@@ -51,7 +54,8 @@ export class OrderObjectMother {
                 OrderBundlePrice.create(
                     OrderBundleAmount.create(20),
                     OrderBundleCurrency.create('usd')
-                )
+                ),
+                OrderBundleImage.create('https://res.cloudinary.com/dxttqmyxu/image/upload/v1733509389/rfjsujtsc9np91mcvksg.jpg')
             )],
             OrderReciviedDate.create(new Date('2026-12-03')),
             UserId.create('cb0e2f2c-1326-428e-9fd4-b7822ff94ab0')
@@ -72,7 +76,8 @@ export class OrderObjectMother {
                 OrderProductPrice.create(
                     OrderProductAmount.create(20),
                     OrderProductCurrency.create('usd')
-                )
+                ),
+                OrderProductImage.create('https://res.cloudinary.com/dxttqmyxu/image/upload/v1733509389/rfjsujtsc9np91mcvksg.jpg')
             )],
             [OrderBundle.create(
                 BundleID.create('cb0e2f2c-1326-428e-9fd4-b7822ff94ab0'),
@@ -81,7 +86,8 @@ export class OrderObjectMother {
                 OrderBundlePrice.create(
                     OrderBundleAmount.create(20),
                     OrderBundleCurrency.create('usd')
-                )
+                ),
+                OrderBundleImage.create('https://res.cloudinary.com/dxttqmyxu/image/upload/v1733509389/rfjsujtsc9np91mcvksg.jpg')
             )],
             OrderReport.create(
                 OrderReportId.create('c1L22f2c-1457-428e-9fd4-b7822ff94ab7'),
