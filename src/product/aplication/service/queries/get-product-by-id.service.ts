@@ -32,6 +32,7 @@ export class GetProductByIdService implements IApplicationService<GetProductById
             caducityDate: producto.Value.ProductCaducityDate ? producto.Value.ProductCaducityDate.Value : new Date('2029-01-01'),
             categories: producto.Value.Categories ? producto.Value.Categories.map(i=>i.Value) : [],
             discount: producto.Value.Discount ? producto.Value.Discount.Value : "",
+            image3d: producto.Value.Image3D ? producto.Value.Image3D.Image3D: ""
         }
 
         return Result.success(response,202)

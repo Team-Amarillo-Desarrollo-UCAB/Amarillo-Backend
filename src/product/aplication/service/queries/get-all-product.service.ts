@@ -51,6 +51,7 @@ export class GetAllProductService implements IApplicationService<GetAllProductSe
                         caducityDate: producto.ProductCaducityDate ? producto.ProductCaducityDate.Value : new Date('2029-01-01'),
                         category: producto.Categories ? producto.Categories.map(i => i.Value) : [],
                         discount: producto.Discount ? producto.Discount.Value : "",
+                        image3d: producto.Image3D ? producto.Image3D.Image3D: "",
                     });
                 })
             );

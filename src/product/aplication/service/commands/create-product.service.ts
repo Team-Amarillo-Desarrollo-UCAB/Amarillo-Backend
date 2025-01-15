@@ -24,6 +24,7 @@ import { DiscountExistenceService } from "src/common/application/application-ser
 import { DiscountID } from "src/discount/domain/value-objects/discount-id";
 import { ProductCaducityDate } from "src/product/domain/value-objects/productCaducityDate";
 import { ProductWeight } from "src/product/domain/value-objects/product-weight";
+import { Product3DImage } from "src/product/domain/value-objects/product-3d-image";
 
 export class CreateProductService implements IApplicationService<CreateProductServiceEntryDTO, CreateProductServiceResponseDTO> {
 
@@ -48,6 +49,8 @@ export class CreateProductService implements IApplicationService<CreateProductSe
         );
 
         const productImages = iconUrls.map((url) => ProductImage.create(url));
+
+        const image3d = await this.fileUploader.UploadFile(data.image3d)
 
         // let categorias: CategoryID[] = []
 
@@ -98,6 +101,7 @@ export class CreateProductService implements IApplicationService<CreateProductSe
             categoryResult.Value,
             discountResult.Value ? DiscountID.create(data.discount) : null,
             data.caducityDate ? ProductCaducityDate.create(data.caducityDate) : null,
+            data.image3d ? Product3DImage.create(data.image3d) : null
 
         )
         const result = await this.productRepository.saveProductAggregate(producto)
@@ -118,6 +122,7 @@ export class CreateProductService implements IApplicationService<CreateProductSe
             images: producto.Images.map((image) => image.Image),
             caducityDate: data.caducityDate ?? null,
             discount: data.discount ?? null,
+            image3d: image3d ?? null
         }
 
         await this.eventBus.publish(producto.pullEvents())

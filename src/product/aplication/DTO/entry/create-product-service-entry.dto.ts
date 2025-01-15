@@ -27,4 +27,6 @@ export interface CreateProductServiceEntryDTO extends ApplicationServiceEntryDto
 
     discount?: string;
 
+    image3d?:string;
+
 }

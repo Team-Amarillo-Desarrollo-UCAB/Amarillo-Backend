@@ -6,6 +6,7 @@ import { ProductCaducityDate } from "../value-objects/productCaducityDate";
 import { ProductImage } from "../value-objects/product-image";
 import { ProductWeight } from "../value-objects/product-weight";
 import { Moneda } from 'src/product/domain/enum/Monedas';
+import { Product3DImage } from "../value-objects/product-3d-image";
 
 export class ProductCreated extends DomainEvent {
     protected constructor(
@@ -21,7 +22,8 @@ export class ProductCreated extends DomainEvent {
         public categories: CategoryID[],
         public discount?: DiscountID,
         public caducityDate?: ProductCaducityDate,
-        public weight?: ProductWeight
+        public weight?: ProductWeight,
+        public image3d?: Product3DImage
     ) {
         super();
     }
@@ -39,7 +41,8 @@ export class ProductCreated extends DomainEvent {
         categories: CategoryID[],
         discount?: DiscountID,
         caducityDate?: ProductCaducityDate,
-        weight?: ProductWeight 
+        weight?: ProductWeight,
+        image3d?: Product3DImage
     ): ProductCreated {
         return new ProductCreated(
             id,
@@ -54,7 +57,8 @@ export class ProductCreated extends DomainEvent {
             categories,
             discount,
             caducityDate,
-            weight
+            weight,
+            image3d
         );
     }
 }
