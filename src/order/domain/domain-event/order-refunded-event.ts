@@ -5,7 +5,8 @@ export class OrderRefunded extends DomainEvent {
     constructor(
         public id: string,
         public monto: number,
-        public moneda: string
+        public moneda: string,
+        public factura: string
     ) {
         super()
     }
@@ -13,12 +14,14 @@ export class OrderRefunded extends DomainEvent {
     static create(
         id: string,
         monto: number,
-        moneda: string
+        moneda: string,
+        factura?: string
     ): OrderRefunded {
         return new OrderRefunded(
             id,
             monto,
-            moneda
+            moneda,
+            factura
         )
     }
 

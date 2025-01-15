@@ -29,6 +29,7 @@ import { OrderProcessed } from "./domain-event/order-processed-event";
 import { OrderStateChanged } from "./domain-event/order-state-changed";
 import { OrderLocationDeliveryModified } from "./domain-event/order-location-delivery-modified-event";
 import { OrderBillRecivied } from "./domain-event/order-bill-recivied";
+import { OrderRefunded } from "./domain-event/order-refunded-event";
 
 export class Order extends AggregateRoot<OrderId> {
 
@@ -239,6 +240,16 @@ export class Order extends AggregateRoot<OrderId> {
     modifiedReciviedDate(frecha_entrega: OrderReciviedDate): void {
         const event = OrderReciviedDateModified.create(this.Id.Id, frecha_entrega.ReciviedDate)
         this.onEvent(event)
+    }
+
+    refundOrderEvent(monto: OrderPayment, factura: string): void{
+        const event = OrderRefunded.create(
+            this.Id.Id,
+            monto.AmountPayment().Total,
+            monto.CurrencyPayment().Currency,
+            factura
+        )
+        this.events.push(event)
     }
 
     protected applyEvent(event: DomainEvent): void {
