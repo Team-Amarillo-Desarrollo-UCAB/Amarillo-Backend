@@ -71,8 +71,10 @@ export class GetProductResponseDTO{
     discount?: string;
 
     @ApiProperty({
-        example: "AGOTADO"
+        example: 'cloudinaryURL'
     })
-    status?: string
+    @IsString()
+    @IsOptional()
+    image3d?: string;
 
 }

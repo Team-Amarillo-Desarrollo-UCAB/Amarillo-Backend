@@ -28,6 +28,7 @@ import { ProductDiscountModified } from "./domain-event/product-discount-modifie
 import { ProductImagesModified } from "./domain-event/product-images-modified";
 import { ProductNameModified } from "./domain-event/product-name-modified";
 import { ProductUnitModified } from "./domain-event/product-unit-modified";
+import { Product3DImage } from "./value-objects/product-3d-image";
 
 export class Product extends AggregateRoot<ProductId> {
 
@@ -42,6 +43,7 @@ export class Product extends AggregateRoot<ProductId> {
         private categories?: CategoryID[],
         private discount?: DiscountID,
         private caducityDate?:ProductCaducityDate,
+        private image3d?:Product3DImage
     ) {
         const event = ProductCreated.create(
             id.Id,
@@ -104,7 +106,11 @@ export class Product extends AggregateRoot<ProductId> {
 
     get ProductCaducityDate(): ProductCaducityDate | undefined {
         return this.caducityDate;
-      }
+    }
+
+    get Image3D(): Product3DImage | undefined{
+        return this.image3d
+    }
 
 
 
@@ -267,7 +273,8 @@ export class Product extends AggregateRoot<ProductId> {
         price?: ProductPrice,
         categories?: CategoryID[],
         discount?: DiscountID,
-        caducityDate?: ProductCaducityDate
+        caducityDate?: ProductCaducityDate,
+        image3d?: Product3DImage
     ): Product {
         return new Product(
             id,
@@ -279,7 +286,8 @@ export class Product extends AggregateRoot<ProductId> {
             images,
             categories,
             discount,
-            caducityDate
+            caducityDate,
+            image3d
         )
     }
 

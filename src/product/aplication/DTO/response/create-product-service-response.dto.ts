@@ -28,5 +28,7 @@ export interface CreateProductServiceResponseDTO{
 
     weight?:number
 
+    image3d?:string;
+
 
 }

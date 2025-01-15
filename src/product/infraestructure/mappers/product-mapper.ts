@@ -16,6 +16,7 @@ import { OrmCategoryRepository } from "src/category/infraestructure/repositories
 import { CategoryID } from "src/category/domain/value-objects/category-id";
 import { ProductCaducityDate } from "src/product/domain/value-objects/productCaducityDate";
 import { DiscountID } from "src/discount/domain/value-objects/discount-id";
+import { Product3DImage } from "src/product/domain/value-objects/product-3d-image";
 
 export class ProductMapper implements IMapper<Product, OrmProduct> {
 
@@ -40,6 +41,10 @@ export class ProductMapper implements IMapper<Product, OrmProduct> {
             ormDiscount = domain.Discount.Value
         }
 
+        let ormImage3D= null
+
+        if(domain.Image3D && domain.Image3D.Image3D ) ormImage3D = domain.Image3D.Image3D 
+
         // let categorias: OrmCategory[] = []
 
         // for(const categoria of domain.Categories){
@@ -61,6 +66,7 @@ export class ProductMapper implements IMapper<Product, OrmProduct> {
             domain.Categories.map(i => i.Value),
             ormCaducityDate,
             ormDiscount,
+            ormImage3D
 
 
         )
@@ -113,6 +119,7 @@ export class ProductMapper implements IMapper<Product, OrmProduct> {
             categories,
             persistence.discount ? DiscountID.create(persistence.discount) : null,
             persistence.caducityDate ? ProductCaducityDate.create(persistence.caducityDate) : null,
+            persistence.image3d ? Product3DImage.create( persistence.image3d) : null
         );
 
         return product;

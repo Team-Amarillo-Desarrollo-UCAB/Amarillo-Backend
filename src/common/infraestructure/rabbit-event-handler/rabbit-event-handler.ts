@@ -27,6 +27,7 @@ import { OrderProductImage } from 'src/order/domain/value-object/order-product/o
 import { OrderProductName } from 'src/order/domain/value-object/order-product/order-product-name'
 import { OrderProductPrice } from 'src/order/domain/value-object/order-product/order-product-price'
 import { ProductCreated } from 'src/product/domain/domain-event/product-created-event'
+import { ProductDiscountModified } from 'src/product/domain/domain-event/product-discount-modified'
 import { ProductId } from 'src/product/domain/value-objects/product-id'
 import { testCreated } from "src/product/infraestructure/controller/test-event"
 import { UserCreated } from 'src/user/domain/events/user-created-event'
@@ -245,6 +246,13 @@ export class RabbitEventBus implements IEventHandler {
                                 event_data.discount
                             );
                             break;
+                        case 'ProductDiscountModified':
+                            event = ProductDiscountModified.create(
+                                event_data.id,
+                                event_data.discount
+                            );
+                            break;
+                            
                     }
 
                     // Ejecutar el callback con el evento procesado
