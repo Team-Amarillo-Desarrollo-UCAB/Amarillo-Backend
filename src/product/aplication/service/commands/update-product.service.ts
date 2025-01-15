@@ -15,12 +15,14 @@ import { ProductImage } from "src/product/domain/value-objects/product-image";
 import { CategoryID } from "src/category/domain/value-objects/category-id";
 import { ProductCaducityDate } from "src/product/domain/value-objects/productCaducityDate";
 import { DiscountID } from "src/discount/domain/value-objects/discount-id";
+import { IEventHandler } from "src/common/application/event-handler/event-handler.interface";
 
 export class UpdateProductService implements IApplicationService
     <UpdateProductServiceEntryDTO, UpdateProductServiceResponseDTO> {
 
     constructor(
-        private readonly productRepository: IProductRepository
+        private readonly productRepository: IProductRepository,
+        private readonly eventHandler: IEventHandler
     ) { }
 
     async execute(data: UpdateProductServiceEntryDTO): Promise<Result<UpdateProductServiceResponseDTO>> {
@@ -116,6 +118,8 @@ export class UpdateProductService implements IApplicationService
         const response: UpdateProductServiceResponseDTO = {
             id_producto: result.Value.Id.Id
         }
+
+        await this.eventHandler.publish(productResult.pullEvents())
 
         return Result.success<UpdateProductServiceResponseDTO>(response,200)
     }

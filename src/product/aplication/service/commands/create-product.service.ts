@@ -50,7 +50,13 @@ export class CreateProductService implements IApplicationService<CreateProductSe
 
         const productImages = iconUrls.map((url) => ProductImage.create(url));
 
-        const image3d = await this.fileUploader.UploadFile(data.image3d)
+        let image3d = null
+
+        if(data.image3d){
+           const ima3d = await this.fileUploader.UploadFile(data.image3d)
+           image3d = Product3DImage.create(ima3d)
+        }
+        
 
         // let categorias: CategoryID[] = []
 
@@ -101,7 +107,7 @@ export class CreateProductService implements IApplicationService<CreateProductSe
             categoryResult.Value,
             discountResult.Value ? DiscountID.create(data.discount) : null,
             data.caducityDate ? ProductCaducityDate.create(data.caducityDate) : null,
-            data.image3d ? Product3DImage.create(data.image3d) : null
+            data.image3d ? Product3DImage.create(image3d) : null
 
         )
         const result = await this.productRepository.saveProductAggregate(producto)
@@ -122,7 +128,7 @@ export class CreateProductService implements IApplicationService<CreateProductSe
             images: producto.Images.map((image) => image.Image),
             caducityDate: data.caducityDate ?? null,
             discount: data.discount ?? null,
-            image3d: image3d ?? null
+            image3d: image3d
         }
 
         await this.eventBus.publish(producto.pullEvents())
