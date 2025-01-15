@@ -110,4 +110,11 @@ export class GetAllProductsResponseDTO {
     @IsOptional()
     discount?: string;
 
+    @ApiProperty({
+        example: 'Cloudinaryurl'
+    })
+    @IsString()
+    @IsOptional()
+    image3d?: string;
+
 }

@@ -70,6 +70,15 @@ import { OrmAuditingRepository } from 'src/common/infraestructure/auditing/repos
 import { OrmAccountRepository } from 'src/user/infraestructure/repositories/orm-repositories/orm-account-repository';
 import { SecurityDecorator } from 'src/common/application/application-services/decorators/security-decorator/security-decorator';
 import { AuditingDecorator } from 'src/common/application/application-services/decorators/auditing-decorator/auditing.decorator';
+import { IDiscountRepository } from 'src/discount/domain/repositories/discount.repository.interface';
+import { FirebaseNotifier } from 'src/notification/infraestructure/notifier/firebase-notifier';
+import { NotifyProductDiscountService } from 'src/notification/infraestructure/services/notification-services/notify-product-discount.service';
+import { ProductDiscountModified } from 'src/product/domain/domain-event/product-discount-modified';
+import { INotificationAddressRepository } from 'src/notification/infraestructure/interface/notification-address-repository.interface';
+import { INotificationAlertRepository } from 'src/notification/infraestructure/interface/notification-alert-repository.interface';
+import { OrmNotificationAddressRepository } from 'src/notification/infraestructure/repositories/orm-notification-address-repository';
+import { OrmNotificationAlertRepository } from 'src/notification/infraestructure/repositories/orm-notification-alert-repository';
+import { NotifyProductDiscountServiceEntryDTO } from 'src/notification/infraestructure/services/dto/entry/notify-product-discount-service-entry.dto';
 
 @ApiTags("Product")
 @Controller("product")
@@ -87,12 +96,19 @@ export class ProductController {
     private readonly categoryMapper: OrmCategoryMapper
     private readonly auditingRepository: OrmAuditingRepository;
     private readonly accountUserRepository: OrmAccountRepository;
+    private readonly discountRepo: IDiscountRepository
+    private readonly notiAddressRepository: INotificationAddressRepository
+    private readonly notiAlertRepository: INotificationAlertRepository
+
 
     constructor(
         @Inject('DataSource') private readonly dataSource: DataSource,
         private readonly categoriesExistenceService: CategoriesExistenceService,
         private readonly discountExistenceService: DiscountExistenceService
     ) {
+        this.notiAddressRepository = new OrmNotificationAddressRepository(dataSource)
+        this.notiAlertRepository = new OrmNotificationAlertRepository(dataSource)
+        this.discountRepo = new OrmDiscountRepository(new OrmDiscountMapper(), this.dataSource)
         this.categoryRepository = new OrmCategoryRepository(new OrmCategoryMapper(), dataSource)
         this.historicoRepository = new HistoricoPrecioRepository(dataSource)
         this.productRepository =
@@ -110,7 +126,7 @@ export class ProductController {
         this.fileUploader = new CloudinaryFileUploader(),
             this.categoryMapper = new OrmCategoryMapper(),
             this.categoriesExistenceService = new CategoriesExistenceService(new OrmCategoryRepository(new OrmCategoryMapper(), this.dataSource))
-        this.discountExistenceService = new DiscountExistenceService(new OrmDiscountRepository(new OrmDiscountMapper(), this.dataSource))
+        this.discountExistenceService = new DiscountExistenceService(this.discountRepo)
     }
 
     @Post('create')
@@ -291,7 +307,8 @@ export class ProductController {
             images: product.images, //
             caducityDate: product.caducityDate,//
             categories: product.category,//
-            discount: product.discount//
+            discount: product.discount,//
+            image3d: product.image3d
           }));
 
         return response
@@ -387,6 +404,25 @@ export class ProductController {
             userId: user.id,
             ...request
         }
+
+        await this.eventBus.subscribe('ProductDiscountModified', async (event: ProductDiscountModified) => { 
+            const service = new NotifyProductDiscountService(  
+                this.notiAddressRepository,
+                this.notiAlertRepository,
+                this.productRepository,  
+                this.idGenerator,
+                FirebaseNotifier.getInstance(),
+                this.discountRepo
+            )
+            const entry: NotifyProductDiscountServiceEntryDTO = {  
+              userId: user.id,
+              product_id: event.id  
+            }
+            const response = await service.execute(entry)
+            console.log("Resultado servicio: ", response.isSuccess())
+        }, 'Notificar via push por producto descuento modificado');  
+          
+  
 
         console.log("request: ", request)
 
