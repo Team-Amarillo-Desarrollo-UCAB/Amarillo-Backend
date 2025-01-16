@@ -280,7 +280,6 @@ describe('Create order', () => {
         )
 
         const result = await service.execute(entry)
-
         expect(result.isSuccess()).toBeFalsy()
 
 
