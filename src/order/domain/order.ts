@@ -150,7 +150,7 @@ export class Order extends AggregateRoot<OrderId> {
     }
 
     private changeStateOrderProcessed(): void {
-        if (this.estado.equals(OrderEstado.create(EnumOrderEstados.CANCELED)))
+        if (this.estado.equals(OrderEstado.create(EnumOrderEstados.CANCELLED)))
             throw new InvalidOrderState('La orden no se puede cambiar si ya fue cancelada')
         this.estado = OrderEstado.create(EnumOrderEstados.BEING_PROCESSED)
         this.events.push(
@@ -162,7 +162,7 @@ export class Order extends AggregateRoot<OrderId> {
     }
 
     private changeStateOrderRecivied(): void {
-        if (this.estado.equals(OrderEstado.create(EnumOrderEstados.CANCELED)))
+        if (this.estado.equals(OrderEstado.create(EnumOrderEstados.CANCELLED)))
             throw new InvalidOrderState('La orden no se puede cambiar si ya fue cancelada')
         this.estado = OrderEstado.create(EnumOrderEstados.DELIVERED)
         this.events.push(
@@ -174,7 +174,7 @@ export class Order extends AggregateRoot<OrderId> {
     }
 
     private chnageStateOrderSent(): void {
-        if (this.estado.equals(OrderEstado.create(EnumOrderEstados.CANCELED)))
+        if (this.estado.equals(OrderEstado.create(EnumOrderEstados.CANCELLED)))
             throw new InvalidOrderState('La orden no se puede cambiar si ya fue cancelada')
         this.estado = OrderEstado.create(EnumOrderEstados.SHIPPED)
         this.events.push(
