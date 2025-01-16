@@ -166,17 +166,25 @@ export class OrderRepository extends Repository<OrmOrder> implements IOrderRepos
             //Actualizar el campo fecha_fin directamente en la entidad
             estado_actual.fecha_fin = fecha_cambio
 
-            //Guardar la entidad actualizada
-            await this.ormEstadoOrdenRepository.save(estado_actual)
+            const update = await this.ormEstadoOrdenRepository
+                .createQueryBuilder()
+                .update()
+                .set({ fecha_fin: fecha_cambio })
+                .where('id_orden = :idOrden', { idOrden: order.Id.Id })
+                .andWhere('fecha_fin IS NULL') // Aquí se maneja correctamente el null
+                .execute()
 
+            if (update.affected === 0) {
+                return Result.fail(new Error('Orden no actualizada'), 404, 'Orden no actualizada')
+            }
             //Crear el nuevo estado si es necesario
             const nuevo_estado = Estado_Orden.create(
                 order.Id.Id,
                 estado.id,
                 fecha_cambio,
-                null
+                null,
+                estado
             )
-
             //Guardar el nuevo estado
             await this.ormEstadoOrdenRepository.save(nuevo_estado)
 
