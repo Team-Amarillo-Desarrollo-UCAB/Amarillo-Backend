@@ -26,10 +26,12 @@ Es un patrón de arquitectura software que promueve la producción, detección, 
 
 ```bash
 $ npm install
+```
 
 ## Uso de Docker
 ```bash
 $ npm run docker:start 
+```
 
 ### ¿Cómo correr el backend?
 
@@ -39,6 +41,7 @@ $ npm run start
 
 # watch mode
 $ npm run start:dev
+```
 
 ### ¿Cómo correr los Test?
 
@@ -48,6 +51,7 @@ $ npm run test
 
 # correr un archivo .spec en específico
 $ npx jest --testPathPattern="create-bundle.spec.ts”
+```
 
 ## Responsabilidades de cada integrante del equipo
 
