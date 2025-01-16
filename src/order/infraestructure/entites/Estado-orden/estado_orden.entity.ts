@@ -29,13 +29,15 @@ export class Estado_Orden {
     id_orden: string,
     id_estado: string,
     fecha_inicio: Date,
-    fecha_fin?: Date
+    fecha_fin?: Date,
+    estado?: Estado
   ): Estado_Orden {
     const estadoOrden = new Estado_Orden()
     estadoOrden.id_orden = id_orden
     estadoOrden.id_estado = id_estado
     estadoOrden.fecha_inicio = fecha_inicio
-    estadoOrden.fecha_fin ? fecha_fin : null
+    fecha_fin ? estadoOrden.fecha_fin = fecha_fin : estadoOrden.fecha_fin = null
+    estado ? estadoOrden.estado = estado : null
     return estadoOrden;
   }
 
