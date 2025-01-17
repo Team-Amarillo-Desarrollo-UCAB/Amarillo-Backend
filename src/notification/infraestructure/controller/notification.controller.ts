@@ -48,6 +48,9 @@ import { OrderRepository } from "src/order/infraestructure/repositories/order-re
 import { OrderMapper } from "src/order/infraestructure/mappers/order-mapper"
 import { PaymentMapper } from "src/order/infraestructure/mappers/payment-mapper"
 import { ReportMapper } from "src/order/infraestructure/mappers/report-mapper"
+import { GetManyNotificationByUserInfraService } from "../services/queries/get-all-notification-by-user.service"
+import { GetNotificationsUserDto } from "./dto/entry/get-notification-by-user-entry.dto"
+import { GetNotificationsUserSwaggerResponse } from "./dto/response/get-notifications-by-user-response.dto"
 
 @ApiTags('Notification')
 @Controller('notifications')
@@ -133,6 +136,30 @@ export class NotificationController {
         }
 
         return response
+    }
+
+    @Get('many')
+    @ApiOkResponse({ 
+        description: 'Obtener notificaciones de un usuario', 
+        type: GetNotificationsUserSwaggerResponse
+    })
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    async getNotificationsByUser( @Query() getNotifications:GetNotificationsUserDto, @GetUser() user ) {
+        let dataentry={ ...getNotifications, userId: user.id }
+        const service = new ExceptionDecorator( 
+            new LoggingDecorator(
+                new PerformanceDecorator(    
+                    new GetManyNotificationByUserInfraService(
+                        this.notiAlertRepository
+                    ),
+                    new NativeLogger(this.logger)
+                ),
+                new NativeLogger(this.logger)
+            ),
+            new HttpExceptionHandler()
+        )
+        return (await service.execute(dataentry)).Value    
     }
 
     @Cron(CronExpression.EVERY_DAY_AT_10AM)
