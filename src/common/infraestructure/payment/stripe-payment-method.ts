@@ -68,7 +68,7 @@ export class StripePaymentMethod implements IPaymentMethod {
                 OrderPaymentName.create(EnumPaymentMethod.STRIPE),
                 OrderPaymentCurrency.create(orden.Moneda),
                 OrderPaymentTotal.create(orden.Monto.Total),
-                PaymentMethodId.create(method.Value.Id.Id),
+                PaymentMethodId.create(method.Value.Id.Id),//
             )
 
             orden.asignarMetodoPago(pago,charge.receipt_url)
