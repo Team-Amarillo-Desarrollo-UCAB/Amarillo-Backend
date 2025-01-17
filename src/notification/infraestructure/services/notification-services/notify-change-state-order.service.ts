@@ -64,7 +64,7 @@ export class NotifyChangeStateOrderService implements
             }
             const result = await this.pushNotifier.sendNotificationPush(pushMessage)
             if (!result.isSuccess())
-                return Result.fail<string>(result.Error, 500, result.Message)
+                console.log('Error para el token ',token)
 
         })
 

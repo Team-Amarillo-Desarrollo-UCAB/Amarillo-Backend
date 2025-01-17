@@ -88,8 +88,8 @@ describe('Create bundle', () => {
             new FileUploaderMock(),
             new CategoriesExistenceService(categoryRepositoryMock),
             new ProductsExistenceService(productRepositoryMock),
-            new DiscountExistenceService(discountRepositoryMock)
-
+            new DiscountExistenceService(discountRepositoryMock),
+            new EventHandlerMock()
         )
 
         const result = await service.execute(entry)
@@ -160,8 +160,8 @@ describe('Create bundle', () => {
             new FileUploaderMock(),
             new CategoriesExistenceService(categoryRepositoryMock),
             new ProductsExistenceService(productRepositoryMock),
-            new DiscountExistenceService(discountRepositoryMock)
-
+            new DiscountExistenceService(discountRepositoryMock),
+            new EventHandlerMock()
         )
 
         const result = await service.execute(entry)
@@ -232,8 +232,8 @@ describe('Create bundle', () => {
             new FileUploaderMock(),
             new CategoriesExistenceService(categoryRepositoryMock),
             new ProductsExistenceService(productRepositoryMock),
-            new DiscountExistenceService(discountRepositoryMock)
-
+            new DiscountExistenceService(discountRepositoryMock),
+            new EventHandlerMock()
         )
 
         const result = await service.execute(entry)
@@ -304,8 +304,8 @@ describe('Create bundle', () => {
             new FileUploaderMock(),
             new CategoriesExistenceService(categoryRepositoryMock),
             new ProductsExistenceService(productRepositoryMock),
-            new DiscountExistenceService(discountRepositoryMock)
-
+            new DiscountExistenceService(discountRepositoryMock),
+            new EventHandlerMock()
         )
 
         const result = await service.execute(entry)
@@ -351,7 +351,8 @@ describe('Create bundle', () => {
             new FileUploaderMock(),
             new CategoriesExistenceService(categoryRepositoryMock),
             new ProductsExistenceService(productRepositoryMock),
-            new DiscountExistenceService(new DiscountMockRepository())
+            new DiscountExistenceService(new DiscountMockRepository()),
+            new EventHandlerMock()
         );
 
         await expect(service.execute(entry)).rejects.toThrowError(
@@ -399,7 +400,8 @@ describe('Create bundle', () => {
             new FileUploaderMock(),
             new CategoriesExistenceService(categoryRepositoryMock),
             new ProductsExistenceService(productRepositoryMock),
-            new DiscountExistenceService(new DiscountMockRepository())
+            new DiscountExistenceService(new DiscountMockRepository()),
+            new EventHandlerMock()
         );
 
         await expect(service.execute(entry)).rejects.toThrowError(
@@ -448,7 +450,8 @@ describe('Create bundle', () => {
             new FileUploaderMock(),
             new CategoriesExistenceService(categoryRepositoryMock),
             new ProductsExistenceService(productRepositoryMock),
-            new DiscountExistenceService(new DiscountMockRepository())
+            new DiscountExistenceService(new DiscountMockRepository()),
+            new EventHandlerMock()
         );
         const result = await service.execute(entry)
 
@@ -496,7 +499,8 @@ describe('Create bundle', () => {
             new FileUploaderMock(),
             new CategoriesExistenceService(categoryRepositoryMock),
             new ProductsExistenceService(productRepositoryMock),
-            new DiscountExistenceService(new DiscountMockRepository())
+            new DiscountExistenceService(new DiscountMockRepository()),
+            new EventHandlerMock()
         );
         const result = await service.execute(entry)
 
@@ -566,8 +570,8 @@ describe('Create bundle', () => {
             new FileUploaderMock(),
             new CategoriesExistenceService(categoryRepositoryMock),
             new ProductsExistenceService(productRepositoryMock),
-            new DiscountExistenceService(discountRepositoryMock)
-
+            new DiscountExistenceService(discountRepositoryMock),
+            new EventHandlerMock()
         )
 
         await expect(service.execute(entry)).rejects.toThrowError(
@@ -652,8 +656,8 @@ describe('Create bundle', () => {
             new FileUploaderMock(),
             new CategoriesExistenceService(categoryRepositoryMock),
             new ProductsExistenceService(productRepositoryMock),
-            new DiscountExistenceService(discountRepositoryMock)
-
+            new DiscountExistenceService(discountRepositoryMock),
+            new EventHandlerMock()
         )
 
         const result = await service.execute(entry)
@@ -726,8 +730,8 @@ describe('Create bundle', () => {
             new FileUploaderMock(),
             new CategoriesExistenceService(categoryRepositoryMock),
             new ProductsExistenceService(productRepositoryMock),
-            new DiscountExistenceService(discountRepositoryMock)
-
+            new DiscountExistenceService(discountRepositoryMock),
+            new EventHandlerMock()
         )
 
         await expect(service.execute(entry)).rejects.toThrowError(
@@ -798,8 +802,8 @@ describe('Create bundle', () => {
             new FileUploaderMock(),
             new CategoriesExistenceService(categoryRepositoryMock),
             new ProductsExistenceService(productRepositoryMock),
-            new DiscountExistenceService(discountRepositoryMock)
-
+            new DiscountExistenceService(discountRepositoryMock),
+            new EventHandlerMock()
         )
 
         await expect(service.execute(entry)).rejects.toThrowError(
@@ -870,8 +874,8 @@ describe('Create bundle', () => {
             new FileUploaderMock(),
             new CategoriesExistenceService(categoryRepositoryMock),
             new ProductsExistenceService(productRepositoryMock),
-            new DiscountExistenceService(discountRepositoryMock)
-
+            new DiscountExistenceService(discountRepositoryMock),
+            new EventHandlerMock()
         )
 
         await expect(service.execute(entry)).rejects.toThrowError(
@@ -942,8 +946,8 @@ describe('Create bundle', () => {
             new FileUploaderMock(),
             new CategoriesExistenceService(categoryRepositoryMock),
             new ProductsExistenceService(productRepositoryMock),
-            new DiscountExistenceService(discountRepositoryMock)
-
+            new DiscountExistenceService(discountRepositoryMock),
+            new EventHandlerMock()
         )
 
         await expect(service.execute(entry)).rejects.toThrowError(
@@ -1014,8 +1018,8 @@ describe('Create bundle', () => {
             new FileUploaderMock(),
             new CategoriesExistenceService(categoryRepositoryMock),
             new ProductsExistenceService(productRepositoryMock),
-            new DiscountExistenceService(discountRepositoryMock)
-
+            new DiscountExistenceService(discountRepositoryMock),
+            new EventHandlerMock()
         )
 
         await expect(service.execute(entry)).rejects.toThrowError(
@@ -1086,8 +1090,8 @@ describe('Create bundle', () => {
             new FileUploaderMock(),
             new CategoriesExistenceService(categoryRepositoryMock),
             new ProductsExistenceService(productRepositoryMock),
-            new DiscountExistenceService(discountRepositoryMock)
-
+            new DiscountExistenceService(discountRepositoryMock),
+            new EventHandlerMock()
         )
 
         await expect(service.execute(entry)).rejects.toThrowError(

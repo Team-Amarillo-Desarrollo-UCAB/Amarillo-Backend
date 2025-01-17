@@ -34,36 +34,39 @@ export class NotifyRefundOrderService implements
 
     async execute(data: NotifyRefundOrderServiceEntryDTO): Promise<Result<string>> {
 
-        const find_token = await this.notiAddressRepository.findTokenByIdUser(data.userId)
-        if (!find_token.isSuccess())
-            return Result.fail(find_token.Error, find_token.StatusCode, find_token.Message)
+        const find_tokens = await this.notiAddressRepository.findAllTokensByUser(data.userId)
+        if (!find_tokens.isSuccess())
+            return Result.fail(find_tokens.Error, find_tokens.StatusCode, find_tokens.Message)
 
         const find_orden = await this.ordenRepository.findOrderById(data.id_orden)
         if (!find_orden.isSuccess())
             return Result.fail(find_orden.Error, find_orden.StatusCode, find_orden.Message)
 
         const orden = find_orden.Value
-        const token = find_token.Value
+        const tokens = find_tokens.Value
         const pushTitle = 'Orden #' + orden.Id.Id.slice(-3) + ' reembolsada'
         const pushBody = 'La orden #' + orden.Id.Id.slice(-3) + " ha sido reembolsada por la cantidad de " + data.monto_reembolsado + orden.Payment.CurrencyPayment().Currency
 
-        this.notiAlertRepository.saveNotificationAlert({
-            alert_id: await this.uuidGenerator.generateId(),
-            user_id: token.user_id,
-            title: pushTitle,
-            body: pushBody,
-            date: new Date(),
-            user_readed: false
-        })
-        const pushMessage: PushNotificationDto = {
-            token: token.token,
-            notification: {
-                title: pushTitle, body: pushBody
+        tokens.forEach(async token => {
+            this.notiAlertRepository.saveNotificationAlert({
+                alert_id: await this.uuidGenerator.generateId(),
+                user_id: token.user_id,
+                title: pushTitle,
+                body: pushBody,
+                date: new Date(),
+                user_readed: false
+            })
+            const pushMessage: PushNotificationDto = {
+                token: token.token,
+                notification: {
+                    title: pushTitle, body: pushBody
+                }
             }
-        }
-        const result = await this.pushNotifier.sendNotificationPush(pushMessage)
-        if (!result.isSuccess())
-            return Result.fail<string>(result.Error, 500, result.Message)
+            const result = await this.pushNotifier.sendNotificationPush(pushMessage)
+            if (!result.isSuccess())
+                console.log('Error para el token ',token)
+
+        })
 
         return Result.success('Notification push sended', 200)
 
