@@ -13,7 +13,7 @@ export class CreateCategoryEntryDTO {
         example: 'base64image',
     })
     @IsString()
-    icon?: string;
+    image?: string;
 
 
 }
