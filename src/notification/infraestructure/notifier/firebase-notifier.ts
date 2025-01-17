@@ -64,7 +64,7 @@ export class FirebaseNotifier implements IPushSender {
             },
         }
         try {
-            const res = await admin.messaging().send(msg).then(e => { console.log(' sendeeeeed ') })
+            const res = await admin.messaging().send(msg).then(e => { console.log(' sendeeeeed to ',msg.token) })
             return Result.success<string>('push_sended', 200)
         } catch (e) {
             console.log("ERROR e:", e)

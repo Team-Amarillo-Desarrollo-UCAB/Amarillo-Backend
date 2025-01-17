@@ -282,8 +282,27 @@ export class OrderController {
         await this.eventBus.subscribe('OrderCreated', async (event: OrderCreated) => {
             const sender = new NodemailerEmailSender();
             const order_id = event.id;
+            const data_productos = []
+            event.productos.map(p => {
+                data_productos.push(
+                    {
+                        name: p.Name().Value,
+                        image: p.Image().Image,
+                        quantity: p.Cantidad().Value
+                    }
+                )
+            })
+            event.bundles.map(c => {
+                data_productos.push(
+                    {
+                        name: c.Name().Value,
+                        image: c.Image().Image,
+                        quantity: c.Cantidad().Value
+                    }
+                )
+            })
             console.log("Receptor: ", user.email)
-            sender.sendEmail(user.email, user.name, order_id);
+            sender.sendEmail(user.email, user.name, order_id, data_productos);
         }, 'Notificar orden de compra');
 
 
@@ -1186,6 +1205,33 @@ export class OrderController {
 
         return response
 
+    }
+
+    @Get('Test')
+    async test() {
+        const sender = new NodemailerEmailSender();
+        const order_id = '';
+        const data = [{
+            name: 'Esponja',
+            image: "https://res.cloudinary.com/dxttqmyxu/image/upload/v1731484347/irt7dk0xphtffonboewo.png",
+            quantity: 2
+        },
+        {
+            name: 'Babero',
+            image: "https://res.cloudinary.com/dxttqmyxu/image/upload/v1731483722/ulx3mwxjckhuwexa76qe.webp",
+            quantity: 2
+        },
+        {
+            name: 'Babero',
+            image: "https://res.cloudinary.com/dxttqmyxu/image/upload/v1731483722/ulx3mwxjckhuwexa76qe.webp",
+            quantity: 2
+        },
+        {
+            name: 'Babero',
+            image: "https://res.cloudinary.com/dxttqmyxu/image/upload/v1731483722/ulx3mwxjckhuwexa76qe.webp",
+            quantity: 2
+        }]
+        sender.sendEmail('labastidas.21@est.ucab.edu.ve', 'Luigi Bastidas', order_id, data);
     }
 
 
