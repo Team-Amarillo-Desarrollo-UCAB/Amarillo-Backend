@@ -82,6 +82,12 @@ Implementación de los casos de uso de los agregados mencionados anteriormente. 
 
 Configuraciones iniciales del apartado test. Tests unitarios de servicios de aplicación con sus correspondientes casos de prueba en creación de producto y combo
 
+- Documentacion:
+### Diagrama del Modelo de Dominio
+
+
+### Diagrama de Arquitectura Hexagonal
+![App Screenshot](./imgs/Domain%20Model%20-%20Yellow%20Team%20-%20Hexagonal%20Diagrama.svg)
 
 - Despliegue:
 
