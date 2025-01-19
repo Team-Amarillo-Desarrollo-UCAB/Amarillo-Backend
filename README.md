@@ -84,7 +84,7 @@ Configuraciones iniciales del apartado test. Tests unitarios de servicios de apl
 
 - Documentacion:
 ### Diagrama del Modelo de Dominio
-
+![App Screenshot](./imgs/Domain%20Model%20-%20Yellow%20Team%20-%20Backend%20-%20DDD%20Domain%20Model.svg)
 
 ### Diagrama de Arquitectura Hexagonal
 ![App Screenshot](./imgs/Domain%20Model%20-%20Yellow%20Team%20-%20Hexagonal%20Diagrama.svg)
