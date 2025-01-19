@@ -97,11 +97,17 @@ Encargado del despliegue del backend mediante una suscripción a railway.
 
 - Capa de dominio:
 
+Implementacion completa de los agregados Orden y Payment Method, asi como del servicio de dominio para el calculo del total de una orden. Intervenciones en el modulo Producto y Cupon.
 
 - Capa de aplicación:
 
+Implementacion de los casos de uso para los agregados Orden y Payment Method, asi como intervencion en la creacion de algunos casos de uso para el modulo de Producto y Cupon, Implementación de los aspectos de Logging y Performance, participacion en el de manejo de excepciones.
 
 - Capa de infraestructura
+
+Creacion del controlador, de los mapper y entidades utilizando TypeOrm, para los modulos de Orden y Payment Method. Implementacion de los adaptadores para los puertos definidos en Domino de los servicios de dominio para calcular el shipping fee dado la distancia de entrega y el metodo de pago por Stripe asi como el reembolso. 
+
+Implmentacion del manejador de eventos con RabbitMQ, creacion de los servicios de infraestructura para las notificaciones Push de las ordenes, intervencion en los modulos de producto y notificaciones.
 
 ### Nadine Chancay
 
